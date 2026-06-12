@@ -2612,11 +2612,12 @@ function refreshProductionPanel(key, type) {
 
   if (isSorting) {
     const sYield = Math.round(sortingYield(level) * 100);
-    if (wasteEl) wasteEl.textContent = 'Déchets : ' + (stock.waste ?? 0);
-    if (yieldEl) yieldEl.textContent = sYield + '% raffiné / ' + (100-sYield) + '% déchets';
+    if (wasteEl) { wasteEl.textContent = 'Déchets : ' + (stock.waste ?? 0); wasteEl.parentElement.style.display = 'flex'; }
+    if (yieldEl) { yieldEl.textContent = sYield + '% raffiné / ' + (100-sYield) + '% déchets'; yieldEl.parentElement.style.display = 'flex'; }
   } else {
-    if (wasteEl) wasteEl.textContent = '100% minerais bruts';
-    if (yieldEl) yieldEl.textContent = 'Pas de déchets';
+    // Mines/puits/carrières : pas de ligne déchets ni rendement
+    if (wasteEl) wasteEl.parentElement.style.display = 'none';
+    if (yieldEl) yieldEl.parentElement.style.display = 'none';
   }
   document.getElementById('bp-prod-capacity').textContent = total + ' / ' + capacity;
 }
