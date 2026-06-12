@@ -2599,9 +2599,24 @@ function refreshProductionPanel(key, type) {
   // Statut production
   const status = getBuildingStatus(key, type);
   const statusEl = document.getElementById('bp-prod-status');
-  if (statusEl && status) {
-    statusEl.textContent = status.ok ? '✅ En production — ' + status.reason : '⛔ ' + status.reason;
-    statusEl.style.color = status.ok ? 'var(--success)' : 'var(--error)';
+  if (statusEl) {
+    if (status) {
+      statusEl.textContent = status.ok ? '✅ En production — ' + status.reason : '⛔ ' + status.reason;
+      statusEl.style.color = status.ok ? 'var(--success)' : 'var(--error)';
+      statusEl.style.display = 'block';
+    } else {
+      // Pas de workers requis mais on affiche quand même l'état
+      const assigned = state.assignedWorkers[key] ?? 0;
+      const maxW = (BUILDING_DEF[type]?.workers ?? 0) + Math.floor(level / 5);
+      if (maxW > 0) {
+        const effic = Math.round(assigned / maxW * 100);
+        statusEl.textContent = assigned > 0
+          ? '✅ En production — ' + assigned + '/' + maxW + ' travailleur(s) · ' + effic + '% efficacité'
+          : '⛔ Aucun travailleur assigné';
+        statusEl.style.color = assigned > 0 ? 'var(--success)' : 'var(--error)';
+        statusEl.style.display = 'block';
+      }
+    }
   }
 
   const isSorting = type === 'sorting';
