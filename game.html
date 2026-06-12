@@ -195,9 +195,9 @@
       <div class="panel-section">
         <h4>⚙️ Production</h4>
         <div id="bp-prod-status" style="text-align:center;padding:4px 0;margin-bottom:6px;font-size:0.72rem;letter-spacing:0.1em;color:var(--error)">⛔ Production stoppée</div>
-        <div class="th-row"><span>Rendement</span><span class="th-val" id="bp-prod-yield">30% / 70%</span></div>
+        <div class="th-row" id="bp-prod-yield-row"><span>Rendement</span><span class="th-val" id="bp-prod-yield">30% / 70%</span></div>
         <div class="th-row"><span id="bp-prod-resource">Ressource : 0</span><span class="th-val"></span></div>
-        <div class="th-row"><span id="bp-prod-waste">Déchets : 0</span><span class="th-val"></span></div>
+        <div class="th-row" id="bp-prod-waste-row"><span id="bp-prod-waste">Déchets : 0</span><span class="th-val"></span></div>
         <div class="th-row"><span>Entrepôt</span><span class="th-val" id="bp-prod-capacity">0 / 5</span></div>
       </div>
     </div>
@@ -2610,14 +2610,17 @@ function refreshProductionPanel(key, type) {
 
   document.getElementById('bp-prod-resource').textContent = (RESOURCE_LABELS[resType] ?? resType ?? '—') + ' : ' + resQty;
 
+  const wasteRow = document.getElementById('bp-prod-waste-row');
+  const yieldRow = document.getElementById('bp-prod-yield-row');
   if (isSorting) {
     const sYield = Math.round(sortingYield(level) * 100);
-    if (wasteEl) { wasteEl.textContent = 'Déchets : ' + (stock.waste ?? 0); wasteEl.parentElement.style.display = 'flex'; }
-    if (yieldEl) { yieldEl.textContent = sYield + '% raffiné / ' + (100-sYield) + '% déchets'; yieldEl.parentElement.style.display = 'flex'; }
+    if (wasteEl)  wasteEl.textContent  = 'Déchets : ' + (stock.waste ?? 0);
+    if (yieldEl)  yieldEl.textContent  = sYield + '% raffiné / ' + (100-sYield) + '% déchets';
+    if (wasteRow) wasteRow.style.display = 'flex';
+    if (yieldRow) yieldRow.style.display = 'flex';
   } else {
-    // Mines/puits/carrières : pas de ligne déchets ni rendement
-    if (wasteEl) wasteEl.parentElement.style.display = 'none';
-    if (yieldEl) yieldEl.parentElement.style.display = 'none';
+    if (wasteRow) wasteRow.style.display = 'none';
+    if (yieldRow) yieldRow.style.display = 'none';
   }
   document.getElementById('bp-prod-capacity').textContent = total + ' / ' + capacity;
 }
