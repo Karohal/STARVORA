@@ -2436,16 +2436,16 @@ function updateTruckBuildQueue() {
   for (const [factoryKey, q] of Object.entries(state.truckBuildQueue)) {
     q.progress = Math.min(1, (now - q.startTime) / q.duration);
 
-    // Mettre à jour le countdown en temps réel si panel ouvert
-    const timerEl = document.getElementById('truck-build-timer');
-    const barEl   = document.getElementById('truck-build-bar');
-    if (timerEl) {
-      const remaining = Math.max(0, Math.ceil((q.duration - (now - q.startTime)) / 1000));
-      timerEl.textContent = remaining + 's restantes';
-    }
-    if (barEl) {
-      barEl.style.width = Math.round(q.progress * 100) + '%';
-    }
+    // Mettre à jour le countdown en temps réel
+    const elapsed3  = now - q.startTime;
+    const remaining3 = Math.max(0, Math.ceil((q.duration - elapsed3) / 1000));
+    const pct3       = Math.round(q.progress * 100);
+
+    // Mettre à jour via les IDs si présents dans le DOM
+    const timerEl = document.getElementById('truck-build-timer-' + factoryKey.replace(',','-'));
+    const barEl   = document.getElementById('truck-build-bar-' + factoryKey.replace(',','-'));
+    if (timerEl) timerEl.textContent = remaining3 + 's restantes';
+    if (barEl)   barEl.style.width   = pct3 + '%';
 
     if (q.progress >= 1) {
       delete state.truckBuildQueue[factoryKey];
