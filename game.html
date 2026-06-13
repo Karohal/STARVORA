@@ -2385,7 +2385,7 @@ function handleTruckStop(t, stop) {
       t.status = 'unloading';
     } else {
       // Mauvais type d'entrepôt → notifier et passer
-      notify('⚠️ Mauvais type d'entrepôt pour ce camion !', 'err');
+      notify("⚠️ Mauvais type d'entrepot pour ce camion !", 'err');
       t.atStop     = false;
       t.atStopTs   = 0;
       t.routeIndex = (t.routeIndex + 1) % t.route.length;
