@@ -992,12 +992,25 @@ const BUILD_TIME = {
 };
 
 // ---------- VALIDITÉ ----------
-function isValidPlacement(col, row) {
+// Ressources requises par type de bâtiment extracteur
+const EXTRACTOR_RESOURCES = {
+  mine:   ['iron', 'coal'],
+  quarry: ['stone'],
+  well:   ['oil', 'water'],
+};
+
+function isValidPlacement(col, row, type) {
   if (col < 0 || row < 0 || col >= 20 || row >= 20) return false;
   if (state.map[row][col].terrain === 'mountain') return false;
-
   if (state.buildings[`${col},${row}`]) return false;
   if (state.buildingQueue[`${col},${row}`]) return false;
+
+  // Vérifier la ressource sous le bâtiment extracteur
+  if (EXTRACTOR_RESOURCES[type]) {
+    const res = state.resources[row]?.[col];
+    if (!res || !EXTRACTOR_RESOURCES[type].includes(res)) return false;
+  }
+
   return true;
 }
 
@@ -1005,7 +1018,11 @@ function isValidPlacement(col, row) {
 function placeBuilding(col, row) {
   const type = state.selectedBuilding;
   if (!type) return notify('Sélectionne un bâtiment !', 'err');
-  if (!isValidPlacement(col, row)) return notify('Impossible ici !', 'err');
+  if (!isValidPlacement(col, row, type)) {
+    const req = EXTRACTOR_RESOURCES[type];
+    if (req) return notify('⛏️ Pose sur : ' + req.map(r => RESOURCE_LABELS[r]??r).join(' ou ') + ' !', 'err');
+    return notify('Impossible ici !', 'err');
+  }
 
   const def = BUILDING_DEF[type];
   if (state.money < def.cost) return notify('Pas assez d\'argent !', 'err');
@@ -1240,7 +1257,7 @@ function drawGhostPreview(ctx) {
   if (tool !== 'build' || !selectedBuilding || !hoverTile) return;
 
   const { col, row } = hoverTile;
-  if (!isValidPlacement(col, row)) return;
+  if (!isValidPlacement(col, row, state.selectedBuilding)) return;
 
   const tile = map[row]?.[col];
   if (!tile) return;
@@ -2725,6 +2742,12 @@ function getBuildingStatus(key, type) {
 
   const effic = Math.round(assigned / maxWorkers * 100);
   return { ok: true, reason: `${assigned}/${maxWorkers} travailleur(s) · ${effic}% efficacité` };
+}
+
+function getExtractorResourceMsg(type) {
+  const required = EXTRACTOR_RESOURCES[type];
+  if (!required) return null;
+  return required.map(r => RESOURCE_LABELS[r] ?? r).join(' ou ');
 }
 
 function getProductionStatus(key, type) {
