@@ -124,6 +124,11 @@
     <div class="b-name">Dépôt Déchets</div>
     <div class="b-cost">220 💰</div>
   </div>
+  <div class="build-item" data-type="warehouse_hazmat" onclick="window._ui.selectBuilding('warehouse_hazmat', this)">
+    <div class="b-icon">☢️</div>
+    <div class="b-name">Dépôt Dangereux</div>
+    <div class="b-cost">300 💰</div>
+  </div>
 </div>
 
 <!-- PANEL BÂTIMENT GÉNÉRIQUE -->
@@ -249,7 +254,7 @@
     <h4 style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:#8aaa88;margin-bottom:8px">🗺 Route</h4>
     <div id="tp-stops"></div>
     <div style="display:flex;gap:8px;margin-top:10px">
-      <button class="assign-btn" id="btn-add-stop">+ Stop</button>
+      <button class="assign-btn" id="btn-add-stop">🗺 Ajouter un itinéraire</button>
       <button class="assign-btn" id="btn-clear-route" style="border-color:#ff6b6b;color:#ff6b6b">🗑 Effacer</button>
     </div>
   </div>
@@ -690,7 +695,13 @@ const BUILDING_DEF = {
     icon: '☣️', name: 'Entrepôt Déchets', cost: 220,
     color: '#404820', w: 1, h: 1,
     workers: 2,
-    description: 'Stocke les déchets et matières dangereuses.',
+    description: 'Stocke les déchets incinérables.',
+  },
+  warehouse_hazmat: {
+    icon: '☢️', name: 'Entrepôt Dangereux', cost: 300,
+    color: '#602010', w: 1, h: 1,
+    workers: 2,
+    description: 'Stocke les matières dangereuses.',
   },
   vehiclefactory: {
     icon: '🏗️', name: 'Usine de Véhicules', cost: 300,
@@ -748,6 +759,7 @@ const RESOURCE_CATEGORY = {
   waste:     'waste',
   incin:     'waste',
   hazardous: 'hazardous',
+  hazmat:    'hazardous',
   iron_r:    'solid',
   coal_r:    'solid',
   stone_r:   'solid',
@@ -768,6 +780,7 @@ const WAREHOUSE_TYPES = {
   warehouse:        { category: 'solid',    label: 'Entrepôt Standard' },
   warehouse_liquid: { category: 'liquid',   label: 'Citerne'           },
   warehouse_waste:  { category: 'waste',    label: 'Entrepôt Déchets'  },
+  warehouse_hazmat: { category: 'hazardous', label: 'Entrepôt Dangereux' },
 };
 
 
@@ -1420,7 +1433,7 @@ function openBuildingPanel(key, type) {
   const isHouse      = type === 'house';
   const isProducer   = ['mine','quarry','well','sorting'].includes(type);
   const isFactory    = type === 'vehiclefactory';
-  const isWarehouse  = ['warehouse','warehouse_liquid','warehouse_waste'].includes(type);
+  const isWarehouse  = ['warehouse','warehouse_liquid','warehouse_waste','warehouse_hazmat'].includes(type);
   const hasWorkers   = !['house','road'].includes(type);
   document.getElementById('bp-townhall-section').style.display   = isTownhall  ? 'block' : 'none';
   document.getElementById('bp-house-section').style.display      = isHouse     ? 'block' : 'none';
@@ -1525,6 +1538,7 @@ function isBuildingUnlocked(type) {
     case 'warehouse':
     case 'warehouse_liquid':
     case 'warehouse_waste':
+    case 'warehouse_hazmat':
     case 'sorting':
     case 'refinery':
     case 'vehiclefactory':    return hasExtractor;
@@ -1814,7 +1828,7 @@ function finalizeBuild(key, type, col, row) {
   if (['mine','quarry','well','sorting'].includes(type)) {
     state.internalStock[key] = { solid: {}, liquid: {}, waste: 0 };
   }
-  if (['warehouse','warehouse_liquid','warehouse_waste'].includes(type)) {
+  if (['warehouse','warehouse_liquid','warehouse_waste','warehouse_hazmat'].includes(type)) {
     state.warehouseStock[key] = {};
   }
   if (type === 'townhall') {
@@ -1933,7 +1947,6 @@ function refreshFactoryPanel(factoryKey) {
   const btnsEl = document.getElementById('bp-truck-build-btns');
   if (btnsEl) {
     const isBuilding = !!state.truckBuildQueue[factoryKey];
-    const truckBadges2 = { standard: '🚛⛏️', tanker: '🚛💧', waste: '🚛🗑️', hazmat: '🚛☢️' };
     btnsEl.innerHTML = Object.entries(TRUCK_TYPES).map(([ttype, def]) =>
       `<button class="assign-btn" data-factory="${factoryKey}" data-ttype="${ttype}"
         style="flex:1;flex-direction:column;height:auto;padding:6px 2px;font-size:0.6rem;${isBuilding ? 'opacity:0.4;pointer-events:none' : ''}">
@@ -2035,9 +2048,14 @@ function refreshTruckPanel(truckId) {
       const label   = def ? `${def.icon} ${def.name}` : stop.key;
       const action  = stop.action === 'load' ? '⬆ Charger' : '⬇ Vider';
       const active  = i === t.routeIndex % t.route.length ? ' style="color:var(--gold)"' : '';
-      return `<div class="th-row"${active}>
-        <span>${i+1}. ${label} — ${action}</span>
-        <button class="assign-btn" style="width:28px;padding:2px;flex-shrink:0" onclick="removeStop('${truckId}',${i})">✕</button>
+      return `<div class="th-row"${active} style="justify-content:space-between">
+        <span style="flex:1">${i+1}. ${label} — ${action}</span>
+        <button onclick="removeStop('${truckId}',${i})" style="
+          width:22px;height:22px;flex-shrink:0;margin-left:8px;
+          background:#c00;border:none;color:#fff;font-size:0.8rem;
+          cursor:pointer;display:flex;align-items:center;justify-content:center;
+          font-weight:bold;border-radius:2px;line-height:1;
+        ">✕</button>
       </div>`;
     }).join('');
   }
@@ -2409,18 +2427,33 @@ function drawTrucks(ctx) {
   }
 }
 
+// Badges visuels des camions
+const truckBadges2 = { standard: '🚛⛏️', tanker: '🚛💧', waste: '🚛🗑️', hazmat: '🚛☢️' };
+
 // ===== FILE CONSTRUCTION CAMIONS =====
 function updateTruckBuildQueue() {
   const now = Date.now();
   for (const [factoryKey, q] of Object.entries(state.truckBuildQueue)) {
     q.progress = Math.min(1, (now - q.startTime) / q.duration);
+
+    // Mettre à jour le countdown en temps réel si panel ouvert
+    const timerEl = document.getElementById('truck-build-timer');
+    const barEl   = document.getElementById('truck-build-bar');
+    if (timerEl) {
+      const remaining = Math.max(0, Math.ceil((q.duration - (now - q.startTime)) / 1000));
+      timerEl.textContent = remaining + 's restantes';
+    }
+    if (barEl) {
+      barEl.style.width = Math.round(q.progress * 100) + '%';
+    }
+
     if (q.progress >= 1) {
       delete state.truckBuildQueue[factoryKey];
       const def = TRUCK_TYPES[q.truckType] ?? TRUCK_TYPES.standard;
       const id  = createTruck(factoryKey, q.truckType ?? 'standard');
       state.trucks[id].driver = 1;
       updateStats();
-      notify('✅ ' + def.icon + ' ' + def.name + ' prêt !', 'ok');
+      notify('✅ ' + (truckBadges2?.[q.truckType] ?? def.icon) + ' ' + def.name + ' prêt !', 'ok');
       refreshFactoryPanel(factoryKey);
     }
   }
@@ -2946,7 +2979,7 @@ function startEconomyTick() {
 
 // ===== LEVEL UP HOTEL DE VILLE =====
 function levelUpCost(type, currentLevel) {
-  const baseCost = { townhall: 50, house: 30, mine: 80, quarry: 60, well: 40, road: 5, sorting: 100, refinery: 150, warehouse: 90, warehouse_liquid: 100, warehouse_waste: 110, vehiclefactory: 150 };
+  const baseCost = { townhall: 50, house: 30, mine: 80, quarry: 60, well: 40, road: 5, sorting: 100, refinery: 150, warehouse: 90, warehouse_liquid: 100, warehouse_waste: 110, warehouse_hazmat: 150, vehiclefactory: 150 };
   const base = baseCost[type] ?? 50;
   return Math.round(base * Math.pow(1.2, currentLevel));
 }
