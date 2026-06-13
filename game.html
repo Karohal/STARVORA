@@ -1942,9 +1942,12 @@ function refreshFactoryPanel(factoryKey) {
         <span style="color:var(--gold)">${def.cost} 💰</span>
       </button>`
     ).join('');
-    // Attacher les événements après injection HTML
+    // Attacher via touchend ET click pour iPhone
     btnsEl.querySelectorAll('button[data-ttype]').forEach(btn => {
-      btn.addEventListener('click', () => buildTruck(btn.dataset.factory, btn.dataset.ttype));
+      const fkey  = btn.dataset.factory;
+      const ttype = btn.dataset.ttype;
+      btn.addEventListener('click',    e => { e.stopPropagation(); buildTruck(fkey, ttype); });
+      btn.addEventListener('touchend', e => { e.stopPropagation(); e.preventDefault(); buildTruck(fkey, ttype); });
     });
   }
 }
