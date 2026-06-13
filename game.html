@@ -1875,17 +1875,24 @@ function createTruck(factoryKey, truckType) {
   return id;
 }
 
-function buildTruck(factoryKey) {
-  const cost = 100;
-  if (state.money < cost) return notify('Pas assez d\'argent ! (100 💰)', 'err');
+function buildTruck(factoryKey, truckType) {
+  truckType = truckType ?? 'standard';
+  const def  = TRUCK_TYPES[truckType] ?? TRUCK_TYPES.standard;
+  const cost = def.cost;
+  if (state.money < cost) return notify('Pas assez d'argent ! (' + cost + ' 💰)', 'err');
   if (state.availableWorkers <= 0) return notify('Pas de conducteur disponible !', 'err');
+  if (state.truckBuildQueue[factoryKey]) return notify('Construction déjà en cours !', 'err');
   state.money -= cost;
   state.availableWorkers--;
-  // Assigner le conducteur à ce camion
-  const id = createTruck(factoryKey);
-  state.trucks[id].driver = 1;
+  const duration = (def.buildTime ?? 10) * 1000;
+  state.truckBuildQueue[factoryKey] = {
+    truckType,
+    startTime: Date.now(),
+    duration,
+    progress: 0,
+  };
   updateStats();
-  notify('🚛 Camion construit !', 'ok');
+  notify('🏗️ ' + (TRUCK_TYPES[truckType]?.name ?? 'Camion') + ' en construction (' + (def.buildTime ?? 10) + 's)...', 'ok');
   refreshFactoryPanel(factoryKey);
 }
 
