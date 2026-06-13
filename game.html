@@ -1115,8 +1115,8 @@ function drawBuilding(ctx, col, row, type) {
   if (type === 'warehouse_liquid') {
     const cx   = s.x;
     const cy   = s.y + th/2 - elev;
-    const rx   = tw / 2.5;
-    const ry   = th / 5;
+    const rx   = tw / 3.5;
+    const ry   = th / 7;
     const cylH = bh;
     const k    = 0.5523;
 
@@ -2125,6 +2125,76 @@ function drawBuildingQueue(ctx) {
       faceColor  = def.color;
       sideColorL = shadeColor(def.color, -30);
       sideColorR = shadeColor(def.color, -15);
+    }
+
+    // Citerne en construction = cylindre
+    if (q.type === 'warehouse_liquid') {
+      const rx   = tw / 3.5;
+      const ry   = th / 7;
+      const cylH = bh;
+      const k    = 0.5523;
+      const col2 = BUILDING_DEF[q.type].color;
+
+      // Couleur rouge→vert selon progression
+      const prog2 = q.progress ?? 0;
+      const r2 = Math.round(200 * (1 - prog2));
+      const g2 = Math.round(180 * prog2);
+      const bodyCol = `rgba(${r2},${g2},40,0.7)`;
+
+      // Corps latéral
+      ctx.beginPath();
+      ctx.moveTo(cx - rx, cy);
+      ctx.lineTo(cx - rx, cy - cylH);
+      ctx.bezierCurveTo(cx-rx,cy-cylH-ry*k, cx-rx*k,cy-cylH-ry, cx,cy-cylH-ry);
+      ctx.bezierCurveTo(cx+rx*k,cy-cylH-ry, cx+rx,cy-cylH-ry*k, cx+rx,cy-cylH);
+      ctx.lineTo(cx + rx, cy);
+      ctx.bezierCurveTo(cx+rx,cy+ry*k, cx+rx*k,cy+ry, cx,cy+ry);
+      ctx.bezierCurveTo(cx-rx*k,cy+ry, cx-rx,cy+ry*k, cx-rx,cy);
+      ctx.closePath();
+      ctx.fillStyle = bodyCol;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+
+      // Ellipse haut
+      ctx.beginPath();
+      ctx.moveTo(cx-rx, cy-cylH);
+      ctx.bezierCurveTo(cx-rx,cy-cylH-ry*k, cx-rx*k,cy-cylH-ry, cx,cy-cylH-ry);
+      ctx.bezierCurveTo(cx+rx*k,cy-cylH-ry, cx+rx,cy-cylH-ry*k, cx+rx,cy-cylH);
+      ctx.bezierCurveTo(cx+rx,cy-cylH+ry*k, cx+rx*k,cy-cylH+ry, cx,cy-cylH+ry);
+      ctx.bezierCurveTo(cx-rx*k,cy-cylH+ry, cx-rx,cy-cylH+ry*k, cx-rx,cy-cylH);
+      ctx.closePath();
+      ctx.fillStyle = bodyCol;
+      ctx.fill();
+      ctx.stroke();
+
+      // Étincelles
+      if (prog2 > 0 && prog2 < 1 && Math.random() < 0.25) {
+        const frontY = cy - cylH * prog2;
+        const spx = cx + (Math.random() - 0.5) * rx;
+        const spy = frontY + (Math.random() - 0.5) * 6 * cam.zoom;
+        ctx.beginPath();
+        ctx.arc(spx, spy, (0.8 + Math.random() * 1.5) * cam.zoom, 0, Math.PI * 2);
+        ctx.fillStyle = Math.random() > 0.5 ? '#ffee44' : '#ff9900';
+        ctx.fill();
+      }
+
+      // Icône + timer
+      if (cam.zoom > 0.4) {
+        const remaining = Math.max(0, Math.ceil((q.duration - (Date.now() - q.startTime)) / 1000));
+        ctx.font = `${Math.floor(13 * cam.zoom)}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(BUILDING_DEF[q.type].icon, cx, cy - cylH - ry - 8 * cam.zoom);
+        ctx.font = `bold ${Math.floor(9 * cam.zoom)}px monospace`;
+        ctx.fillStyle = '#fff';
+        ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+        ctx.lineWidth = 2 * cam.zoom;
+        ctx.strokeText(remaining + 's', cx, cy - cylH + 4 * cam.zoom);
+        ctx.fillText(remaining + 's', cx, cy - cylH + 4 * cam.zoom);
+      }
+      continue;
     }
 
     if (q.type !== 'road') {
