@@ -1347,7 +1347,7 @@ function openBuildingPanel(key, type) {
   document.getElementById('bp-warehouse-section').style.display  = isWarehouse ? 'block' : 'none';
   if (isProducer)  refreshProductionPanel(key, type);
   if (isFactory)   refreshFactoryPanel(key);
-  if (isWarehouse) refreshWarehousePanel(key);
+  if (isWarehouse) refreshWarehousePanel(key, type);
 
   // Statut générique pour tous les bâtiments avec workers
   const bldDef = BUILDING_DEF[type];
@@ -2394,11 +2394,11 @@ function handleTruckStop(t, stop) {
 }
 
 // ===== ENTREPÔT =====
-function refreshWarehousePanel(key) {
+function refreshWarehousePanel(key, type) {
+  type = type || state.buildings[key];
   const level    = state.buildingLevels[key] ?? 0;
   const capacity = warehouseCapacity(level);
   const stock    = state.warehouseStock[key] ?? {};
-  const type     = state.buildings[key];
 
   // Filtrer les ressources selon le type d'entrepôt
   const allowedCat = WAREHOUSE_TYPES[type]?.category ?? 'solid';
@@ -2548,8 +2548,8 @@ function updateProductionUI() {
       refreshProductionPanel(key, type);
     }
     // Rafraîchir panel entrepôt si ouvert
-    if (key && type === 'warehouse') {
-      refreshWarehousePanel(key);
+    if (key && ['warehouse','warehouse_liquid','warehouse_waste'].includes(type)) {
+      refreshWarehousePanel(key, type);
     }
   }
   // Rafraîchir panel camion si ouvert
