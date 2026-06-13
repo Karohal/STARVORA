@@ -1111,6 +1111,61 @@ function drawBuilding(ctx, col, row, type) {
     return;
   }
 
+  // Citerne = cylindre isométrique
+  if (type === 'warehouse_liquid') {
+    const cx   = s.x;
+    const cy   = s.y + th/2 - elev;
+    const rx   = tw / 2.2;  // rayon horizontal ellipse
+    const ry   = th / 4.5;  // rayon vertical ellipse
+    const cylH = bh;         // hauteur du cylindre
+
+    // Corps du cylindre (rectangle arrondi latéral)
+    // Face gauche du cylindre
+    ctx.beginPath();
+    ctx.moveTo(cx - rx, cy);
+    ctx.lineTo(cx - rx, cy - cylH);
+    ctx.ellipse(cx, cy - cylH, rx, ry, 0, Math.PI, 0);
+    ctx.lineTo(cx + rx, cy);
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI);
+    ctx.closePath();
+    ctx.fillStyle = shadeColor(def.color, -20);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // Ellipse du bas
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fillStyle = shadeColor(def.color, -35);
+    ctx.fill();
+    ctx.stroke();
+
+    // Ellipse du haut (toit)
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - cylH, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fillStyle = def.color;
+    ctx.fill();
+    ctx.stroke();
+
+    // Icône
+    if (cam.zoom > 0.55) {
+      ctx.font = `${Math.floor(13 * cam.zoom)}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(def.icon, cx, cy - cylH - 10 * cam.zoom);
+      // Niveau
+      const lvl = state.buildingLevels[`${col},${row}`] ?? 0;
+      ctx.font = `bold ${Math.floor(9 * cam.zoom)}px monospace`;
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+      ctx.lineWidth = 2 * cam.zoom;
+      ctx.strokeText(lvl, cx, cy - cylH + 4 * cam.zoom);
+      ctx.fillText(lvl, cx, cy - cylH + 4 * cam.zoom);
+    }
+    return;
+  }
+
   const cx = s.x;
   const cy = s.y + th/2 - elev;
   const bw = tw / 2;
