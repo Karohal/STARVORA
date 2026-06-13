@@ -757,10 +757,10 @@ const RESOURCE_CATEGORY = {
 
 // Types de camions
 const TRUCK_TYPES = {
-  standard: { icon: '🚛', name: 'Camion de Minerais', cost: 100, capacity: 2, category: 'solid',    color: '#c8a020', buildTime: 10 },
-  tanker:   { icon: '🚒', name: 'Camion Citerne',     cost: 120, capacity: 2, category: 'liquid',   color: '#4090c0', buildTime: 12 },
-  waste:    { icon: '🗑️', name: 'Camion de Déchets',  cost: 80,  capacity: 2, category: 'waste',    color: '#607040', buildTime: 8  },
-  hazmat:   { icon: '☢️', name: 'Camion Dangereux',   cost: 200, capacity: 1, category: 'hazardous',color: '#a03020', buildTime: 20 },
+  standard: { icon: '🚛', name: 'Camion Minerais',  cost: 100, capacity: 2, category: 'solid',    color: '#c8a020', truckColor: '#c8a020', buildTime: 10 },
+  tanker:   { icon: '🚛', name: 'Camion Citerne',   cost: 120, capacity: 2, category: 'liquid',   color: '#4090c0', truckColor: '#2060a0', buildTime: 12 },
+  waste:    { icon: '🚛', name: 'Camion Déchets',   cost: 80,  capacity: 2, category: 'waste',    color: '#607040', truckColor: '#304820', buildTime: 8  },
+  hazmat:   { icon: '🚛', name: 'Camion Dangereux', cost: 200, capacity: 1, category: 'hazardous',color: '#a03020', truckColor: '#801010', buildTime: 20 },
 };
 
 // Types d'entrepôts
@@ -1907,24 +1907,16 @@ function refreshFactoryPanel(factoryKey) {
     </div>`;
   }
 
-  if (myTrucks.length === 0 && !inQueue) {
-    listEl.innerHTML = queueHtml + '<div class="th-muted">Aucun véhicule construit</div>';
+  // Afficher juste le nombre de camions construits
+  const truckCount = myTrucks.length;
+  if (truckCount === 0 && !inQueue) {
+    listEl.innerHTML = queueHtml + '<div class="th-muted">Aucun véhicule — cliquez sur un camion pour le gérer</div>';
   } else {
-    listEl.innerHTML = myTrucks.map(t => {
-      const cargo    = Object.entries(t.cargo).map(([r,q]) => `${RESOURCE_LABELS[r]??r}:${q}`).join(', ') || '—';
-      const statusLabel = { idle:'En attente', moving:'En route', loading:'Chargement', unloading:'Déchargement' };
-      return `<div class="th-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:6px 0">
-        <span style="color:var(--gold)">🚛 ${t.id}</span>
-        <span>Conducteur : ${t.driver}/1 · Cargaison : ${t.cargo ? Object.values(t.cargo).reduce((a,b)=>a+b,0) : 0}/${t.capacity}</span>
-        <span style="color:var(--cyan)">Statut : ${statusLabel[t.status]??t.status}</span>
-        <span>Cargo : ${cargo}</span>
-        <div style="display:flex;gap:6px;margin-top:4px">
-          <button class="assign-btn" onclick="openTruckPanel('${t.id}')">🚛 Gérer</button>
-          <button class="assign-btn" style="border-color:var(--error);color:var(--error)" onclick="deleteTruck('${t.id}')">✕ Supprimer</button>
-        </div>
-      </div>`;
-    }).join('<hr style="border-color:rgba(240,192,64,0.1);margin:4px 0">');
-    listEl.innerHTML = queueHtml + listEl.innerHTML;
+    const countHtml = truckCount > 0
+      ? `<div class="th-row" style="margin-bottom:6px"><span>Véhicules actifs</span><span class="th-val">${truckCount}</span></div>
+         <div class="th-muted" style="font-size:0.65rem">Cliquez sur un camion pour le gérer</div>`
+      : '';
+    listEl.innerHTML = queueHtml + countHtml;
   }
 
   // Boutons construire par type
@@ -2012,7 +2004,8 @@ function refreshTruckPanel(truckId) {
   const statuses = { idle:'En attente', moving:'En route 🚛', loading:'Chargement ⬆', unloading:'Déchargement ⬇' };
 
   const tDef = TRUCK_TYPES[t.truckType] ?? TRUCK_TYPES.standard;
-  document.getElementById('tp-title').textContent    = tDef.icon + ' ' + (tDef.name ?? truckId);
+  const truckBadge = { standard: '🚛', tanker: '🚛💧', waste: '🚛🗑', hazmat: '🚛☢️' };
+  document.getElementById('tp-title').textContent = (truckBadge[t.truckType] ?? '🚛') + ' ' + (tDef.name ?? truckId);
   document.getElementById('tp-status').textContent   = statuses[t.status] ?? t.status;
   document.getElementById('tp-driver').textContent   = t.driver + '/1';
   document.getElementById('tp-cargo').textContent    = loaded + '/' + t.capacity + (cargo !== '—' ? ' (' + cargo + ')' : '');
@@ -2374,6 +2367,15 @@ function drawTrucks(ctx) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('🚛', s.x, s.y + (TH/2 - 4) * cam.zoom);
+
+    // Badge couleur selon type
+    const tDef2 = TRUCK_TYPES[t.truckType] ?? TRUCK_TYPES.standard;
+    const badgeIcons = { standard: '', tanker: '💧', waste: '🗑', hazmat: '☢' };
+    const badge = badgeIcons[t.truckType] ?? '';
+    if (badge && cam.zoom > 0.5) {
+      ctx.font = `${Math.floor(size * 0.6)}px serif`;
+      ctx.fillText(badge, s.x + size * 0.5, s.y + (TH/2 - 4) * cam.zoom - size * 0.4);
+    }
 
     // Barre de chargement si cargo
     if (t.capacity > 0) {
