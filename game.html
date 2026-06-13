@@ -1926,10 +1926,11 @@ function refreshFactoryPanel(factoryKey) {
   const btnsEl = document.getElementById('bp-truck-build-btns');
   if (btnsEl) {
     const isBuilding = !!state.truckBuildQueue[factoryKey];
+    const truckBadges2 = { standard: '🚛⛏️', tanker: '🚛💧', waste: '🚛🗑️', hazmat: '🚛☢️' };
     btnsEl.innerHTML = Object.entries(TRUCK_TYPES).map(([ttype, def]) =>
       `<button class="assign-btn" data-factory="${factoryKey}" data-ttype="${ttype}"
         style="flex:1;flex-direction:column;height:auto;padding:6px 2px;font-size:0.6rem;${isBuilding ? 'opacity:0.4;pointer-events:none' : ''}">
-        <span style="font-size:1.1rem">${def.icon}</span>
+        <span style="font-size:1.2rem">${truckBadges2[ttype] ?? def.icon}</span>
         <span>${def.name}</span>
         <span style="color:var(--gold)">${def.cost} 💰</span>
       </button>`
@@ -2373,11 +2374,13 @@ function drawTrucks(ctx) {
 
     // Badge couleur selon type
     const tDef2 = TRUCK_TYPES[t.truckType] ?? TRUCK_TYPES.standard;
-    const badgeIcons = { standard: '⛏', tanker: '💧', waste: '🗑', hazmat: '☢' };
-    const badge = badgeIcons[t.truckType] ?? '';
-    if (badge && cam.zoom > 0.5) {
-      ctx.font = `${Math.floor(size * 0.6)}px serif`;
-      ctx.fillText(badge, s.x + size * 0.5, s.y + (TH/2 - 4) * cam.zoom - size * 0.4);
+    const badgeIcons = { standard: '⛏️', tanker: '💧', waste: '🗑️', hazmat: '☢️' };
+    const badge = badgeIcons[t.truckType ?? 'standard'] ?? '⛏️';
+    if (cam.zoom > 0.4) {
+      ctx.font = `${Math.floor(size * 0.55)}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(badge, s.x + size * 0.45, s.y + (TH/2 - 4) * cam.zoom - size * 0.5);
     }
 
     // Barre de chargement si cargo
@@ -2404,7 +2407,7 @@ function updateTruckBuildQueue() {
     if (q.progress >= 1) {
       delete state.truckBuildQueue[factoryKey];
       const def = TRUCK_TYPES[q.truckType] ?? TRUCK_TYPES.standard;
-      const id  = createTruck(factoryKey, q.truckType);
+      const id  = createTruck(factoryKey, q.truckType ?? 'standard');
       state.trucks[id].driver = 1;
       updateStats();
       notify('✅ ' + def.icon + ' ' + def.name + ' prêt !', 'ok');
@@ -2470,7 +2473,8 @@ function handleTruckStop(t, stop) {
     if (!stock) { t.status = 'loading'; return; }
 
     // Catégorie du camion
-    const truckCat = TRUCK_TYPES[t.truckType]?.category ?? 'solid';
+    const truckType2 = t.truckType ?? 'standard';
+    const truckCat = TRUCK_TYPES[truckType2]?.category ?? 'solid';
     let resKey = null, availQty = 0;
 
     if (truckCat === 'solid') {
@@ -2528,7 +2532,8 @@ function handleTruckStop(t, stop) {
     const ws       = state.warehouseStock[stop.key];
     const bldType  = state.buildings[stop.key];
     const allowCat = WAREHOUSE_TYPES[bldType]?.category ?? 'solid';
-    const truckCat = TRUCK_TYPES[t.truckType]?.category ?? 'solid';
+    const truckType2 = t.truckType ?? 'standard';
+    const truckCat = TRUCK_TYPES[truckType2]?.category ?? 'solid';
 
     // Vérifier compatibilité camion/entrepôt
     if (ws !== undefined && allowCat === truckCat) {
