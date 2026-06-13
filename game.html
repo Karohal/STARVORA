@@ -1880,8 +1880,8 @@ startEconomyTick();
 setInterval(productionTick, 60000);
 // Sauvegarde auto toutes les 60s
 setInterval(() => {
-  saveGame();
-  showSaveIndicator();
+  if (typeof saveGame === 'function') saveGame();
+  if (typeof showSaveIndicator === 'function') showSaveIndicator();
 }, 60000);
 drawFrame_start();
 
