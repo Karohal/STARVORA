@@ -1345,7 +1345,7 @@ function openBuildingPanel(key, type) {
   document.getElementById('bp-production-section').style.display = isProducer  ? 'block' : 'none';
   document.getElementById('bp-factory-section').style.display    = isFactory   ? 'block' : 'none';
   document.getElementById('bp-warehouse-section').style.display  = isWarehouse ? 'block' : 'none';
-  if (isProducer)  refreshProductionPanel(key, type);
+  if (isProducer) refreshProductionPanel(key, type);
   if (isFactory)   refreshFactoryPanel(key);
   if (isWarehouse) refreshWarehousePanel(key, type);
 
@@ -2380,6 +2380,8 @@ function handleTruckStop(t, stop) {
       t.atStopTs   = 0;
       t.routeIndex = (t.routeIndex + 1) % t.route.length;
       updateProductionUI();
+      // Rafraîchir aussi si panel fermé — forcer via un flag
+      state._warehouseUpdated = stop.key;
     } else if (ws === undefined) {
       // Pas d'entrepôt → attendre
       t.status = 'unloading';
