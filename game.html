@@ -1853,21 +1853,24 @@ const TRUCK_SPEED_ROUTE   = 0.5;
 const TRUCK_SPEED_NOROUTE = 0.1;
 
 
-function createTruck(factoryKey) {
+function createTruck(factoryKey, truckType) {
   const [col, row] = factoryKey.split(',').map(Number);
-  const id = 'truck_' + (++state.truckCounter);
+  const def = TRUCK_TYPES[truckType] ?? TRUCK_TYPES.standard;
+  const id  = 'truck_' + (++state.truckCounter);
   state.trucks[id] = {
     id,
     factoryKey,
-    x: col,        // position actuelle (float)
+    truckType: truckType ?? 'standard',
+    x: col,
     y: row,
-    route: [],     // [{key, action:'load'|'unload'}]
+    route:      [],
     routeIndex: 0,
-    driver: 0,     // 0 ou 1
-    cargo: {},     // { resource: qty }
-    capacity: 2,
-    status: 'idle', // idle | moving | loading | unloading
-    waitTimer: 0,
+    driver:     0,
+    cargo:      {},
+    capacity:   def.capacity,
+    status:     'idle',
+    atStop:     false,
+    atStopTs:   0,
   };
   return id;
 }
