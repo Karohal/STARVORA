@@ -2112,21 +2112,6 @@ function drawBuildingQueue(ctx) {
     const cy = s.y + th/2 - elev;
     const bw = tw / 2;
 
-    // Couleur selon progression : rouge → vert → couleur finale
-    let faceColor, sideColorL, sideColorR;
-    if (prog < 1) {
-      // Rouge transparent au début, vire au vert
-      const r = Math.round(200 * (1 - prog));
-      const g2 = Math.round(180 * prog);
-      faceColor  = `rgba(${r},${g2},40,0.6)`;
-      sideColorL = `rgba(${Math.round(r*0.7)},${Math.round(g2*0.7)},20,0.6)`;
-      sideColorR = `rgba(${Math.round(r*0.85)},${Math.round(g2*0.85)},30,0.6)`;
-    } else {
-      faceColor  = def.color;
-      sideColorL = shadeColor(def.color, -30);
-      sideColorR = shadeColor(def.color, -15);
-    }
-
     // Citerne en construction = cylindre
     if (q.type === 'warehouse_liquid') {
       const rx   = tw / 3.5;
@@ -2196,6 +2181,24 @@ function drawBuildingQueue(ctx) {
       }
       continue;
     }
+
+
+    // Couleur selon progression : rouge → vert → couleur finale
+    let faceColor, sideColorL, sideColorR;
+    if (prog < 1) {
+      // Rouge transparent au début, vire au vert
+      const r = Math.round(200 * (1 - prog));
+      const g2 = Math.round(180 * prog);
+      faceColor  = `rgba(${r},${g2},40,0.6)`;
+      sideColorL = `rgba(${Math.round(r*0.7)},${Math.round(g2*0.7)},20,0.6)`;
+      sideColorR = `rgba(${Math.round(r*0.85)},${Math.round(g2*0.85)},30,0.6)`;
+    } else {
+      faceColor  = def.color;
+      sideColorL = shadeColor(def.color, -30);
+      sideColorR = shadeColor(def.color, -15);
+    }
+
+
 
     if (q.type !== 'road') {
       // Face gauche
