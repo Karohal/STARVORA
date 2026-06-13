@@ -3184,10 +3184,12 @@ document.addEventListener('DOMContentLoaded', () => {
 window._ui = { setTool, selectBuilding, toggleResLayer, adjustZoom, openTownhallPanel, closeTownhallPanel };
 
 // Exposer toutes les fonctions utilisées dans les onclick inline
-window.removeStop       = removeStop;
-window.saveGame         = saveGame;
-window.resetGame        = resetGame;
+window.removeStop        = removeStop;
+window.saveGame          = saveGame;
+window.resetGame         = resetGame;
 window.showSaveIndicator = showSaveIndicator;
+window.buildTruck        = buildTruck;
+window.assignWorker      = assignWorker;
 window.confirmStop      = confirmStop;
 window.cancelStop       = cancelStop;
 window.closeTruckPanel  = closeTruckPanel;
