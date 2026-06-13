@@ -1118,27 +1118,17 @@ function drawBuilding(ctx, col, row, type) {
     const rx   = tw / 2.5;
     const ry   = th / 5;
     const cylH = bh;
-
-    // Fonction ellipse compatible tous navigateurs
-    function drawEllipse(x, y, rX, rY) {
-      const k = 0.5523;
-      ctx.moveTo(x - rX, y);
-      ctx.bezierCurveTo(x - rX, y - rY * k, x - rX * k, y - rY, x, y - rY);
-      ctx.bezierCurveTo(x + rX * k, y - rY, x + rX, y - rY * k, x + rX, y);
-      ctx.bezierCurveTo(x + rX, y + rY * k, x + rX * k, y + rY, x, y + rY);
-      ctx.bezierCurveTo(x - rX * k, y + rY, x - rX, y + rY * k, x - rX, y);
-      ctx.closePath();
-    }
+    const k    = 0.5523;
 
     // Corps latéral
     ctx.beginPath();
     ctx.moveTo(cx - rx, cy);
     ctx.lineTo(cx - rx, cy - cylH);
-    ctx.bezierCurveTo(cx - rx, cy - cylH - ry * 0.5523, cx - rx * 0.5523, cy - cylH - ry, cx, cy - cylH - ry);
-    ctx.bezierCurveTo(cx + rx * 0.5523, cy - cylH - ry, cx + rx, cy - cylH - ry * 0.5523, cx + rx, cy - cylH);
+    ctx.bezierCurveTo(cx-rx, cy-cylH-ry*k, cx-rx*k, cy-cylH-ry, cx, cy-cylH-ry);
+    ctx.bezierCurveTo(cx+rx*k, cy-cylH-ry, cx+rx, cy-cylH-ry*k, cx+rx, cy-cylH);
     ctx.lineTo(cx + rx, cy);
-    ctx.bezierCurveTo(cx + rx, cy + ry * 0.5523, cx + rx * 0.5523, cy + ry, cx, cy + ry);
-    ctx.bezierCurveTo(cx - rx * 0.5523, cy + ry, cx - rx, cy + ry * 0.5523, cx - rx, cy);
+    ctx.bezierCurveTo(cx+rx, cy+ry*k, cx+rx*k, cy+ry, cx, cy+ry);
+    ctx.bezierCurveTo(cx-rx*k, cy+ry, cx-rx, cy+ry*k, cx-rx, cy);
     ctx.closePath();
     ctx.fillStyle = shadeColor(def.color, -20);
     ctx.fill();
@@ -1146,16 +1136,26 @@ function drawBuilding(ctx, col, row, type) {
     ctx.lineWidth = 0.8;
     ctx.stroke();
 
-    // Ellipse du bas
+    // Ellipse bas
     ctx.beginPath();
-    drawEllipse(cx, cy, rx, ry);
+    ctx.moveTo(cx-rx, cy);
+    ctx.bezierCurveTo(cx-rx,cy-ry*k, cx-rx*k,cy-ry, cx,cy-ry);
+    ctx.bezierCurveTo(cx+rx*k,cy-ry, cx+rx,cy-ry*k, cx+rx,cy);
+    ctx.bezierCurveTo(cx+rx,cy+ry*k, cx+rx*k,cy+ry, cx,cy+ry);
+    ctx.bezierCurveTo(cx-rx*k,cy+ry, cx-rx,cy+ry*k, cx-rx,cy);
+    ctx.closePath();
     ctx.fillStyle = shadeColor(def.color, -35);
     ctx.fill();
     ctx.stroke();
 
-    // Ellipse du haut
+    // Ellipse haut
     ctx.beginPath();
-    drawEllipse(cx, cy - cylH, rx, ry);
+    ctx.moveTo(cx-rx, cy-cylH);
+    ctx.bezierCurveTo(cx-rx,cy-cylH-ry*k, cx-rx*k,cy-cylH-ry, cx,cy-cylH-ry);
+    ctx.bezierCurveTo(cx+rx*k,cy-cylH-ry, cx+rx,cy-cylH-ry*k, cx+rx,cy-cylH);
+    ctx.bezierCurveTo(cx+rx,cy-cylH+ry*k, cx+rx*k,cy-cylH+ry, cx,cy-cylH+ry);
+    ctx.bezierCurveTo(cx-rx*k,cy-cylH+ry, cx-rx,cy-cylH+ry*k, cx-rx,cy-cylH);
+    ctx.closePath();
     ctx.fillStyle = def.color;
     ctx.fill();
     ctx.stroke();
@@ -1171,8 +1171,8 @@ function drawBuilding(ctx, col, row, type) {
       ctx.fillStyle = '#fff';
       ctx.strokeStyle = 'rgba(0,0,0,0.8)';
       ctx.lineWidth = 2 * cam.zoom;
-      ctx.strokeText(lvl + '', cx, cy - cylH + 4 * cam.zoom);
-      ctx.fillText(lvl + '', cx, cy - cylH + 4 * cam.zoom);
+      ctx.strokeText(String(lvl), cx, cy - cylH + 4 * cam.zoom);
+      ctx.fillText(String(lvl), cx, cy - cylH + 4 * cam.zoom);
     }
     return;
   }
