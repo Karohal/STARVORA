@@ -1115,18 +1115,30 @@ function drawBuilding(ctx, col, row, type) {
   if (type === 'warehouse_liquid') {
     const cx   = s.x;
     const cy   = s.y + th/2 - elev;
-    const rx   = tw / 2.2;  // rayon horizontal ellipse
-    const ry   = th / 4.5;  // rayon vertical ellipse
-    const cylH = bh;         // hauteur du cylindre
+    const rx   = tw / 2.5;
+    const ry   = th / 5;
+    const cylH = bh;
 
-    // Corps du cylindre (rectangle arrondi latéral)
-    // Face gauche du cylindre
+    // Fonction ellipse compatible tous navigateurs
+    function drawEllipse(x, y, rX, rY) {
+      const k = 0.5523;
+      ctx.moveTo(x - rX, y);
+      ctx.bezierCurveTo(x - rX, y - rY * k, x - rX * k, y - rY, x, y - rY);
+      ctx.bezierCurveTo(x + rX * k, y - rY, x + rX, y - rY * k, x + rX, y);
+      ctx.bezierCurveTo(x + rX, y + rY * k, x + rX * k, y + rY, x, y + rY);
+      ctx.bezierCurveTo(x - rX * k, y + rY, x - rX, y + rY * k, x - rX, y);
+      ctx.closePath();
+    }
+
+    // Corps latéral
     ctx.beginPath();
     ctx.moveTo(cx - rx, cy);
     ctx.lineTo(cx - rx, cy - cylH);
-    ctx.ellipse(cx, cy - cylH, rx, ry, 0, Math.PI, 0);
+    ctx.bezierCurveTo(cx - rx, cy - cylH - ry * 0.5523, cx - rx * 0.5523, cy - cylH - ry, cx, cy - cylH - ry);
+    ctx.bezierCurveTo(cx + rx * 0.5523, cy - cylH - ry, cx + rx, cy - cylH - ry * 0.5523, cx + rx, cy - cylH);
     ctx.lineTo(cx + rx, cy);
-    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI);
+    ctx.bezierCurveTo(cx + rx, cy + ry * 0.5523, cx + rx * 0.5523, cy + ry, cx, cy + ry);
+    ctx.bezierCurveTo(cx - rx * 0.5523, cy + ry, cx - rx, cy + ry * 0.5523, cx - rx, cy);
     ctx.closePath();
     ctx.fillStyle = shadeColor(def.color, -20);
     ctx.fill();
@@ -1136,32 +1148,31 @@ function drawBuilding(ctx, col, row, type) {
 
     // Ellipse du bas
     ctx.beginPath();
-    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    drawEllipse(cx, cy, rx, ry);
     ctx.fillStyle = shadeColor(def.color, -35);
     ctx.fill();
     ctx.stroke();
 
-    // Ellipse du haut (toit)
+    // Ellipse du haut
     ctx.beginPath();
-    ctx.ellipse(cx, cy - cylH, rx, ry, 0, 0, Math.PI * 2);
+    drawEllipse(cx, cy - cylH, rx, ry);
     ctx.fillStyle = def.color;
     ctx.fill();
     ctx.stroke();
 
-    // Icône
+    // Icône + niveau
     if (cam.zoom > 0.55) {
       ctx.font = `${Math.floor(13 * cam.zoom)}px serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(def.icon, cx, cy - cylH - 10 * cam.zoom);
-      // Niveau
+      ctx.fillText(def.icon, cx, cy - cylH - ry - 8 * cam.zoom);
       const lvl = state.buildingLevels[`${col},${row}`] ?? 0;
       ctx.font = `bold ${Math.floor(9 * cam.zoom)}px monospace`;
       ctx.fillStyle = '#fff';
       ctx.strokeStyle = 'rgba(0,0,0,0.8)';
       ctx.lineWidth = 2 * cam.zoom;
-      ctx.strokeText(lvl, cx, cy - cylH + 4 * cam.zoom);
-      ctx.fillText(lvl, cx, cy - cylH + 4 * cam.zoom);
+      ctx.strokeText(lvl + '', cx, cy - cylH + 4 * cam.zoom);
+      ctx.fillText(lvl + '', cx, cy - cylH + 4 * cam.zoom);
     }
     return;
   }
