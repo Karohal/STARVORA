@@ -14,8 +14,18 @@
   <div class="stat-chip">💰 <span id="stat-money">500</span></div>
   <div class="stat-chip">👥 <span id="stat-pop">10</span> · 🏚️ <span id="stat-homeless">10</span></div>
   <div class="stat-chip">🏗️ <span id="stat-buildings">0</span></div>
+  <button class="menu-btn" onclick="saveGame(); showSaveIndicator()">💾</button>
+  <button class="menu-btn" onclick="resetGame()">🔄</button>
   <button id="menu-btn" onclick="window.location.href='index.html'">⬅ Menu</button>
 </div>
+
+<!-- INDICATEUR SAUVEGARDE -->
+<div id="save-indicator" style="
+  display:none; position:fixed; top:56px; left:50%; transform:translateX(-50%);
+  background:rgba(5,5,15,0.9); border:1px solid var(--success);
+  color:var(--success); padding:4px 12px; font-size:0.65rem;
+  letter-spacing:0.1em; z-index:30; pointer-events:none;
+">💾 Sauvegardé !</div>
 
 <!-- RESOURCE LAYER TOGGLE -->
 <div id="res-toggle" onclick="window._ui.toggleResLayer()">
@@ -604,6 +614,105 @@ html, body {
 
 </style>
 <script>
+// ===== VERSION & SAUVEGARDE =====
+const GAME_VERSION = '0.2.0';
+const SAVE_KEY     = 'starvora_save';
+const VERSION_KEY  = 'starvora_version';
+
+function saveGame() {
+  try {
+    const save = {
+      version:          GAME_VERSION,
+      money:            state.money,
+      population:       state.population,
+      homeless:         state.homeless,
+      housed:           state.housed,
+      buildings:        state.buildings,
+      buildingLevels:   state.buildingLevels,
+      buildingQueue:    state.buildingQueue,
+      internalStock:    state.internalStock,
+      warehouseStock:   state.warehouseStock,
+      assignedWorkers:  state.assignedWorkers,
+      houseOccupants:   state.houseOccupants,
+      availableWorkers: state.availableWorkers,
+      hasTownhall:      state.hasTownhall,
+      trucks:           state.trucks,
+      truckCounter:     state.truckCounter,
+      truckBuildQueue:  state.truckBuildQueue,
+      cam:              state.cam,
+      savedAt:          Date.now(),
+    };
+    localStorage.setItem(SAVE_KEY,    JSON.stringify(save));
+    localStorage.setItem(VERSION_KEY, GAME_VERSION);
+    return true;
+  } catch(e) {
+    console.error('Sauvegarde échouée:', e);
+    return false;
+  }
+}
+
+function loadGame() {
+  try {
+    const savedVersion = localStorage.getItem(VERSION_KEY);
+    if (savedVersion !== GAME_VERSION) {
+      console.log('Version différente — nouvelle partie');
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(VERSION_KEY);
+      return false;
+    }
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    const save = JSON.parse(raw);
+
+    state.money            = save.money            ?? 10000;
+    state.population       = save.population       ?? 10;
+    state.homeless         = save.homeless         ?? 10;
+    state.housed           = save.housed           ?? 0;
+    state.buildings        = save.buildings        ?? {};
+    state.buildingLevels   = save.buildingLevels   ?? {};
+    state.buildingQueue    = save.buildingQueue    ?? {};
+    state.internalStock    = save.internalStock    ?? {};
+    state.warehouseStock   = save.warehouseStock   ?? {};
+    state.assignedWorkers  = save.assignedWorkers  ?? {};
+    state.houseOccupants   = save.houseOccupants   ?? {};
+    state.availableWorkers = save.availableWorkers ?? 0;
+    state.hasTownhall      = save.hasTownhall      ?? false;
+    state.trucks           = save.trucks           ?? {};
+    state.truckCounter     = save.truckCounter     ?? 0;
+    state.truckBuildQueue  = save.truckBuildQueue  ?? {};
+    if (save.cam) {
+      state.cam.x    = save.cam.x    ?? 0;
+      state.cam.y    = save.cam.y    ?? 0;
+      state.cam.zoom = save.cam.zoom ?? 1;
+    }
+
+    // Recalculer hasTownhall depuis buildings
+    state.hasTownhall = Object.values(state.buildings).includes('townhall');
+
+    // Réparer les startTime des files de construction
+    // (les timers continuent depuis la sauvegarde)
+    for (const q of Object.values(state.buildingQueue)) {
+      if (!q.startTime) q.startTime = Date.now();
+    }
+    for (const q of Object.values(state.truckBuildQueue)) {
+      if (!q.startTime) q.startTime = Date.now();
+    }
+
+    console.log('✅ Partie chargée !');
+    return true;
+  } catch(e) {
+    console.error('Chargement échoué:', e);
+    return false;
+  }
+}
+
+function resetGame() {
+  if (!confirm('Recommencer une nouvelle partie ? La sauvegarde sera effacée.')) return;
+  localStorage.removeItem(SAVE_KEY);
+  localStorage.removeItem(VERSION_KEY);
+  location.reload();
+}
+
 // ===== GESTIONNAIRE D'ERREURS GLOBAL =====
 window.onerror = function(msg, src, line, col, err) {
   showError('JS: ' + msg + ' | src:' + src + ' L' + line + ':' + col + (err ? ' | ' + err.stack : ''));
@@ -1759,12 +1868,21 @@ canvas.addEventListener('touchend', e => {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 generateMap();
+// Charger la sauvegarde
+const hasSave = loadGame();
+if (!hasSave) generateMap();
+
 updateStats();
 updatePopulation();
 updateAvailableWorkers();
 refreshBuildPanel();
 startEconomyTick();
 setInterval(productionTick, 60000);
+// Sauvegarde auto toutes les 60s
+setInterval(() => {
+  saveGame();
+  showSaveIndicator();
+}, 60000);
 drawFrame_start();
 
 setTimeout(() => notify('🚀 Bienvenue Commandant ! Commence par construire l\'Hôtel de Ville.', 'ok'), 600);
