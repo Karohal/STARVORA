@@ -984,6 +984,12 @@ function shadeColor(hex, pct) {
   return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
 }
 
+const EXTRACTOR_RESOURCES = {
+  mine:   ['iron', 'coal'],
+  quarry: ['stone'],
+  well:   ['oil', 'water'],
+};
+
 const BUILD_TIME = {
   townhall: 5, house: 10, mine: 15, quarry: 15, well: 15,
   road: 3, sorting: 25, refinery: 25,
@@ -993,12 +999,6 @@ const BUILD_TIME = {
 
 // ---------- VALIDITÉ ----------
 // Ressources requises par type de bâtiment extracteur
-const EXTRACTOR_RESOURCES = {
-  mine:   ['iron', 'coal'],
-  quarry: ['stone'],
-  well:   ['oil', 'water'],
-};
-
 function isValidPlacement(col, row, type) {
   if (col < 0 || row < 0 || col >= 20 || row >= 20) return false;
   if (state.map[row][col].terrain === 'mountain') return false;
