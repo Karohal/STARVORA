@@ -1879,7 +1879,7 @@ function buildTruck(factoryKey, truckType) {
   truckType = truckType ?? 'standard';
   const def  = TRUCK_TYPES[truckType] ?? TRUCK_TYPES.standard;
   const cost = def.cost;
-  if (state.money < cost) return notify('Pas assez d'argent ! (' + cost + ' 💰)', 'err');
+  if (state.money < cost) return notify("Pas assez d'argent ! (" + cost + " 💰)", 'err');
   if (state.availableWorkers <= 0) return notify('Pas de conducteur disponible !', 'err');
   if (state.truckBuildQueue[factoryKey]) return notify('Construction déjà en cours !', 'err');
   state.money -= cost;
