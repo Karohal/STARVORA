@@ -2004,7 +2004,7 @@ function refreshTruckPanel(truckId) {
   const statuses = { idle:'En attente', moving:'En route 🚛', loading:'Chargement ⬆', unloading:'Déchargement ⬇' };
 
   const tDef = TRUCK_TYPES[t.truckType] ?? TRUCK_TYPES.standard;
-  const truckBadge = { standard: '🚛', tanker: '🚛💧', waste: '🚛🗑', hazmat: '🚛☢️' };
+  const truckBadge = { standard: '🚛⛏️', tanker: '🚛💧', waste: '🚛🗑', hazmat: '🚛☢️' };
   document.getElementById('tp-title').textContent = (truckBadge[t.truckType] ?? '🚛') + ' ' + (tDef.name ?? truckId);
   document.getElementById('tp-status').textContent   = statuses[t.status] ?? t.status;
   document.getElementById('tp-driver').textContent   = t.driver + '/1';
@@ -2370,7 +2370,7 @@ function drawTrucks(ctx) {
 
     // Badge couleur selon type
     const tDef2 = TRUCK_TYPES[t.truckType] ?? TRUCK_TYPES.standard;
-    const badgeIcons = { standard: '', tanker: '💧', waste: '🗑', hazmat: '☢' };
+    const badgeIcons = { standard: '⛏', tanker: '💧', waste: '🗑', hazmat: '☢' };
     const badge = badgeIcons[t.truckType] ?? '';
     if (badge && cam.zoom > 0.5) {
       ctx.font = `${Math.floor(size * 0.6)}px serif`;
