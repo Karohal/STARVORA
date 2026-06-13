@@ -742,12 +742,17 @@ const RESOURCE_CATEGORY = {
   coal:      'solid',
   stone:     'solid',
   gravel:    'solid',
-  fuel:      'solid',
+  fuel:      'liquid',
   water:     'liquid',
   oil:       'liquid',
   waste:     'waste',
   incin:     'waste',
   hazardous: 'hazardous',
+  iron_r:    'solid',
+  coal_r:    'solid',
+  stone_r:   'solid',
+  water_r:   'liquid',
+  oil_r:     'liquid',
 };
 
 // Types de camions
@@ -2354,15 +2359,18 @@ function handleTruckStop(t, stop) {
   } else if (stop.action === 'unload') {
     const loaded = Object.values(t.cargo).reduce((a,b)=>a+b,0);
 
-    // Rien à décharger → passer au stop suivant quand même
     if (loaded === 0) {
       t.routeIndex = (t.routeIndex + 1) % t.route.length;
       return;
     }
 
-    // Décharger dans entrepôt global si dispo, sinon attendre
-    const ws = state.warehouseStock[stop.key];
-    if (ws !== undefined) {
+    const ws       = state.warehouseStock[stop.key];
+    const bldType  = state.buildings[stop.key];
+    const allowCat = WAREHOUSE_TYPES[bldType]?.category ?? 'solid';
+    const truckCat = TRUCK_TYPES[t.truckType]?.category ?? 'solid';
+
+    // Vérifier compatibilité camion/entrepôt
+    if (ws !== undefined && allowCat === truckCat) {
       for (const [res, qty] of Object.entries(t.cargo)) {
         ws[res] = (ws[res] ?? 0) + qty;
       }
@@ -2372,9 +2380,15 @@ function handleTruckStop(t, stop) {
       t.atStopTs   = 0;
       t.routeIndex = (t.routeIndex + 1) % t.route.length;
       updateProductionUI();
-    } else {
-      // Pas d'entrepôt valide → attendre
+    } else if (ws === undefined) {
+      // Pas d'entrepôt → attendre
       t.status = 'unloading';
+    } else {
+      // Mauvais type d'entrepôt → notifier et passer
+      notify('⚠️ Mauvais type d'entrepôt pour ce camion !', 'err');
+      t.atStop     = false;
+      t.atStopTs   = 0;
+      t.routeIndex = (t.routeIndex + 1) % t.route.length;
     }
   }
 }
@@ -2384,16 +2398,25 @@ function refreshWarehousePanel(key) {
   const level    = state.buildingLevels[key] ?? 0;
   const capacity = warehouseCapacity(level);
   const stock    = state.warehouseStock[key] ?? {};
-  const total    = Object.values(stock).reduce((a,b)=>a+b,0);
+  const type     = state.buildings[key];
 
-  const stockHtml = Object.entries(RESOURCE_LABELS).map(([res, label]) => {
-    const qty = stock[res] ?? 0;
-    return `<div class="th-row"><span>${label}</span><span class="th-val">${qty}</span></div>`;
-  }).join('');
+  // Filtrer les ressources selon le type d'entrepôt
+  const allowedCat = WAREHOUSE_TYPES[type]?.category ?? 'solid';
 
-  const el = document.getElementById('bp-warehouse-stock');
+  const filtered = Object.entries(RESOURCE_LABELS).filter(([res]) => {
+    return (RESOURCE_CATEGORY[res] ?? 'solid') === allowedCat;
+  });
+
+  const total = filtered.reduce((sum, [res]) => sum + (stock[res] ?? 0), 0);
+
+  const stockHtml = filtered
+    .filter(([res]) => (stock[res] ?? 0) > 0)
+    .map(([res, label]) => `<div class="th-row"><span>${label}</span><span class="th-val">${stock[res]}</span></div>`)
+    .join('') || '<div class="th-muted">Vide</div>';
+
+  const el    = document.getElementById('bp-warehouse-stock');
   const capEl = document.getElementById('bp-warehouse-capacity');
-  if (el)    el.innerHTML = stockHtml || '<div class="th-muted">Vide</div>';
+  if (el)    el.innerHTML = stockHtml;
   if (capEl) capEl.textContent = total + ' / ' + capacity;
 }
 
