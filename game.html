@@ -694,6 +694,16 @@ function loadGame() {
     // Recalculer hasTownhall depuis buildings
     state.hasTownhall = Object.values(state.buildings).includes('townhall');
 
+    // Migrer les anciens stocks des usines de traitement
+    for (const [key, type] of Object.entries(state.buildings)) {
+      if (type === 'sorting' && state.internalStock[key]) {
+        const s = state.internalStock[key];
+        if (!s.input || !s.output) {
+          state.internalStock[key] = { input: {}, output: {} };
+        }
+      }
+    }
+
     // Réparer les startTime des files de construction
     // (les timers continuent depuis la sauvegarde)
     for (const q of Object.values(state.buildingQueue)) {
@@ -2733,7 +2743,10 @@ function handleTruckStop(t, stop) {
     // Décharger dans usine de traitement (quai input)
     if (bldType === 'sorting') {
       if (!state.internalStock[stop.key]) state.internalStock[stop.key] = { input: {}, output: {} };
+      // Migrer ancien format vers nouveau
       const sortStock = state.internalStock[stop.key];
+      if (!sortStock.input)  sortStock.input  = {};
+      if (!sortStock.output) sortStock.output = {};
       const level2    = state.buildingLevels[stop.key] ?? 0;
       const inCap2    = sortingInputCapacity(level2);
       const inTotal2  = Object.values(sortStock.input ?? {}).reduce((a,b)=>a+b,0);
@@ -2862,6 +2875,9 @@ function productionTick() {
 
     if (!state.internalStock[key]) state.internalStock[key] = { input: {}, output: {} };
     const stock  = state.internalStock[key];
+    // Migrer ancien format
+    if (!stock.input)  stock.input  = {};
+    if (!stock.output) stock.output = {};
     const inCap  = sortingInputCapacity(level);
     const outCap = sortingOutputCapacity(level);
     const yld    = sortingYield(level);
