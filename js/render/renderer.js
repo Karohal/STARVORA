@@ -46,63 +46,65 @@ function drawMap(ctx) {
     for (let c = 0; c < COLS; c++) {
       const tile = state.map[r]?.[c];
       if (!tile) continue;
-      const s    = tileToScreen(c, r);
-      const tw   = TW * cam.zoom;
-      const th   = TH * cam.zoom;
-      const elev = tile.elevation * 14 * cam.zoom;
+      const s  = tileToScreen(c, r);
+      const tw = TW * cam.zoom;
+      const th = TH * cam.zoom;
 
-      // Couleur terrain
-      const tColor = TERRAIN_TYPES[tile.terrain]?.color ?? '#3a5a2a';
+      // Tout est plat — élévation 0
+      // Montagne = tuile grise plate avec motif
+      const isMountain = tile.terrain === 'mountain';
+      const tColor = isMountain ? '#555560' : (TERRAIN_TYPES[tile.terrain]?.color ?? '#3a5a2a');
 
-      // Face top
+      // Face top (toujours plate)
       ctx.beginPath();
-      ctx.moveTo(s.x,        s.y - elev);
-      ctx.lineTo(s.x + tw/2, s.y + th/2 - elev);
-      ctx.lineTo(s.x,        s.y + th   - elev);
-      ctx.lineTo(s.x - tw/2, s.y + th/2 - elev);
+      ctx.moveTo(s.x,        s.y);
+      ctx.lineTo(s.x + tw/2, s.y + th/2);
+      ctx.lineTo(s.x,        s.y + th);
+      ctx.lineTo(s.x - tw/2, s.y + th/2);
       ctx.closePath();
       ctx.fillStyle = tColor;
       ctx.fill();
 
       // Bordure
-      ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-      ctx.lineWidth   = 0.5;
+      ctx.strokeStyle = isMountain ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.12)';
+      ctx.lineWidth   = isMountain ? 1 : 0.5;
       ctx.stroke();
 
-      // Face latérale si élevation
-      if (elev > 0) {
+      // Motif montagne : deux petits triangles gris foncé
+      if (isMountain && cam.zoom > 0.4) {
+        const mx = s.x, my = s.y + th/2;
+        // Triangle gauche
         ctx.beginPath();
-        ctx.moveTo(s.x,        s.y + th - elev);
-        ctx.lineTo(s.x - tw/2, s.y + th/2 - elev);
-        ctx.lineTo(s.x - tw/2, s.y + th/2);
-        ctx.lineTo(s.x,        s.y + th);
+        ctx.moveTo(mx - tw/6, my + th/8);
+        ctx.lineTo(mx - tw/10, my - th/6);
+        ctx.lineTo(mx,         my + th/8);
         ctx.closePath();
-        ctx.fillStyle = shadeColor(tColor, -40);
+        ctx.fillStyle = '#373740';
         ctx.fill();
+        // Triangle droit
         ctx.beginPath();
-        ctx.moveTo(s.x,        s.y + th - elev);
-        ctx.lineTo(s.x + tw/2, s.y + th/2 - elev);
-        ctx.lineTo(s.x + tw/2, s.y + th/2);
-        ctx.lineTo(s.x,        s.y + th);
+        ctx.moveTo(mx,         my + th/8);
+        ctx.lineTo(mx + tw/8,  my - th/8);
+        ctx.lineTo(mx + tw/5,  my + th/8);
         ctx.closePath();
-        ctx.fillStyle = shadeColor(tColor, -25);
+        ctx.fillStyle = '#434350';
         ctx.fill();
       }
 
-      // Ressource
+      // Ressource (dot coloré)
       const res = state.resources[r]?.[c];
       if (res && cam.zoom > 0.3) {
         const rColor = RESOURCE_COLORS[res] ?? '#888';
         ctx.beginPath();
-        ctx.arc(s.x, s.y + th/2 - elev, 3 * cam.zoom, 0, Math.PI * 2);
+        ctx.arc(s.x, s.y + th/2, 3 * cam.zoom, 0, Math.PI * 2);
         ctx.fillStyle = rColor;
         ctx.fill();
         if (cam.zoom > 0.6) {
           ctx.font = `${Math.floor(8 * cam.zoom)}px sans-serif`;
-          ctx.textAlign = 'center';
+          ctx.textAlign    = 'center';
           ctx.textBaseline = 'bottom';
-          ctx.fillStyle = '#fff';
-          ctx.fillText(RESOURCE_LABELS[res] ?? res, s.x, s.y + th/2 - elev - 4 * cam.zoom);
+          ctx.fillStyle    = '#fff';
+          ctx.fillText(RESOURCE_LABELS[res] ?? res, s.x, s.y + th/2 - 4 * cam.zoom);
         }
       }
     }
