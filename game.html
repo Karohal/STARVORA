@@ -625,6 +625,8 @@ function saveGame() {
       version:          GAME_VERSION,
       money:            state.money,
       population:       state.population,
+      map:              state.map,
+      resources:        state.resources,
       homeless:         state.homeless,
       housed:           state.housed,
       buildings:        state.buildings,
@@ -666,6 +668,8 @@ function loadGame() {
 
     state.money            = save.money            ?? 10000;
     state.population       = save.population       ?? 10;
+    if (save.map && save.map.length)       state.map       = save.map;
+    if (save.resources && save.resources.length) state.resources = save.resources;
     state.homeless         = save.homeless         ?? 10;
     state.housed           = save.housed           ?? 0;
     state.buildings        = save.buildings        ?? {};
