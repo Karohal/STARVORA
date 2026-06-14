@@ -842,22 +842,24 @@ const RESOURCE_COLORS = {
 };
 
 const RESOURCE_LABELS = {
+  // Ressources brutes (mines/puits/carrières)
   iron:       'Minerais de Fer',
   coal:       'Minerais de Charbon',
   water:      'Eau Brute',
   oil:        'Pétrole Brut',
   stone:      'Pierre Brute',
-  waste:      'Déchets',
-  incin:      'Incinérable',
-  gravel:     'Gravats',
-  fuel:       'Carburant',
-  hazardous:  'Matière Dangereuse',
-  // Ressources raffinées (sorties usine traitement)
-  iron_r:     'Fer',
+  // Ressources traitées (sortie usine traitement)
+  iron_r:     'Fer Brut',
   coal_r:     'Charbon',
+  stone_r:    'Pierre Traitée',
   water_r:    'Eau',
   oil_r:      'Pétrole',
-  stone_r:    'Pierre',
+  gravel:     'Gravats',
+  // Déchets et autres
+  waste:      'Déchets',
+  incin:      'Incinérable',
+  fuel:       'Carburant',
+  hazardous:  'Matière Dangereuse',
 };
 
 // Catégories de ressources
@@ -1947,8 +1949,11 @@ function finalizeBuild(key, type, col, row) {
   state.buildings[key]      = type;
   state.buildingLevels[key] = 0;
 
-  if (['mine','quarry','well','sorting'].includes(type)) {
+  if (['mine','quarry','well'].includes(type)) {
     state.internalStock[key] = { solid: {}, liquid: {}, waste: 0 };
+  }
+  if (type === 'sorting') {
+    state.internalStock[key] = { input: {}, output: {} };
   }
   if (['warehouse','warehouse_liquid','warehouse_waste','warehouse_hazmat'].includes(type)) {
     state.warehouseStock[key] = {};
@@ -2649,8 +2654,10 @@ function handleTruckStop(t, stop) {
     let resKey = null, availQty = 0;
 
     if (truckCat === 'solid') {
-      for (const [r, q] of Object.entries(stock.solid ?? {})) {
-        if (q > 0) { resKey = r; availQty = q; break; }
+      // Chercher dans solid ou output (usine traitement)
+      const solidSrc = stock.output ?? stock.solid ?? {};
+      for (const [r, q] of Object.entries(solidSrc)) {
+        if (q > 0 && RESOURCE_CATEGORY[r] === 'solid') { resKey = r; availQty = q; break; }
       }
     } else if (truckCat === 'liquid') {
       for (const [r, q] of Object.entries(stock.liquid ?? {})) {
@@ -2786,11 +2793,6 @@ function getResourceForTile(col, row) {
   return state.resources[row]?.[col] ?? null;
 }
 
-// Ratio de raffinage usine traitement selon niveau
-function sortingYield(level) {
-  return Math.min(0.80, 0.30 + Math.floor(level / 5) * 0.01);
-}
-
 // Tick de production — appelé toutes les 60s
 function productionTick() {
   // === USINES DE TRAITEMENT ===
@@ -2800,38 +2802,43 @@ function productionTick() {
     const assigned = state.assignedWorkers[key] ?? 0;
     const maxW     = (BUILDING_DEF[type].workers ?? 1) + Math.floor(level / 5);
     if (assigned === 0) continue;
-    const efficiency = assigned / maxW;
 
-    // Chercher un entrepôt d'input connecté (pour l'instant : prendre dans tous les stocks solides)
-    // Logique simple : traiter les minerais bruts disponibles dans n'importe quel entrepôt interne voisin
-    // Pour l'instant on cherche dans tous les internalStocks
-    let processed = false;
-    for (const [srcKey, stock] of Object.entries(state.internalStock)) {
-      for (const [res, qty] of Object.entries(stock.solid ?? {})) {
-        if (qty <= 0) continue;
-        // C'est un minerai brut ?
-        if (!['iron','coal','stone'].includes(res)) continue;
+    if (!state.internalStock[key]) state.internalStock[key] = { input: {}, output: {} };
+    const stock  = state.internalStock[key];
+    const inCap  = sortingInputCapacity(level);
+    const outCap = sortingOutputCapacity(level);
+    const yld    = sortingYield(level);
+    const efficiency = Math.min(1, assigned / maxW);
 
-        const take      = Math.min(qty, Math.round(5 * efficiency));
-        if (take <= 0) continue;
+    // Traiter chaque ressource disponible en input
+    for (const res of SORTING_INPUT) {
+      const inQty = stock.input[res] ?? 0;
+      if (inQty <= 0) continue;
 
-        const yld       = sortingYield(level);
-        const refined   = Math.round(take * yld);
-        const wst       = take - refined;
-        const refinedRes = res + '_r'; // ex: iron_r, coal_r
+      // Vérifier place en output
+      const outTotal = Object.values(stock.output).reduce((a,b)=>a+b,0);
+      if (outTotal >= outCap) break;
 
-        // Enlever les minerais bruts
-        stock.solid[res] -= take;
+      const take     = Math.min(inQty, Math.round(5 * efficiency));
+      if (take <= 0) continue;
 
-        // Ajouter au stock de l'usine de traitement
-        if (!state.internalStock[key]) state.internalStock[key] = { solid: {}, liquid: {}, waste: 0 };
-        const outStock = state.internalStock[key];
-        outStock.solid[refinedRes] = (outStock.solid[refinedRes] ?? 0) + refined;
-        outStock.waste             = (outStock.waste ?? 0) + wst;
-        processed = true;
-        break;
-      }
-      if (processed) break;
+      const refined  = Math.round(take * yld);
+      const gravats  = Math.round(take * 0.50);
+      const dechets  = take - refined - gravats;
+      const outRes   = SORTING_OUTPUT[res] ?? (res + '_r');
+
+      // Déduire input
+      stock.input[res] = Math.max(0, inQty - take);
+
+      // Ajouter output (respecter capacité)
+      const free = outCap - outTotal;
+      const addRes  = Math.min(refined, free);
+      const addGrav = Math.min(gravats, Math.max(0, free - addRes));
+      const addWst  = Math.min(dechets, Math.max(0, free - addRes - addGrav));
+
+      stock.output[outRes]    = (stock.output[outRes]    ?? 0) + addRes;
+      stock.output['gravel']  = (stock.output['gravel']  ?? 0) + addGrav;
+      stock.output['waste']   = (stock.output['waste']   ?? 0) + addWst;
     }
   }
 
