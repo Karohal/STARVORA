@@ -696,7 +696,7 @@ function loadGame() {
 
     // Migrer les anciens stocks des usines de traitement
     for (const [key, type] of Object.entries(state.buildings)) {
-      if (type === 'sorting' && state.internalStock[key]) {
+      if ((type === 'sorting' || type === 'refinery') && state.internalStock[key]) {
         const s = state.internalStock[key];
         if (!s.input || !s.output) {
           state.internalStock[key] = { input: {}, output: {} };
@@ -1557,7 +1557,7 @@ function openBuildingPanel(key, type) {
   // Panel townhall : afficher section entrepôt + bâtiments
   const isTownhall   = type === 'townhall';
   const isHouse      = type === 'house';
-  const isProducer   = ['mine','quarry','well','sorting'].includes(type);
+  const isProducer   = ['mine','quarry','well','sorting','refinery'].includes(type);
   const isFactory    = type === 'vehiclefactory';
   const isWarehouse  = ['warehouse','warehouse_liquid','warehouse_waste','warehouse_hazmat'].includes(type);
   const hasWorkers   = !['house','road'].includes(type);
@@ -1986,7 +1986,7 @@ function finalizeBuild(key, type, col, row) {
   if (['mine','quarry','well'].includes(type)) {
     state.internalStock[key] = { solid: {}, liquid: {}, waste: 0 };
   }
-  if (type === 'sorting') {
+  if (type === 'sorting' || type === 'refinery') {
     state.internalStock[key] = { input: {}, output: {} };
   }
   if (['warehouse','warehouse_liquid','warehouse_waste','warehouse_hazmat'].includes(type)) {
@@ -2741,18 +2741,20 @@ function handleTruckStop(t, stop) {
     const bldType  = state.buildings[stop.key];
 
     // Décharger dans usine de traitement (quai input)
-    if (bldType === 'sorting') {
+    if (bldType === 'sorting' || bldType === 'refinery') {
       if (!state.internalStock[stop.key]) state.internalStock[stop.key] = { input: {}, output: {} };
-      // Migrer ancien format vers nouveau
       const sortStock = state.internalStock[stop.key];
       if (!sortStock.input)  sortStock.input  = {};
       if (!sortStock.output) sortStock.output = {};
-      const level2    = state.buildingLevels[stop.key] ?? 0;
-      const inCap2    = sortingInputCapacity(level2);
-      const inTotal2  = Object.values(sortStock.input ?? {}).reduce((a,b)=>a+b,0);
+
+      const validInput = bldType === 'refinery' ? REFINERY_INPUT : SORTING_INPUT;
+      const level2     = state.buildingLevels[stop.key] ?? 0;
+      const inCap2     = sortingInputCapacity(level2);
+      const inTotal2   = Object.values(sortStock.input).reduce((a,b)=>a+b,0);
+
       if (inTotal2 < inCap2) {
         for (const [res, qty] of Object.entries(t.cargo)) {
-          if (SORTING_INPUT.includes(res)) {
+          if (validInput.includes(res)) {
             sortStock.input[res] = (sortStock.input[res] ?? 0) + qty;
           }
         }
@@ -2853,9 +2855,13 @@ function getResourceForTile(col, row) {
   return state.resources[row]?.[col] ?? null;
 }
 
-// Constantes usine de traitement
+// Constantes usine de traitement (solides)
 const SORTING_INPUT  = ['iron', 'coal', 'stone'];
 const SORTING_OUTPUT = { iron: 'iron_r', coal: 'coal_r', stone: 'stone_r' };
+
+// Constantes raffinerie (liquides)
+const REFINERY_INPUT  = ['water', 'oil'];
+const REFINERY_OUTPUT = { water: 'water_r', oil: 'oil_r' };
 
 // Fonctions usine de traitement
 function sortingInputCapacity(level)  { return 5  + Math.floor(level / 5) * 2; }
@@ -2865,9 +2871,9 @@ function sortingYield(level) { return Math.min(0.80, 0.30 + Math.floor(level / 5
 
 // Tick de production — appelé toutes les 60s
 function productionTick() {
-  // === USINES DE TRAITEMENT ===
+  // === USINES DE TRAITEMENT ET RAFFINERIE ===
   for (const [key, type] of Object.entries(state.buildings)) {
-    if (type !== 'sorting') continue;
+    if (type !== 'sorting' && type !== 'refinery') continue;
     const level    = state.buildingLevels[key] ?? 0;
     const assigned = state.assignedWorkers[key] ?? 0;
     const maxW     = (BUILDING_DEF[type].workers ?? 1) + Math.floor(level / 5);
@@ -2884,7 +2890,9 @@ function productionTick() {
     const efficiency = Math.min(1, assigned / maxW);
 
     // Traiter chaque ressource disponible en input
-    for (const res of SORTING_INPUT) {
+    const inputList = type === 'refinery' ? REFINERY_INPUT : SORTING_INPUT;
+    const outputMap = type === 'refinery' ? REFINERY_OUTPUT : SORTING_OUTPUT;
+    for (const res of inputList) {
       const inQty = stock.input[res] ?? 0;
       if (inQty <= 0) continue;
 
@@ -2898,7 +2906,7 @@ function productionTick() {
       const refined  = Math.floor(take * yld);
       const gravats  = Math.floor(take * 0.50);
       const dechets  = Math.max(0, take - refined - gravats);
-      const outRes   = SORTING_OUTPUT[res] ?? (res + '_r');
+      const outRes   = outputMap[res] ?? (res + '_r');
 
       // Déduire input
       stock.input[res] = Math.max(0, inQty - take);
