@@ -39,9 +39,16 @@ function onTouchStart(e) {
 function onTouchMove(e) {
   e.preventDefault();
   if (e.touches.length === 2 && _pinchDist) {
-    const dist  = getPinchDist(e);
-    const delta = (dist - _pinchDist) * 0.005;
-    state.cam.zoom = Math.max(0.3, Math.min(2.5, state.cam.zoom + delta));
+    const dist    = getPinchDist(e);
+    const oldZoom = state.cam.zoom;
+    const delta   = (dist - _pinchDist) * 0.005;
+    const newZoom = Math.max(0.3, Math.min(2.5, oldZoom + delta));
+    // Centrer sur le milieu des deux doigts
+    const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    state.cam.x = mx - (mx - state.cam.x) * (newZoom / oldZoom);
+    state.cam.y = my - (my - state.cam.y) * (newZoom / oldZoom);
+    state.cam.zoom = newZoom;
     _pinchDist = dist;
     return;
   }
@@ -99,8 +106,16 @@ function onMouseUp(e) {
 }
 function onWheel(e) {
   e.preventDefault();
-  const delta = -e.deltaY * 0.001;
-  state.cam.zoom = Math.max(0.3, Math.min(2.5, state.cam.zoom + delta));
+  const oldZoom = state.cam.zoom;
+  const delta   = -e.deltaY * 0.001;
+  const newZoom = Math.max(0.3, Math.min(2.5, oldZoom + delta));
+  // Zoomer centré sur le curseur
+  const rect = document.getElementById('game-canvas').getBoundingClientRect();
+  const mx   = e.clientX - rect.left;
+  const my   = e.clientY - rect.top;
+  state.cam.x = mx - (mx - state.cam.x) * (newZoom / oldZoom);
+  state.cam.y = my - (my - state.cam.y) * (newZoom / oldZoom);
+  state.cam.zoom = newZoom;
 }
 
 // ===== CLAVIER =====
