@@ -50,12 +50,16 @@ function drawMap(ctx) {
       const tw = TW * cam.zoom;
       const th = TH * cam.zoom;
 
-      // Tout est plat — élévation 0
-      // Montagne = tuile grise plate avec motif
       const isMountain = tile.terrain === 'mountain';
-      const tColor = isMountain ? '#555560' : (TERRAIN_TYPES[tile.terrain]?.color ?? '#3a5a2a');
+      const res        = state.resources[r]?.[c];
 
-      // Face top (toujours plate)
+      // Couleur : montagne=gris, ressource=couleur ressource, sinon vert gazon
+      let tColor;
+      if (isMountain)  tColor = '#555560';
+      else if (res)    tColor = RESOURCE_COLORS[res] ?? '#4a7a3a';
+      else             tColor = '#4a7a3a';
+
+      // Tuile plate
       ctx.beginPath();
       ctx.moveTo(s.x,        s.y);
       ctx.lineTo(s.x + tw/2, s.y + th/2);
@@ -64,48 +68,37 @@ function drawMap(ctx) {
       ctx.closePath();
       ctx.fillStyle = tColor;
       ctx.fill();
-
-      // Bordure
-      ctx.strokeStyle = isMountain ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.12)';
-      ctx.lineWidth   = isMountain ? 1 : 0.5;
+      ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+      ctx.lineWidth   = 0.5;
       ctx.stroke();
 
-      // Motif montagne : deux petits triangles gris foncé
+      // Motif montagne
       if (isMountain && cam.zoom > 0.4) {
         const mx = s.x, my = s.y + th/2;
-        // Triangle gauche
         ctx.beginPath();
         ctx.moveTo(mx - tw/6, my + th/8);
         ctx.lineTo(mx - tw/10, my - th/6);
         ctx.lineTo(mx,         my + th/8);
         ctx.closePath();
-        ctx.fillStyle = '#373740';
-        ctx.fill();
-        // Triangle droit
+        ctx.fillStyle = '#373740'; ctx.fill();
         ctx.beginPath();
         ctx.moveTo(mx,         my + th/8);
         ctx.lineTo(mx + tw/8,  my - th/8);
         ctx.lineTo(mx + tw/5,  my + th/8);
         ctx.closePath();
-        ctx.fillStyle = '#434350';
-        ctx.fill();
+        ctx.fillStyle = '#434350'; ctx.fill();
       }
 
-      // Ressource (dot coloré)
-      const res = state.resources[r]?.[c];
-      if (res && cam.zoom > 0.3) {
-        const rColor = RESOURCE_COLORS[res] ?? '#888';
-        ctx.beginPath();
-        ctx.arc(s.x, s.y + th/2, 3 * cam.zoom, 0, Math.PI * 2);
-        ctx.fillStyle = rColor;
-        ctx.fill();
-        if (cam.zoom > 0.6) {
-          ctx.font = `${Math.floor(8 * cam.zoom)}px sans-serif`;
-          ctx.textAlign    = 'center';
-          ctx.textBaseline = 'bottom';
-          ctx.fillStyle    = '#fff';
-          ctx.fillText(RESOURCE_LABELS[res] ?? res, s.x, s.y + th/2 - 4 * cam.zoom);
-        }
+      // Nom de la ressource
+      if (res && cam.zoom > 0.6) {
+        ctx.font         = `bold ${Math.floor(8 * cam.zoom)}px sans-serif`;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle    = '#fff';
+        ctx.strokeStyle  = 'rgba(0,0,0,0.6)';
+        ctx.lineWidth    = 2;
+        ctx.strokeText(RESOURCE_LABELS[res] ?? res, s.x, s.y + th/2);
+        ctx.fillText(RESOURCE_LABELS[res] ?? res, s.x, s.y + th/2);
       }
     }
   }
