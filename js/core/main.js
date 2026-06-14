@@ -3,8 +3,6 @@
 // Point d'entrée — initialisation et boucle principale
 // ============================================================
 
-let lastTruckUpdate = null;
-
 document.addEventListener('DOMContentLoaded', () => {
   // Erreurs globales
   window.onerror = function(msg, src, line, col, err) {
@@ -15,31 +13,25 @@ document.addEventListener('DOMContentLoaded', () => {
     showError('Promise: ' + (e.reason?.message || e.reason || 'unknown'));
   });
 
-  // Canvas
+  // Charger sauvegarde ou générer nouvelle carte EN PREMIER
+  const hasSave = loadGame();
+  if (!hasSave) initNewGame();
+
+  // Canvas APRÈS init (la carte doit exister pour centrer la caméra)
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
-
-  // Charger sauvegarde ou générer nouvelle carte
-  const hasSave = loadGame();
-  if (!hasSave) {
-    initNewGame();
-  }
 
   // UI
   updateStats();
   updatePopulation();
   updateAvailableWorkers();
   refreshBuildPanel();
+  updateExploreArrows();
 
   // Ticks
   startEconomyTick();
   setInterval(productionTick, 60000);
-
-  // Sauvegarde auto toutes les 60s
-  setInterval(() => {
-    if (typeof saveGame === 'function') saveGame();
-    if (typeof showSaveIndicator === 'function') showSaveIndicator();
-  }, 60000);
+  setInterval(() => { saveGame(); showSaveIndicator(); }, 60000);
 
   // Événements
   setupInputEvents();
@@ -49,28 +41,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initNewGame() {
-  // Générer la map de départ (centre de la planète)
-  const startMap = getPlanetMap(START_MAP_X, START_MAP_Y);
+  const startMap     = getPlanetMap(START_MAP_X, START_MAP_Y);
   startMap.map       = generateTerrain(COLS, ROWS, true, START_MAP_X, START_MAP_Y);
   startMap.resources = placeResources(startMap.map, STARTING_MAP_RESOURCES, COLS, ROWS);
-
-  // Charger comme map active
-  state.map       = startMap.map;
-  state.resources = startMap.resources;
+  state.map          = startMap.map;
+  state.resources    = startMap.resources;
   state.planet[mapKey(START_MAP_X, START_MAP_Y)] = startMap;
-
-  // Centrer la caméra
-  const midCol = COLS / 2, midRow = ROWS / 2;
-  const midX   = (midCol - midRow) * (TW / 2);
-  const midY   = (midCol + midRow) * (TH / 2);
-  state.cam.x  = window.innerWidth  / 2 - midX * state.cam.zoom;
-  state.cam.y  = window.innerHeight / 2 - midY * state.cam.zoom - 40;
 }
 
 // ============================================================
 // BOUCLE PRINCIPALE
 // ============================================================
-
 function drawFrame_start() {
   requestAnimationFrame(ts => {
     updateTrucks(ts);
@@ -84,41 +65,62 @@ function drawFrame_start() {
 function drawFrame() {
   const canvas = document.getElementById('game-canvas');
   const ctx    = canvas.getContext('2d');
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Tuiles
+  if (!state.map || state.map.length === 0) {
+    requestAnimationFrame(ts => { updateTrucks(ts); updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); drawFrame(); });
+    return;
+  }
+
   drawMap(ctx);
 
-  // Bâtiments construits
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const key = `${c},${r}`;
-      if (state.buildings[key]) {
-        drawBuilding(ctx, c, r, state.buildings[key]);
-      }
+      if (state.buildings[key]) drawBuilding(ctx, c, r, state.buildings[key]);
     }
   }
 
-  // Bâtiments en construction
   drawBuildingQueue(ctx);
-
-  // Ghost preview
   drawGhostPreview(ctx);
-
-  // Camions
   drawTrucks(ctx);
 
-  // Flèches d'exploration
-  drawExploreArrows(ctx);
+  requestAnimationFrame(ts => { updateTrucks(ts); updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); drawFrame(); });
+}
 
-  requestAnimationFrame(ts => {
-    updateTrucks(ts);
-    updateBuildingQueue();
-    updateTruckBuildQueue();
-    updateExploration();
-    drawFrame();
-  });
+// File de construction bâtiments
+function updateBuildingQueue() {
+  const now = Date.now();
+  for (const [key, q] of Object.entries(state.buildingQueue)) {
+    q.progress = Math.min(1, (now - q.startTime) / q.duration);
+    if (q.progress >= 1) finalizeBuild(key, q.type, q.col, q.row);
+  }
+}
+
+function finalizeBuild(key, type, col, row) {
+  delete state.buildingQueue[key];
+  state.buildings[key]      = type;
+  state.buildingLevels[key] = 0;
+
+  if (['mine','quarry','well'].includes(type)) {
+    state.internalStock[key] = { solid: {}, liquid: {}, waste: 0 };
+  }
+  if (['sorting','crusher','refinery','water_plant'].includes(type)) {
+    state.internalStock[key] = { input: {}, output: {} };
+  }
+  if (Object.keys(WAREHOUSE_CATEGORIES).includes(type)) {
+    state.warehouseStock[key] = {};
+  }
+  if (type === 'townhall') {
+    state.hasTownhall = true;
+    refreshBuildPanel();
+  }
+  if (type === 'house') scheduleHousing(key, type);
+
+  updateAvailableWorkers();
+  updateStats();
+  refreshBuildPanel();
+  notify('✅ ' + (BUILDING_DEF[type]?.icon ?? '') + ' ' + (BUILDING_DEF[type]?.name ?? type) + ' construit !', 'ok');
 }
 
 function showError(msg) {
@@ -128,3 +130,27 @@ function showError(msg) {
   div.onclick = () => div.remove();
   document.body.appendChild(div);
 }
+
+// Exposer les fonctions globales
+window.setTool         = setTool;
+window.adjustZoom      = adjustZoom;
+window.selectBuilding  = selectBuilding;
+window.toggleSection   = toggleSection;
+window.buildingLevelUp = buildingLevelUp;
+window.openTruckPanel  = openTruckPanel;
+window.closeTruckPanel = closeTruckPanel;
+window.openBuildingPanel  = openBuildingPanel;
+window.closeBuildingPanel = closeBuildingPanel;
+window.removeStop      = removeStop;
+window.confirmStop     = confirmStop;
+window.cancelStop      = cancelStop;
+window.deleteTruck     = deleteTruck;
+window.buildTruck      = buildTruck;
+window.assignWorker    = assignWorker;
+window.saveGame        = saveGame;
+window.resetGame       = resetGame;
+window.showSaveIndicator = showSaveIndicator;
+window.openExplorePanel  = openExplorePanel;
+window.closeExplorePanel = closeExplorePanel;
+window.navigateToMap     = navigateToMap;
+window.startExploration  = startExploration;
