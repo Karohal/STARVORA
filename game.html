@@ -2033,40 +2033,47 @@ function refreshFactoryPanel(factoryKey) {
   const listEl   = document.getElementById('bp-truck-list');
   if (!listEl) return;
 
-  // Afficher la file de construction
   const inQueue = state.truckBuildQueue[factoryKey];
   let queueHtml = '';
+
   if (inQueue) {
-    const qDef = TRUCK_TYPES[inQueue.truckType] ?? TRUCK_TYPES.standard;
-    const remaining = Math.max(0, Math.ceil((inQueue.duration - (Date.now() - inQueue.startTime)) / 1000));
-    const pct = Math.round((inQueue.progress ?? 0) * 100);
-    queueHtml = `<div style="margin-bottom:8px;padding:6px;border:1px solid rgba(240,192,64,0.3);background:rgba(240,192,64,0.05)">
-    const fkSafe = factoryKey.replace(",","-");
-  // Afficher juste le nombre de camions construits
+    const qDef      = TRUCK_TYPES[inQueue.truckType] ?? TRUCK_TYPES.standard;
+    const elapsed   = Date.now() - inQueue.startTime;
+    const remaining = Math.max(0, Math.ceil((inQueue.duration - elapsed) / 1000));
+    const pct       = Math.round(Math.min(1, elapsed / inQueue.duration) * 100);
+    const fkSafe    = factoryKey.replace(',', '-');
+    const badge     = truckBadges2[inQueue.truckType] ?? '\u{1F69B}';
+    queueHtml = '<div style="margin-bottom:8px;padding:6px;border:1px solid rgba(240,192,64,0.3);background:rgba(240,192,64,0.05)">'
+      + '<div style="font-size:0.7rem;color:var(--gold);margin-bottom:4px">\uD83C\uDFD7 En construction : ' + badge + ' ' + qDef.name + '</div>'
+      + '<div style="background:rgba(0,0,0,0.3);height:6px;border-radius:2px;overflow:hidden">'
+      + '<div id="truck-build-bar-' + fkSafe + '" style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,var(--cyan),var(--gold))"></div>'
+      + '</div>'
+      + '<div id="truck-build-timer-' + fkSafe + '" style="font-size:0.65rem;color:var(--muted);margin-top:3px;text-align:right">' + remaining + 's restantes</div>'
+      + '</div>';
+  }
+
   const truckCount = myTrucks.length;
   if (truckCount === 0 && !inQueue) {
     listEl.innerHTML = queueHtml + '<div class="th-muted">Aucun véhicule — cliquez sur un camion pour le gérer</div>';
   } else {
     const countHtml = truckCount > 0
-      ? `<div class="th-row" style="margin-bottom:6px"><span>Véhicules actifs</span><span class="th-val">${truckCount}</span></div>
-         <div class="th-muted" style="font-size:0.65rem">Cliquez sur un camion pour le gérer</div>`
+      ? '<div class="th-row" style="margin-bottom:6px"><span>Véhicules actifs</span><span class="th-val">' + truckCount + '</span></div>'
+        + '<div class="th-muted" style="font-size:0.65rem">Cliquez sur un camion pour le gérer</div>'
       : '';
     listEl.innerHTML = queueHtml + countHtml;
   }
 
-  // Boutons construire par type
   const btnsEl = document.getElementById('bp-truck-build-btns');
   if (btnsEl) {
     const isBuilding = !!state.truckBuildQueue[factoryKey];
     btnsEl.innerHTML = Object.entries(TRUCK_TYPES).map(([ttype, def]) =>
-      `<button class="assign-btn" data-factory="${factoryKey}" data-ttype="${ttype}"
-        style="flex:1;flex-direction:column;height:auto;padding:6px 2px;font-size:0.6rem;${isBuilding ? 'opacity:0.4;pointer-events:none' : ''}">
-        <span style="font-size:1.2rem">${truckBadges2[ttype] ?? def.icon}</span>
-        <span>${def.name}</span>
-        <span style="color:var(--gold)">${def.cost} 💰</span>
-      </button>`
+      '<button class="assign-btn" data-factory="' + factoryKey + '" data-ttype="' + ttype + '"'
+      + ' style="flex:1;flex-direction:column;height:auto;padding:6px 2px;font-size:0.6rem;' + (isBuilding ? 'opacity:0.4;pointer-events:none' : '') + '">'
+      + '<span style="font-size:1.2rem">' + (truckBadges2[ttype] ?? def.icon) + '</span>'
+      + '<span>' + def.name + '</span>'
+      + '<span style="color:var(--gold)">' + def.cost + ' \uD83D\uDCB0</span>'
+      + '</button>'
     ).join('');
-    // Attacher via touchend ET click pour iPhone
     btnsEl.querySelectorAll('button[data-ttype]').forEach(btn => {
       const fkey  = btn.dataset.factory;
       const ttype = btn.dataset.ttype;
@@ -2075,7 +2082,6 @@ function refreshFactoryPanel(factoryKey) {
     });
   }
 }
-
 function deleteTruck(id) {
   const t = state.trucks[id];
   if (!t) return;
