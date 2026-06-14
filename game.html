@@ -884,9 +884,9 @@ const RESOURCE_CATEGORY = {
 
 // Types de camions
 const TRUCK_TYPES = {
-  standard: { icon: '🚛', name: 'Camion Minerais',  cost: 100, capacity: 2, category: 'solid',    color: '#c8a020', truckColor: '#c8a020', buildTime: 10 },
-  tanker:   { icon: '🚛', name: 'Camion Citerne',   cost: 120, capacity: 2, category: 'liquid',   color: '#4090c0', truckColor: '#2060a0', buildTime: 12 },
-  waste:    { icon: '🚛', name: 'Camion Déchets',   cost: 80,  capacity: 2, category: 'waste',    color: '#607040', truckColor: '#304820', buildTime: 8  },
+  standard: { icon: '🚛', name: 'Camion Minerais',  cost: 100, capacity: 5, category: 'solid',    color: '#c8a020', truckColor: '#c8a020', buildTime: 10 },
+  tanker:   { icon: '🚛', name: 'Camion Citerne',   cost: 120, capacity: 5, category: 'liquid',   color: '#4090c0', truckColor: '#2060a0', buildTime: 12 },
+  waste:    { icon: '🚛', name: 'Camion Déchets',   cost: 80,  capacity: 5, category: 'waste',    color: '#607040', truckColor: '#304820', buildTime: 8  },
   hazmat:   { icon: '🚛', name: 'Camion Dangereux', cost: 200, capacity: 1, category: 'hazardous',color: '#a03020', truckColor: '#801010', buildTime: 20 },
 };
 
@@ -1579,7 +1579,7 @@ function openBuildingPanel(key, type) {
   }
 
   if (isHouse) {
-    const capacity = 2 + Math.floor(level / 5);
+    const capacity = 4 + Math.floor(level / 5) * 2;
     const occupants = state.houseOccupants[key] ?? 0;
     document.getElementById('bp-house-capacity').textContent = occupants + ' / ' + capacity;
     // Remplacer "Travailleurs" par "Habitants" dans le label
@@ -1990,8 +1990,8 @@ function updateBuildingQueue() {
 
 // ===== CAMIONS =====
 
-const TRUCK_SPEED_ROUTE   = 0.5;
-const TRUCK_SPEED_NOROUTE = 0.1;
+const TRUCK_SPEED_ROUTE   = 0.3;
+const TRUCK_SPEED_NOROUTE = 0.05;
 
 
 function createTruck(factoryKey, truckType) {
@@ -2796,7 +2796,7 @@ function refreshWarehousePanel(key, type) {
 
 // Capacité entrepôt interne selon niveau
 function internalCapacity(level) {
-  return 5 + Math.floor(level / 10);
+  return 10 + Math.floor(level / 5) * 2;
 }
 
 // Capacité entrepôt global selon niveau
@@ -2811,7 +2811,7 @@ function extractionYield(level) {
 
 // Unités produites/min selon niveau (mines/puits/carrières)
 function productionRate(level) {
-  return 5 + Math.floor(level / 5) * 2;
+  return 1 + Math.floor(level / 5);
 }
 
 // Ressource produite selon type de bâtiment + tuile
@@ -3132,11 +3132,14 @@ function scheduleHousingForKey(hkey) {
 function startEconomyTick() {
   setInterval(() => {
     // Sans-abris coûtent -1 💰 chacun
-    const cost = state.homeless * 1;
-    // Travailleurs assignés rapportent +2 💰 chacun
+    const cost = state.homeless * 2;
+    // Chômeurs logés (logés mais pas assignés)
     const totalAssigned = Object.values(state.assignedWorkers).reduce((a, b) => a + b, 0);
-    const gain = totalAssigned * 2;
-    const delta = gain - cost;
+    const chomeurs = Math.max(0, state.housed - totalAssigned);
+    const chomeurCost = chomeurs * 0.5;
+    // Travailleurs assignés rapportent +3 💰 chacun
+    const gain = totalAssigned * 3;
+    const delta = Math.floor(gain - cost - chomeurCost);
     state.money += delta;
     updateStats();
     if (delta !== 0) {
