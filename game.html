@@ -2819,6 +2819,10 @@ function getResourceForTile(col, row) {
   return state.resources[row]?.[col] ?? null;
 }
 
+// Constantes usine de traitement
+const SORTING_INPUT  = ['iron', 'coal', 'stone'];
+const SORTING_OUTPUT = { iron: 'iron_r', coal: 'coal_r', stone: 'stone_r' };
+
 // Fonctions usine de traitement
 function sortingInputCapacity(level)  { return 5  + Math.floor(level / 5) * 2; }
 function sortingOutputCapacity(level) { return 15 + Math.floor(level / 5) * 2; }
