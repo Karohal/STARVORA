@@ -2707,8 +2707,34 @@ function handleTruckStop(t, stop) {
       return;
     }
 
-    const ws       = state.warehouseStock[stop.key];
     const bldType  = state.buildings[stop.key];
+
+    // Décharger dans usine de traitement (quai input)
+    if (bldType === 'sorting') {
+      if (!state.internalStock[stop.key]) state.internalStock[stop.key] = { input: {}, output: {} };
+      const sortStock = state.internalStock[stop.key];
+      const level2    = state.buildingLevels[stop.key] ?? 0;
+      const inCap2    = sortingInputCapacity(level2);
+      const inTotal2  = Object.values(sortStock.input ?? {}).reduce((a,b)=>a+b,0);
+      if (inTotal2 < inCap2) {
+        for (const [res, qty] of Object.entries(t.cargo)) {
+          if (SORTING_INPUT.includes(res)) {
+            sortStock.input[res] = (sortStock.input[res] ?? 0) + qty;
+          }
+        }
+        t.cargo      = {};
+        t.status     = 'unloading';
+        t.atStop     = false;
+        t.atStopTs   = 0;
+        t.routeIndex = (t.routeIndex + 1) % t.route.length;
+        updateProductionUI();
+      } else {
+        t.status = 'unloading'; // Quai plein, attendre
+      }
+      return;
+    }
+
+    const ws       = state.warehouseStock[stop.key];
     const allowCat = WAREHOUSE_TYPES[bldType]?.category ?? 'solid';
     const truckType2 = t.truckType ?? 'standard';
     const truckCat = TRUCK_TYPES[truckType2]?.category ?? 'solid';
@@ -2828,9 +2854,9 @@ function productionTick() {
       const take     = Math.min(inQty, Math.round(5 * efficiency));
       if (take <= 0) continue;
 
-      const refined  = Math.round(take * yld);
-      const gravats  = Math.round(take * 0.50);
-      const dechets  = take - refined - gravats;
+      const refined  = Math.floor(take * yld);
+      const gravats  = Math.floor(take * 0.50);
+      const dechets  = Math.max(0, take - refined - gravats);
       const outRes   = SORTING_OUTPUT[res] ?? (res + '_r');
 
       // Déduire input
