@@ -17,9 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const hasSave = loadGame();
   if (!hasSave) initNewGame();
 
-  // Canvas APRÈS init (la carte doit exister pour centrer la caméra)
+  // Canvas APRÈS init
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
+
+  // Centrer sur la map de départ
+  if (!hasSave) centerCamera();
 
   // UI
   updateStats();
