@@ -2041,13 +2041,13 @@ function refreshFactoryPanel(factoryKey) {
     const remaining = Math.max(0, Math.ceil((inQueue.duration - (Date.now() - inQueue.startTime)) / 1000));
     const pct = Math.round((inQueue.progress ?? 0) * 100);
     queueHtml = `<div style="margin-bottom:8px;padding:6px;border:1px solid rgba(240,192,64,0.3);background:rgba(240,192,64,0.05)">
-    const fkSafe = factoryKey.replace(',','-');
-    queueHtml = `<div style="margin-bottom:8px;padding:6px;border:1px solid rgba(240,192,64,0.3);background:rgba(240,192,64,0.05)">
-      <div style="font-size:0.7rem;color:var(--gold);margin-bottom:4px">🏗️ En construction : ${truckBadges2[inQueue.truckType]??'🚛'} ${qDef.name}</div>
-      <div style="background:rgba(0,0,0,0.3);height:6px;border-radius:2px;overflow:hidden">
-        <div id="truck-build-bar-${fkSafe}" style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--cyan),var(--gold))"></div>
+    const fkSafe = factoryKey.replace(",","-");
+    queueHtml = `<div style='margin-bottom:8px;padding:6px;border:1px solid rgba(240,192,64,0.3);background:rgba(240,192,64,0.05)'>
+      <div style='font-size:0.7rem;color:var(--gold);margin-bottom:4px'>🏗️ En construction : ${truckBadges2[inQueue.truckType]||'🚛'} ${qDef.name}</div>
+      <div style='background:rgba(0,0,0,0.3);height:6px;border-radius:2px;overflow:hidden'>
+        <div id='truck-build-bar-${fkSafe}' style='height:100%;width:${pct}%;background:linear-gradient(90deg,var(--cyan),var(--gold))'></div>
       </div>
-      <div id="truck-build-timer-${fkSafe}" style="font-size:0.65rem;color:var(--muted);margin-top:3px;text-align:right">${remaining}s restantes</div>
+      <div id='truck-build-timer-${fkSafe}' style='font-size:0.65rem;color:var(--muted);margin-top:3px;text-align:right'>${remaining}s restantes</div>
     </div>`;
   // Afficher juste le nombre de camions construits
   const truckCount = myTrucks.length;
