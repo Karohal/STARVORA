@@ -68,6 +68,10 @@ function selectBuilding(type, el) {
   state.selectedBuilding = type;
   document.querySelectorAll('.build-item').forEach(b => b.classList.remove('selected'));
   el?.classList.add('selected');
+  // Fermer le panel et passer en mode construction
+  document.getElementById('build-panel')?.classList.remove('open');
+  state.tool = 'build';
+  notify('🏗️ ' + (BUILDING_DEF[type]?.icon??'') + ' ' + (BUILDING_DEF[type]?.name??type) + ' sélectionné — tapez pour placer', 'ok');
 }
 window.selectBuilding = selectBuilding;
 
