@@ -2793,6 +2793,12 @@ function getResourceForTile(col, row) {
   return state.resources[row]?.[col] ?? null;
 }
 
+// Fonctions usine de traitement
+function sortingInputCapacity(level)  { return 5  + Math.floor(level / 5) * 2; }
+function sortingOutputCapacity(level) { return 15 + Math.floor(level / 5) * 2; }
+function sortingInterval(level) { return Math.max(10000, 60000 - Math.floor(level / 5) * 1000); }
+function sortingYield(level) { return Math.min(0.80, 0.30 + Math.floor(level / 5) * 0.01); }
+
 // Tick de production — appelé toutes les 60s
 function productionTick() {
   // === USINES DE TRAITEMENT ===
