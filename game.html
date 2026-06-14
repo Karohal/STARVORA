@@ -2110,9 +2110,12 @@ function openTruckRoutePanel(truckId) {
 function findTruckAt(sx, sy) {
   const { cam } = state;
   for (const t of Object.values(state.trucks)) {
+    const offset = (t.status === 'loading' || t.status === 'unloading' || t.status === 'idle')
+      ? { dx: -0.45, dy: 0.45 }
+      : { dx: 0, dy: 0 };
     const s = {
-      x: (t.x - t.y) * (TW / 2) * cam.zoom + cam.x,
-      y: (t.x + t.y) * (TH / 2) * cam.zoom + cam.y + (TH/2 - 4) * cam.zoom,
+      x: (t.x + offset.dx - t.y - offset.dy) * (TW / 2) * cam.zoom + cam.x,
+      y: (t.x + offset.dx + t.y + offset.dy) * (TH / 2) * cam.zoom + cam.y + (TH/2 - 4) * cam.zoom,
     };
     const dist = Math.sqrt((sx - s.x)**2 + (sy - s.y)**2);
     if (dist < 20 * cam.zoom) return t;
@@ -2503,9 +2506,13 @@ function drawBuildingQueue(ctx) {
 function drawTrucks(ctx) {
   const { cam } = state;
   for (const t of Object.values(state.trucks)) {
+    // Décaler le camion sur le côté quand il est à l'arrêt
+    const offset = (t.status === 'loading' || t.status === 'unloading' || t.status === 'idle')
+      ? { dx: -0.45, dy: 0.45 }
+      : { dx: 0, dy: 0 };
     const s = {
-      x: (t.x - t.y) * (TW / 2) * cam.zoom + cam.x,
-      y: (t.x + t.y) * (TH / 2) * cam.zoom + cam.y,
+      x: (t.x + offset.dx - t.y - offset.dy) * (TW / 2) * cam.zoom + cam.x,
+      y: (t.x + offset.dx + t.y + offset.dy) * (TH / 2) * cam.zoom + cam.y,
     };
     const size = Math.max(8, 16 * cam.zoom);
 
