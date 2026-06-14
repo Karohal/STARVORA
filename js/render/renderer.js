@@ -10,13 +10,15 @@ function resizeCanvas() {
   ctx    = canvas.getContext('2d');
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
-  if (state.cam.x === 0 && state.cam.y === 0) {
-    const midCol = COLS / 2, midRow = ROWS / 2;
-    const midX   = (midCol - midRow) * (TW / 2);
-    const midY   = (midCol + midRow) * (TH / 2);
-    state.cam.x  = canvas.width  / 2 - midX * state.cam.zoom;
-    state.cam.y  = canvas.height / 2 - midY * state.cam.zoom - 40;
-  }
+}
+
+function centerCamera() {
+  canvas = document.getElementById('game-canvas');
+  const midCol = COLS / 2, midRow = ROWS / 2;
+  const midX   = (midCol - midRow) * (TW / 2);
+  const midY   = (midCol + midRow) * (TH / 2);
+  state.cam.x  = canvas.width  / 2 - midX * state.cam.zoom;
+  state.cam.y  = canvas.height / 2 - midY * state.cam.zoom - 40;
 }
 
 // Coordonnées iso
