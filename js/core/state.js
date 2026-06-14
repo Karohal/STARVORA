@@ -118,7 +118,7 @@ function setActiveMap(x, y) {
   state.truckBuildQueue= newMap.truckBuildQueue;
   state.hasTownhall    = newMap.hasTownhall;
 
-  // Réinitialiser caméra
-  state.cam = { x: 0, y: 0, zoom: 1 };
-  resizeCanvas();
+  // Recentrer caméra sur la nouvelle map
+  state.cam = { x: 0, y: 0, zoom: state.cam.zoom };
+  centerCamera();
 }
