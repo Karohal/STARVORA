@@ -209,7 +209,8 @@
     <div id="bp-production-section" style="display:none">
       <div class="panel-section">
         <h4>⚙️ Production</h4>
-        <div id="bp-prod-status" style="text-align:center;padding:4px 0;margin-bottom:6px;font-size:0.72rem;letter-spacing:0.1em;color:var(--error)">⛔ Production stoppée</div>
+        <div id="bp-waiting-trucks" style="display:none;margin-bottom:6px;padding:4px 0;border-bottom:1px solid rgba(240,192,64,0.1)"></div>
+  <div id="bp-prod-status" style="text-align:center;padding:4px 0;margin-bottom:6px;font-size:0.72rem;letter-spacing:0.1em;color:var(--error)">⛔ Production stoppée</div>
         <div class="th-row" id="bp-prod-yield-row"><span>Rendement</span><span class="th-val" id="bp-prod-yield">30% / 70%</span></div>
         <div class="th-row"><span id="bp-prod-resource">Ressource : 0</span><span class="th-val"></span></div>
         <div class="th-row" id="bp-prod-waste-row"><span id="bp-prod-waste">Déchets : 0</span><span class="th-val"></span></div>
@@ -1560,6 +1561,29 @@ function openBuildingPanel(key, type) {
   if (isFactory)   refreshFactoryPanel(key);
   if (isWarehouse) refreshWarehousePanel(key, type);
 
+  // Camions en attente sur ce bâtiment
+  const waitingEl = document.getElementById('bp-waiting-trucks');
+  if (waitingEl) {
+    const waiting = Object.values(state.trucks).filter(t =>
+      t.atStop && t.route[t.routeIndex % t.route.length]?.key === key
+    );
+    if (waiting.length > 0) {
+      const lines = waiting.map(t => {
+        const tDef = TRUCK_TYPES[t.truckType ?? 'standard'] ?? TRUCK_TYPES.standard;
+        const badge = truckBadges2[t.truckType ?? 'standard'] ?? '🚛';
+        const action = t.status === 'loading' ? 'chargement' : 'déchargement';
+        return badge + ' ' + tDef.name + ' — en attente de ' + action;
+      });
+      waitingEl.innerHTML = lines.map(l =>
+        '<div class="th-row" style="color:var(--gold);font-size:0.7rem">' + l + '</div>'
+      ).join('');
+      waitingEl.style.display = 'block';
+    } else {
+      waitingEl.innerHTML = '';
+      waitingEl.style.display = 'none';
+    }
+  }
+
   // Statut générique pour tous les bâtiments avec workers
   const bldDef = BUILDING_DEF[type];
   const needsWorkers = (bldDef?.workers ?? 0) > 0;
@@ -2115,12 +2139,10 @@ function openTruckRoutePanel(truckId) {
 function findTruckAt(sx, sy) {
   const { cam } = state;
   for (const t of Object.values(state.trucks)) {
-    const offset = (t.status === 'loading' || t.status === 'unloading' || t.status === 'idle')
-      ? { dx: -0.45, dy: 0.45 }
-      : { dx: 0, dy: 0 };
+    if (t.atStop && (t.status === 'loading' || t.status === 'unloading')) continue;
     const s = {
-      x: (t.x + offset.dx - t.y - offset.dy) * (TW / 2) * cam.zoom + cam.x,
-      y: (t.x + offset.dx + t.y + offset.dy) * (TH / 2) * cam.zoom + cam.y + (TH/2 - 4) * cam.zoom,
+      x: (t.x - t.y) * (TW / 2) * cam.zoom + cam.x,
+      y: (t.x + t.y) * (TH / 2) * cam.zoom + cam.y + (TH/2 - 4) * cam.zoom,
     };
     const dist = Math.sqrt((sx - s.x)**2 + (sy - s.y)**2);
     if (dist < 20 * cam.zoom) return t;
@@ -2511,13 +2533,12 @@ function drawBuildingQueue(ctx) {
 function drawTrucks(ctx) {
   const { cam } = state;
   for (const t of Object.values(state.trucks)) {
-    // Décaler le camion sur le côté quand il est à l'arrêt
-    const offset = (t.status === 'loading' || t.status === 'unloading' || t.status === 'idle')
-      ? { dx: -0.45, dy: 0.45 }
-      : { dx: 0, dy: 0 };
+    // Masquer les camions en attente à un stop
+    if (t.atStop && (t.status === 'loading' || t.status === 'unloading')) continue;
+
     const s = {
-      x: (t.x + offset.dx - t.y - offset.dy) * (TW / 2) * cam.zoom + cam.x,
-      y: (t.x + offset.dx + t.y + offset.dy) * (TH / 2) * cam.zoom + cam.y,
+      x: (t.x - t.y) * (TW / 2) * cam.zoom + cam.x,
+      y: (t.x + t.y) * (TH / 2) * cam.zoom + cam.y,
     };
     const size = Math.max(8, 16 * cam.zoom);
 
