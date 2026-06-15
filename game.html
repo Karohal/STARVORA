@@ -171,6 +171,7 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   <span class="stat" id="hud-money">💰 0</span>
   <span class="stat" id="hud-pop">👥 0</span>
   <span class="stat" id="hud-workers">👷 0</span>
+  <span class="stat" id="hud-date">📅 An 2387</span>
   <span id="map-indicator">🗺️ Map (1,1)</span>
   <button class="menu-btn" onclick="window.location.href='index.html'">⬅ Menu</button>
 </div>
@@ -206,6 +207,7 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
       <div class="build-item" data-type="townhall"  onclick="selectBuilding('townhall',this)"><div class="b-icon">🏛️</div><div>Hôtel de Ville</div><div class="b-cost">Gratuit</div></div>
       <div class="build-item" data-type="house"     onclick="selectBuilding('house',this)"><div class="b-icon">🏠</div><div>Résidence</div><div class="b-cost">50 💰</div></div>
       <div class="build-item" data-type="road"      onclick="selectBuilding('road',this)"><div class="b-icon">🛣️</div><div>Route</div><div class="b-cost">10 💰</div></div>
+      <div class="build-item" data-type="hospital" onclick="selectBuilding('hospital',this)"><div class="b-icon">🏥</div><div>Hôpital</div><div class="b-cost">400 💰</div></div>
       <div class="build-item" data-type="stargate"  onclick="selectBuilding('stargate',this)"><div class="b-icon">🌀</div><div>Portail</div><div class="b-cost">500 💰</div></div>
     </div>
   </div>
