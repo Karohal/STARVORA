@@ -49,6 +49,11 @@ function refreshBuildPanel() {
 }
 
 function setTool(t) {
+  // Annuler fantôme si on change d'outil
+  if (state.ghostBuilding && t !== 'build') {
+    state.ghostBuilding = null;
+    document.getElementById('build-confirm-bar').style.display = 'none';
+  }
   state.tool = t;
   document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tool-'+t)?.classList.add('active');
@@ -115,6 +120,7 @@ function openBuildingPanel(key, type) {
   if (hasWorkers)  refreshWorkersPanel(key, type);
   if (type === 'house')    refreshHousePanel(key);
   if (type === 'hospital') refreshHospitalPanel(key);
+  if (type === 'townhall') refreshHdvStockPanel();
 
   // Camions en attente
   const waitingEl = document.getElementById('bp-waiting-trucks');
@@ -394,4 +400,22 @@ function refreshHospitalPanel(key) {
     `<div class="th-row" style="font-size:0.65rem;color:var(--muted)">` +
       (workers === 0 ? '⚠️ Inactif — assignez des travailleurs' : `✅ Actif — ${workers} travailleur(s)`) +
     `</div>`;
+}
+
+// ===== STOCK HdV =====
+function refreshHdvStockPanel() {
+  const el = document.getElementById('bp-hdv-stock');
+  if (!el) return;
+  const stock = state.hdvStock ?? {};
+  const total = Object.values(stock).reduce((a,b)=>a+b,0);
+  if (total === 0) {
+    el.style.display = 'none';
+    return;
+  }
+  el.style.display = 'block';
+  el.innerHTML = '<div style="font-size:0.65rem;color:var(--gold);margin-bottom:4px;letter-spacing:0.1em">📦 STOCKS DE DÉPART</div>' +
+    Object.entries(stock)
+      .filter(([,q]) => q > 0)
+      .map(([r,q]) => `<div class="th-row"><span>${RESOURCE_LABELS[r]??r}</span><span class="th-val">${q}</span></div>`)
+      .join('');
 }
