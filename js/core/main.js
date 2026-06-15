@@ -18,29 +18,29 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!hasSave) initNewGame();
 
   // Canvas APRÈS init
-  resizeCanvas();
+  window.resizeCanvas?.();
   window.addEventListener('resize', resizeCanvas);
 
   // Centrer sur la map de départ
-  if (!hasSave) centerCamera();
+  if (!hasSave) window.centerCamera?.();
 
   // UI
-  updateStats();
-  updatePopulation();
-  updateAvailableWorkers();
-  refreshBuildPanel();
-  updateExploreArrows();
+  window.updateStats?.();
+  window.updatePopulation?.();
+  window.updateAvailableWorkers?.();
+  window.refreshBuildPanel?.();
+  window.updateExploreArrows?.();
 
   // Ticks
-  startEconomyTick();
+  window.startEconomyTick?.();
   setInterval(productionTick, 60000);
   setInterval(() => { saveGame(); showSaveIndicator(); }, 60000);
 
   // Événements
-  setupInputEvents();
+  window.setupInputEvents?.();
 
   // Boucle de rendu
-  drawFrame_start();
+  window.drawFrame_start?.();
 });
 
 function initNewGame() {
@@ -55,7 +55,7 @@ function initNewGame() {
 // ============================================================
 // BOUCLE PRINCIPALE
 // ============================================================
-function drawFrame_start() {
+function window.drawFrame_start?.() {
   requestAnimationFrame(ts => {
     updateTrucks(ts);
     updateBuildingQueue();
@@ -116,16 +116,16 @@ function finalizeBuild(key, type, col, row) {
   }
   if (type === 'townhall') {
     state.hasTownhall = true;
-    refreshBuildPanel();
+    window.refreshBuildPanel?.();
     // Ouvrir le panel info au premier placement
-    setTimeout(() => openHdvInfo(), 500);
+    setTimeout(() => window.openHdvInfo?.(), 500);
   }
-  if (type === 'house') scheduleHousing(key, type);
+  if (type === 'house') window.scheduleHousing?.(key, type);
 
-  updateAvailableWorkers();
-  updateStats();
-  refreshBuildPanel();
-  notify('✅ ' + (BUILDING_DEF[type]?.icon ?? '') + ' ' + (BUILDING_DEF[type]?.name ?? type) + ' construit !', 'ok');
+  window.updateAvailableWorkers?.();
+  window.updateStats?.();
+  window.refreshBuildPanel?.();
+  window.notify?.('✅ ' + (BUILDING_DEF[type]?.icon ?? '') + ' ' + (BUILDING_DEF[type]?.name ?? type) + ' construit !', 'ok');
 }
 
 function showError(msg) {
