@@ -32,6 +32,7 @@ function saveGame() {
       truckCounter:     state.truckCounter,
       truckBuildQueue:  state.truckBuildQueue,
       hasTownhall:      state.hasTownhall,
+      hdvStock:         state.hdvStock,
       exploredMaps:     state.exploredMaps,
       explorationQueue: state.explorationQueue,
       explorationCount: state.explorationCount,
@@ -81,6 +82,7 @@ function loadGame() {
     state.truckCounter     = save.truckCounter     ?? 0;
     state.truckBuildQueue  = save.truckBuildQueue  ?? {};
     state.hasTownhall      = save.hasTownhall      ?? false;
+    state.hdvStock         = save.hdvStock         ?? { stone:30, iron:20, coal:20, water:10 };
     state.exploredMaps     = save.exploredMaps     ?? { '1,1': true };
     state.explorationQueue = save.explorationQueue ?? null;
     state.explorationCount = save.explorationCount ?? 0;
