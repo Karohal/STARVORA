@@ -38,6 +38,15 @@ function onTouchStart(e) {
 
 function onTouchMove(e) {
   e.preventDefault();
+  if (e.touches.length === 1 && state.ghostBuilding) {
+    const t    = e.touches[0];
+    const tile = screenToTile(t.clientX, t.clientY);
+    state.ghostBuilding.col   = tile.col;
+    state.ghostBuilding.row   = tile.row;
+    state.ghostBuilding.valid = isValidPlacement(tile.col, tile.row, state.ghostBuilding.type);
+    updateConfirmBar();
+    return;
+  }
   if (e.touches.length === 2 && _pinchDist) {
     const dist    = getPinchDist(e);
     const oldZoom = state.cam.zoom;
@@ -88,14 +97,23 @@ function onMouseDown(e) {
   _panStart  = { x: e.clientX, y: e.clientY, camX: state.cam.x, camY: state.cam.y };
 }
 function onMouseMove(e) {
-  if (!_mouseDown || !_panStart) return;
+  const tile = screenToTile(e.clientX, e.clientY);
+  if (!_mouseDown || !_panStart) {
+    // Mettre à jour le fantôme mobile si posé
+    if (state.ghostBuilding) {
+      state.ghostBuilding.col = tile.col;
+      state.ghostBuilding.row = tile.row;
+      state.ghostBuilding.valid = isValidPlacement(tile.col, tile.row, state.ghostBuilding.type);
+      updateConfirmBar();
+    }
+    _ghostTile = tile;
+    return;
+  }
   const dist = Math.hypot(e.clientX-_panStart.x, e.clientY-_panStart.y);
   if (dist > 5) {
     state.cam.x = _panStart.camX + (e.clientX - _panStart.x);
     state.cam.y = _panStart.camY + (e.clientY - _panStart.y);
   }
-  // Ghost preview
-  const tile = screenToTile(e.clientX, e.clientY);
   _ghostTile = tile;
 }
 function onMouseUp(e) {
@@ -128,6 +146,7 @@ function onKeyDown(e) {
   if (e.key === '+' || e.key === '=') adjustZoom(0.1);
   if (e.key === '-')                  adjustZoom(-0.1);
   if (e.key === 'Escape') {
+    if (state.ghostBuilding) { cancelBuild(); return; }
     closeBuildingPanel();
     closeTruckPanel();
     closeExplorePanel();
@@ -139,9 +158,12 @@ function onKeyDown(e) {
 function handleTap(sx, sy) {
   const { col, row } = screenToTile(sx, sy);
 
-  // Construire
+  // Mode construction
   if (state.tool === 'build' && state.selectedBuilding) {
-    placeBuilding(col, row);
+    // Si fantôme déjà posé → ne rien faire (géré par ☑️/❌)
+    if (state.ghostBuilding) return;
+    // Poser le fantôme sur la tuile cliquée
+    placeGhost(col, row);
     return;
   }
 
@@ -243,6 +265,50 @@ function placeBuilding(col, row) {
   updateStats();
   notify('🏗️ ' + def.icon + ' ' + def.name + ' en construction (' + duration + 's)...', 'ok');
 }
+
+// ===== FANTÔME DE CONSTRUCTION =====
+function placeGhost(col, row) {
+  const type  = state.selectedBuilding;
+  const valid = isValidPlacement(col, row, type);
+  state.ghostBuilding = { type, col, row, valid };
+  showConfirmBar();
+}
+
+function showConfirmBar() {
+  const bar = document.getElementById('build-confirm-bar');
+  if (bar) bar.style.display = 'flex';
+  updateConfirmBar();
+}
+
+function updateConfirmBar() {
+  const g   = state.ghostBuilding;
+  if (!g) return;
+  const def = BUILDING_DEF[g.type];
+  const el  = document.getElementById('build-confirm-info');
+  if (el) {
+    const valid = g.valid;
+    el.textContent = (def?.icon ?? '') + ' ' + (def?.name ?? g.type) +
+      ' — ' + (valid ? '✅ Emplacement valide' : '❌ Emplacement invalide');
+    el.style.color = valid ? 'var(--success)' : 'var(--error)';
+  }
+}
+
+function confirmBuild() {
+  const g = state.ghostBuilding;
+  if (!g) return;
+  if (!g.valid) return notify('Emplacement invalide !', 'err');
+  placeBuilding(g.col, g.row);
+  cancelBuild();
+}
+
+function cancelBuild() {
+  state.ghostBuilding = null;
+  const bar = document.getElementById('build-confirm-bar');
+  if (bar) bar.style.display = 'none';
+}
+
+window.confirmBuild = confirmBuild;
+window.cancelBuild  = cancelBuild;
 
 function isValidPlacement(col, row, type) {
   if (col<0||row<0||col>=COLS||row>=ROWS) return false;
