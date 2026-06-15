@@ -425,19 +425,23 @@ function drawGhostPreview(ctx) {
     return;
   }
 
-  // Fantôme de survol (aucun bâtiment posé)
-  if (state.tool !== 'build' || !state.selectedBuilding || !_ghostTile) return;
-  const { col, row } = _ghostTile;
-  const valid = isValidPlacement(col, row, state.selectedBuilding);
-  const s     = tileToScreen(col, row);
-  const { cam } = state;
-  const tw = TW*cam.zoom, th = TH*cam.zoom;
-  ctx.beginPath();
-  ctx.moveTo(s.x,s.y); ctx.lineTo(s.x+tw/2,s.y+th/2);
-  ctx.lineTo(s.x,s.y+th); ctx.lineTo(s.x-tw/2,s.y+th/2);
-  ctx.closePath();
-  ctx.fillStyle = valid ? 'rgba(80,220,80,0.2)' : 'rgba(220,60,60,0.2)';
-  ctx.fill();
+  // Surlignage de survol : juste une bordure dorée sur la tuile
+  if (state.tool === 'build' && state.selectedBuilding && _ghostTile && !state.ghostBuilding) {
+    const { col, row } = _ghostTile;
+    const valid = isValidPlacement(col, row, state.selectedBuilding);
+    const s   = tileToScreen(col, row);
+    const { cam } = state;
+    const tw = TW*cam.zoom, th = TH*cam.zoom;
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y); ctx.lineTo(s.x+tw/2, s.y+th/2);
+    ctx.lineTo(s.x, s.y+th); ctx.lineTo(s.x-tw/2, s.y+th/2);
+    ctx.closePath();
+    ctx.strokeStyle = valid ? 'rgba(240,192,64,0.8)' : 'rgba(220,60,60,0.6)';
+    ctx.lineWidth   = 1.5;
+    ctx.stroke();
+    ctx.fillStyle   = valid ? 'rgba(240,192,64,0.08)' : 'rgba(220,60,60,0.08)';
+    ctx.fill();
+  }
 }
 
 // Flèches d'exploration
