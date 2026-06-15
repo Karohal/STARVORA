@@ -410,14 +410,37 @@ function refreshHdvStockPanel() {
   if (!el) return;
   const stock = state.hdvStock ?? {};
   const total = Object.values(stock).reduce((a,b)=>a+b,0);
+
+  // Bouton info toujours affiché dans le panel HdV
+  const infoBtn = '<button onclick="openHdvInfo()" style="'
+    + 'display:flex;align-items:center;gap:6px;width:100%;margin-bottom:8px;'
+    + 'background:rgba(240,192,64,0.08);border:1px solid var(--border);'
+    + 'color:var(--gold);padding:6px 10px;cursor:pointer;font-size:0.72rem;">'
+    + 'ℹ️ Comment utiliser l'Hôtel de Ville ?</button>';
+
+  el.style.display = 'block';
+
   if (total === 0) {
-    el.style.display = 'none';
+    el.innerHTML = infoBtn;
     return;
   }
-  el.style.display = 'block';
-  el.innerHTML = '<div style="font-size:0.65rem;color:var(--gold);margin-bottom:4px;letter-spacing:0.1em">📦 STOCKS DE DÉPART</div>' +
-    Object.entries(stock)
+
+  el.innerHTML = infoBtn
+    + '<div style="font-size:0.65rem;color:var(--gold);margin-bottom:4px;letter-spacing:0.1em">📦 STOCKS DE DÉPART</div>'
+    + Object.entries(stock)
       .filter(([,q]) => q > 0)
       .map(([r,q]) => `<div class="th-row"><span>${RESOURCE_LABELS[r]??r}</span><span class="th-val">${q}</span></div>`)
       .join('');
 }
+
+// ===== PANEL INFO HdV =====
+function openHdvInfo() {
+  document.getElementById('hdv-info-panel').style.display   = 'block';
+  document.getElementById('hdv-info-overlay').style.display = 'block';
+}
+function closeHdvInfo() {
+  document.getElementById('hdv-info-panel').style.display   = 'none';
+  document.getElementById('hdv-info-overlay').style.display = 'none';
+}
+window.openHdvInfo  = openHdvInfo;
+window.closeHdvInfo = closeHdvInfo;
