@@ -31,12 +31,11 @@ function tileToScreen(col, row) {
 }
 function screenToTile(sx, sy) {
   const { cam } = state;
-  const wx = (sx - cam.x) / cam.zoom;
-  const wy = (sy - cam.y) / cam.zoom;
-  return {
-    col: Math.round((wx / (TW/2) + wy / (TH/2)) / 2),
-    row: Math.round((wy / (TH/2) - wx / (TW/2)) / 2),
-  };
+  const wx  = (sx - cam.x) / cam.zoom;
+  const wy  = (sy - cam.y) / cam.zoom;
+  const col = Math.floor((wx / (TW/2) + wy / (TH/2)) / 2);
+  const row = Math.floor((wy / (TH/2) - wx / (TW/2)) / 2);
+  return { col, row };
 }
 
 // ============================================================
