@@ -444,3 +444,9 @@ function closeHdvInfo() {
 }
 window.openHdvInfo  = openHdvInfo;
 window.closeHdvInfo = closeHdvInfo;
+
+// ===== EXPOSITION GLOBALE =====
+window.refreshBuildPanel    = refreshBuildPanel;
+window.updateStats          = updateStats;
+window.notify               = notify;
+window.refreshHdvStockPanel = refreshHdvStockPanel;
