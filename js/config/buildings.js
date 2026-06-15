@@ -162,7 +162,7 @@ const BUILDING_DEF = {
     cost: 500, color: '#4040a0',
     workers: 8, w: 1, h: 1,
     group: 'factory',
-    description: 'Débloque les usines de traitement via l'arbre de recherche.',
+    description: "Débloque les usines de traitement via l'arbre de recherche.",
     unlockCondition: (s) => Object.values(s.buildings).some(t =>
       Object.keys(WAREHOUSE_TYPES ?? {}).includes(t)
     ),
