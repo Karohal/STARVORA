@@ -388,6 +388,44 @@ function drawTrucks(ctx) {
 // Ghost preview
 let _ghostTile = null;
 function drawGhostPreview(ctx) {
+  // Fantôme posé (en attente de confirmation)
+  if (state.ghostBuilding) {
+    const g     = state.ghostBuilding;
+    const s     = tileToScreen(g.col, g.row);
+    const { cam } = state;
+    const tw    = TW * cam.zoom;
+    const th    = TH * cam.zoom;
+    const def   = BUILDING_DEF[g.type];
+    const bh    = 22 * cam.zoom;
+    const cx    = s.x;
+    const cy    = s.y + th/2;
+    const bw    = tw / 2;
+
+    // Surligner la tuile
+    ctx.beginPath();
+    ctx.moveTo(cx, s.y); ctx.lineTo(cx+tw/2, s.y+th/2);
+    ctx.lineTo(cx, s.y+th); ctx.lineTo(cx-tw/2, s.y+th/2);
+    ctx.closePath();
+    ctx.fillStyle = g.valid ? 'rgba(80,220,80,0.25)' : 'rgba(220,60,60,0.25)';
+    ctx.fill();
+    ctx.strokeStyle = g.valid ? 'rgba(80,220,80,0.8)' : 'rgba(220,60,60,0.8)';
+    ctx.lineWidth = 2; ctx.stroke();
+
+    // Bâtiment fantôme semi-transparent
+    ctx.globalAlpha = 0.5;
+    drawCube(ctx, cx, cy, bw, bh, th, def?.color ?? '#888');
+    ctx.globalAlpha = 1;
+
+    // Icône
+    if (cam.zoom > 0.4 && def) {
+      ctx.font = `${Math.floor(14 * cam.zoom)}px serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(def.icon, cx, cy - bh - 8 * cam.zoom);
+    }
+    return;
+  }
+
+  // Fantôme de survol (aucun bâtiment posé)
   if (state.tool !== 'build' || !state.selectedBuilding || !_ghostTile) return;
   const { col, row } = _ghostTile;
   const valid = isValidPlacement(col, row, state.selectedBuilding);
@@ -398,7 +436,7 @@ function drawGhostPreview(ctx) {
   ctx.moveTo(s.x,s.y); ctx.lineTo(s.x+tw/2,s.y+th/2);
   ctx.lineTo(s.x,s.y+th); ctx.lineTo(s.x-tw/2,s.y+th/2);
   ctx.closePath();
-  ctx.fillStyle = valid ? 'rgba(80,220,80,0.3)' : 'rgba(220,60,60,0.3)';
+  ctx.fillStyle = valid ? 'rgba(80,220,80,0.2)' : 'rgba(220,60,60,0.2)';
   ctx.fill();
 }
 
