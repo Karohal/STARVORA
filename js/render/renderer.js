@@ -127,7 +127,7 @@ function drawBuilding(ctx, col, row, type) {
   const th   = TH * cam.zoom;
   const bh   = (type === 'townhall' ? 36 : type === 'road' ? 4 : 22) * cam.zoom;
   const cx   = s.x;
-  const cy   = s.y + th/2;
+  const cy   = s.y + th/4;
   const bw   = tw / 2;
 
   // Route
@@ -286,7 +286,7 @@ function drawBuildingQueue(ctx) {
     const th   = TH * cam.zoom;
     const bh   = (q.type === 'townhall' ? 36 : q.type === 'road' ? 4 : 22) * cam.zoom;
     const cx   = s.x;
-    const cy   = s.y + th/2;
+    const cy   = s.y + th/4;
     const bw   = tw / 2;
     const r2   = Math.round(200 * (1-prog));
     const g2   = Math.round(180 * prog);
@@ -406,7 +406,7 @@ function drawGhostPreview(ctx) {
     const def   = BUILDING_DEF[g.type];
     const bh    = 22 * cam.zoom;
     const cx    = s.x;
-    const cy   = s.y + th/2;
+    const cy   = s.y + th/4;
     const bw    = tw / 2;
 
     // Surligner la tuile
