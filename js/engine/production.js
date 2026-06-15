@@ -200,3 +200,9 @@ function getLoadableResource(stock, truckType) {
   }
   return null;
 }
+
+window.productionTick    = productionTick;
+window.updateProductionUI = updateProductionUI;
+window.getLoadableResource = getLoadableResource;
+window.internalCapacity  = internalCapacity;
+window.warehouseCapacity = warehouseCapacity;
