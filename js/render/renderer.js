@@ -127,7 +127,7 @@ function drawBuilding(ctx, col, row, type) {
   const th   = TH * cam.zoom;
   const bh   = (type === 'townhall' ? 36 : type === 'road' ? 4 : 22) * cam.zoom;
   const cx   = s.x;
-  const cy   = s.y + th/2;
+  const cy   = s.y + th - th/4;  // base au coin bas du losange
   const bw   = tw / 2;
 
   // Route
@@ -146,7 +146,7 @@ function drawBuilding(ctx, col, row, type) {
   // Citerne = cylindre
   if (type === 'warehouse_liquid') {
     drawCylinder(ctx, cx, cy, tw/3.5, th/7, bh, def.color, cam);
-    drawBuildingLabel(ctx, cx, cy, bh, th/7, col, row, def, cam);
+    drawBuildingLabel(ctx, cx, cy, bh, th/7, col, row, def, cam);  
     return;
   }
 
@@ -276,7 +276,7 @@ function drawBuildingQueue(ctx) {
     const th   = TH * cam.zoom;
     const bh   = (q.type === 'townhall' ? 36 : q.type === 'road' ? 4 : 22) * cam.zoom;
     const cx   = s.x;
-    const cy   = s.y + th/2;
+    const cy   = s.y + th - th/4;  // base au coin bas du losange
     const bw   = tw / 2;
     const r2   = Math.round(200 * (1-prog));
     const g2   = Math.round(180 * prog);
@@ -396,7 +396,7 @@ function drawGhostPreview(ctx) {
     const def   = BUILDING_DEF[g.type];
     const bh    = 22 * cam.zoom;
     const cx    = s.x;
-    const cy    = s.y + th/2;
+    const cy    = s.y + th - th/4;  // base au coin bas du losange
     const bw    = tw / 2;
 
     // Surligner la tuile
