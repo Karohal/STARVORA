@@ -100,8 +100,11 @@ function natalityTick() {
     const adults    = residents.filter(r => r.type === 'adult');
     const count     = residents.length;
 
+    // Bonus natalité de la maison (+0.1% par niveau)
+    const houseLevel = state.buildingLevels[key] ?? 0;
+    const houseBonus = houseLevel * 0.001;
     // Conditions : 2+ adultes, place disponible, tirage aléatoire
-    if (adults.length >= 2 && count < cap && Math.random() < birthRate) {
+    if (adults.length >= 2 && count < cap && Math.random() < birthRate + houseBonus) {
       residents.push({ type: 'child', age: 0 });
       state.population++;
       notify('👶 Naissance dans une résidence !', 'ok');
