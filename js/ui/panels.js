@@ -367,7 +367,8 @@ function refreshHousePanel(key) {
       `<div class="th-row"><span>👶 Enfants</span><span class="th-val">${children}</span></div>` +
       `<div class="th-row"><span>👷 Travailleurs</span><span class="th-val">${assigned}/${adults}</span></div>` +
       `<div class="th-row"><span>😴 Sans travail</span><span class="th-val">${Math.max(0,adults-assigned)}</span></div>` +
-      `<div class="th-row"><span>🍼 Taux natalité</span><span class="th-val">${Math.round(getBirthRate()*100)}%</span></div>`;
+      `<div class="th-row"><span>🍼 Taux natalité</span><span class="th-val">${Math.round(getBirthRate()*100)}%</span></div>` +
+      `<div class="th-row"><span>➕ Bonus maison lvl</span><span class="th-val">+${((state.buildingLevels[key]??0)*0.1).toFixed(1)}%</span></div>`;
     el.style.color = 'var(--text)';
     el.style.textAlign = 'left';
   }
