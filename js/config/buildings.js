@@ -157,6 +157,16 @@ const BUILDING_DEF = {
     description: 'Traite l\'eau brute → eau potable, calcaire.',
     unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'well'),
   },
+  research_center: {
+    icon: '🔬', name: 'Centre de Recherche Industriel',
+    cost: 500, color: '#4040a0',
+    workers: 8, w: 1, h: 1,
+    group: 'factory',
+    description: 'Débloque les usines de traitement via l'arbre de recherche.',
+    unlockCondition: (s) => Object.values(s.buildings).some(t =>
+      Object.keys(WAREHOUSE_TYPES ?? {}).includes(t)
+    ),
+  },
   vehiclefactory: {
     icon: '🏗️', name: 'Usine de Véhicules',
     cost: 300, color: '#505050',
@@ -190,7 +200,7 @@ const BUILD_GROUPS = [
   {
     id: 'factory',
     label: '🏭 Usines',
-    types: ['sorting', 'crusher', 'refinery', 'water_plant', 'vehiclefactory'],
+    types: ['research_center', 'sorting', 'crusher', 'refinery', 'water_plant', 'vehiclefactory'],
   },
 ];
 
@@ -202,6 +212,7 @@ const BUILD_TIME = {
   house:        10,
   road:         3,
   hospital:     30,
+  research_center: 45,
   stargate:     60,
   mine:         15,
   quarry:       15,
@@ -222,7 +233,7 @@ const BUILD_TIME = {
 // COÛT DE NIVEAU UP (base × 1.2^niveau)
 // ============================================================
 const LEVELUP_BASE_COST = {
-  townhall: 50, house: 30, hospital: 80,
+  townhall: 50, house: 30, hospital: 80, research_center: 120,
   mine: 80, quarry: 60, well: 40,
   road: 5, stargate: 200,
   sorting: 100, crusher: 100, refinery: 150, water_plant: 120,
@@ -233,7 +244,7 @@ const LEVELUP_BASE_COST = {
 
 // Workers de base par bâtiment
 const BASE_WORKERS = {
-  townhall: 2, house: 0, road: 0, hospital: 6, stargate: 2,
+  townhall: 2, house: 0, road: 0, hospital: 6, research_center: 8, stargate: 2,
   mine: 4, quarry: 3, well: 2,
   sorting: 5, crusher: 4, refinery: 6, water_plant: 4,
   warehouse: 2, warehouse_liquid: 2, warehouse_waste: 2,
