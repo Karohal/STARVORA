@@ -158,6 +158,15 @@ function onKeyDown(e) {
 function handleTap(sx, sy) {
   const { col, row } = screenToTile(sx, sy);
 
+  // Mode destruction
+  if (state.tool === 'destroy') {
+    const key = `${col},${row}`;
+    if (state.buildings[key]) {
+      showDestroyConfirm(key);
+    }
+    return;
+  }
+
   // Mode construction
   if (state.tool === 'build' && state.selectedBuilding) {
     // Si fantôme déjà posé → ne rien faire (géré par ☑️/❌)
@@ -321,3 +330,117 @@ function isValidPlacement(col, row, type) {
   }
   return true;
 }
+
+// ===== DESTRUCTION =====
+let _destroyKey = null;
+
+function showDestroyConfirm(key) {
+  _destroyKey = key;
+  const type  = state.buildings[key];
+  const def   = BUILDING_DEF[type];
+  const level = state.buildingLevels[key] ?? 0;
+  const refund = Math.round((LEVELUP_BASE_COST[type] ?? 0) * 0.5);
+
+  document.getElementById('destroy-info').innerHTML =
+    `${def?.icon ?? ''} ${def?.name ?? type} (Niv.${level})<br>` +
+    `Remboursement matériaux : ~${refund} 💰 équivalent`;
+
+  document.getElementById('destroy-confirm').style.display = 'block';
+  document.getElementById('destroy-overlay').style.display = 'block';
+}
+
+function cancelDestroy() {
+  _destroyKey = null;
+  document.getElementById('destroy-confirm').style.display = 'none';
+  document.getElementById('destroy-overlay').style.display = 'none';
+}
+
+function confirmDestroy() {
+  if (!_destroyKey) return;
+  const key  = _destroyKey;
+  const type = state.buildings[key];
+  const def  = BUILDING_DEF[type];
+  const level = state.buildingLevels[key] ?? 0;
+
+  // Rembourser 50% matériaux dans stock HdV
+  const refundMat = getDestroyRefund(type, level);
+  addToHdvStock(refundMat);
+
+  // Libérer les travailleurs
+  const assigned = state.assignedWorkers[key] ?? 0;
+  delete state.assignedWorkers[key];
+
+  // Libérer les résidents si résidence
+  if (type === 'house') {
+    const occ = state.houseOccupants[key];
+    if (occ?.residents) {
+      // Les résidents deviennent sans-abris
+      occ.residents.forEach(r => {
+        // Chercher une autre maison
+        let moved = false;
+        for (const [k2, t2] of Object.entries(state.buildings)) {
+          if (t2 !== 'house' || k2 === key) continue;
+          const cap2 = houseCapacity(state.buildingLevels[k2] ?? 0);
+          const occ2 = state.houseOccupants[k2];
+          if (occ2?.residents && occ2.residents.length < cap2) {
+            occ2.residents.push(r);
+            moved = true;
+            break;
+          }
+        }
+        if (!moved) state.homeless++;
+      });
+    }
+    delete state.houseOccupants[key];
+  }
+
+  // Supprimer le bâtiment
+  delete state.buildings[key];
+  delete state.buildingLevels[key];
+  delete state.internalStock[key];
+  delete state.warehouseStock[key];
+
+  updatePopulation();
+  updateAvailableWorkers();
+  updateStats();
+  refreshBuildPanel();
+  closeBuildingPanel();
+  cancelDestroy();
+  notify(`🗑️ ${def?.icon ?? ''} ${def?.name ?? type} détruit !`, 'ok');
+}
+
+function getDestroyRefund(type, level) {
+  // 50% des ressources de construction
+  const base = {
+    townhall: { stone: 10, iron: 5 },
+    house:    { stone: 5,  iron: 2 },
+    mine:     { stone: 8,  iron: 5 },
+    quarry:   { stone: 6,  iron: 3 },
+    well:     { stone: 4,  iron: 2 },
+    hospital: { stone: 10, iron: 8 },
+    research_center: { stone: 15, iron: 12 },
+    sorting:  { stone: 10, iron: 8 },
+    warehouse:{ stone: 8,  iron: 4 },
+    road:     { stone: 2 },
+  };
+  const mat = base[type] ?? { stone: 5 };
+  const mult = 1 + level * 0.2; // niveaux augmentent le remboursement
+  const result = {};
+  for (const [r, q] of Object.entries(mat)) {
+    result[r] = Math.floor(q * mult * 0.5);
+  }
+  return result;
+}
+
+function addToHdvStock(materials) {
+  const hdvKey = Object.entries(state.buildings).find(([,t]) => t === 'townhall')?.[0];
+  if (!hdvKey) return;
+  if (!state.hdvStock) state.hdvStock = {};
+  for (const [res, qty] of Object.entries(materials)) {
+    state.hdvStock[res] = (state.hdvStock[res] ?? 0) + qty;
+  }
+}
+
+window.showDestroyConfirm = showDestroyConfirm;
+window.cancelDestroy      = cancelDestroy;
+window.confirmDestroy     = confirmDestroy;
