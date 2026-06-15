@@ -47,6 +47,12 @@ const state = {
 
   // HdV
   hasTownhall: false,
+  hdvStock: {
+    stone: 30,
+    iron:  20,
+    coal:  20,
+    water: 10,
+  },
 
   // Caméra
   cam: { x: 0, y: 0, zoom: 1 },
