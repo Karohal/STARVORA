@@ -243,3 +243,5 @@ window.updatePopulation      = updatePopulation;
 window.updateAvailableWorkers = updateAvailableWorkers;
 window.houseCapacity         = houseCapacity;
 window.getBirthRate          = getBirthRate;
+
+window.startEconomyTick = startEconomyTick;
