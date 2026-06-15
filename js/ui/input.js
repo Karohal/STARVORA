@@ -449,3 +449,5 @@ function addToHdvStock(materials) {
 window.showDestroyConfirm = showDestroyConfirm;
 window.cancelDestroy      = cancelDestroy;
 window.confirmDestroy     = confirmDestroy;
+
+window.setupInputEvents = setupInputEvents;
