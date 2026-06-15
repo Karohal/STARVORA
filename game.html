@@ -211,6 +211,22 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   </div>
 </div>
 
+<!-- POPUP DESTRUCTION -->
+<div id="destroy-confirm" style="
+  display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  background:rgba(5,5,15,0.97); border:1px solid var(--error);
+  padding:16px; z-index:50; width:min(300px,90vw); text-align:center;
+">
+  <div style="font-size:0.85rem;color:var(--error);margin-bottom:8px">🗑️ Détruire ce bâtiment ?</div>
+  <div id="destroy-info" style="font-size:0.72rem;color:var(--muted);margin-bottom:12px"></div>
+  <div style="font-size:0.68rem;color:var(--gold);margin-bottom:12px">50% des matériaux retournés au HdV</div>
+  <div style="display:flex;gap:8px;justify-content:center">
+    <button onclick="cancelDestroy()" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:6px 16px;cursor:pointer">❌ Annuler</button>
+    <button onclick="confirmDestroy()" style="background:rgba(200,50,50,0.2);border:1px solid var(--error);color:var(--error);padding:6px 16px;cursor:pointer">🗑️ Confirmer</button>
+  </div>
+</div>
+<div id="destroy-overlay" onclick="cancelDestroy()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:49"></div>
+
 <!-- SAVE INDICATOR -->
 <div id="save-indicator">💾 Sauvegardé !</div>
 
@@ -260,6 +276,7 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
       <div class="build-item" data-type="crusher"       onclick="selectBuilding('crusher',this)"><div class="b-icon">🪨</div><div>Concasseur</div><div class="b-cost">250 💰</div></div>
       <div class="build-item" data-type="refinery"      onclick="selectBuilding('refinery',this)"><div class="b-icon">🏭</div><div>Raffinerie</div><div class="b-cost">350 💰</div></div>
       <div class="build-item" data-type="water_plant"   onclick="selectBuilding('water_plant',this)"><div class="b-icon">💧</div><div>Usine Eau</div><div class="b-cost">300 💰</div></div>
+      <div class="build-item" data-type="research_center" onclick="selectBuilding('research_center',this)"><div class="b-icon">🔬</div><div>Centre Recherche</div><div class="b-cost">500 💰</div></div>
       <div class="build-item" data-type="vehiclefactory" onclick="selectBuilding('vehiclefactory',this)"><div class="b-icon">🏗️</div><div>Usine Véhicules</div><div class="b-cost">300 💰</div></div>
     </div>
   </div>
@@ -315,6 +332,8 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
   <!-- Panel résidence / hôpital -->
   <div id="bp-house-section" style="display:none;margin-bottom:4px"></div>
+  <!-- Stock HdV -->
+  <div id="bp-hdv-stock" style="display:none;margin-bottom:4px"></div>
 
   <!-- Level up -->
   <button class="assign-btn" id="bp-levelup-btn" data-key="" data-type="" onclick="buildingLevelUp()" style="margin-top:6px;border-color:var(--gold);color:var(--gold)">
@@ -340,8 +359,9 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- BOTTOM BAR -->
 <div id="bottom-bar">
-  <button class="tool-btn active" id="tool-select" onclick="setTool('select')">🔍 Sélect.</button>
-  <button class="tool-btn"        id="tool-build"  onclick="setTool('build')">🏗️ Construire</button>
+  <button class="tool-btn active" id="tool-select"   onclick="setTool('select')">🔍 Sélect.</button>
+  <button class="tool-btn"        id="tool-build"    onclick="setTool('build')">🏗️ Construire</button>
+  <button class="tool-btn"        id="tool-destroy"  onclick="setTool('destroy')" style="color:var(--error)">🗑️ Détruire</button>
   <button class="zoom-btn" onclick="adjustZoom(0.2)">+</button>
   <button class="zoom-btn" onclick="adjustZoom(-0.2)">−</button>
 </div>
