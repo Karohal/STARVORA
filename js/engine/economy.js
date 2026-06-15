@@ -238,3 +238,8 @@ function updateStats() {
   const w = document.getElementById('hud-workers');
   if (w) w.textContent = '👷 ' + state.availableWorkers;
 }
+
+window.updatePopulation      = updatePopulation;
+window.updateAvailableWorkers = updateAvailableWorkers;
+window.houseCapacity         = houseCapacity;
+window.getBirthRate          = getBirthRate;
