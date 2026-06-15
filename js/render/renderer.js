@@ -459,3 +459,7 @@ function drawExploreArrows() {
   // Les flèches sont des éléments HTML, pas canvas
   updateExploreArrows();
 }
+
+window.resizeCanvas  = resizeCanvas;
+window.centerCamera  = centerCamera;
+window.drawFrame_start = drawFrame_start;
