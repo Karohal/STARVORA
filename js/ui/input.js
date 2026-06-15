@@ -92,34 +92,33 @@ function getPinchDist(e) {
 
 // ===== SOURIS =====
 let _mouseDown = false;
+let _isPanning = false;
 function onMouseDown(e) {
   _mouseDown = true;
+  _isPanning = false;
   _panStart  = { x: e.clientX, y: e.clientY, camX: state.cam.x, camY: state.cam.y };
 }
 function onMouseMove(e) {
   const tile = screenToTile(e.clientX, e.clientY);
-  if (!_mouseDown || !_panStart) {
-    // Mettre à jour le fantôme mobile si posé
-    if (state.ghostBuilding) {
-      state.ghostBuilding.col = tile.col;
-      state.ghostBuilding.row = tile.row;
-      state.ghostBuilding.valid = isValidPlacement(tile.col, tile.row, state.ghostBuilding.type);
-      updateConfirmBar();
+
+  if (_mouseDown && _panStart) {
+    const dist = Math.hypot(e.clientX-_panStart.x, e.clientY-_panStart.y);
+    if (dist > 5) {
+      state.cam.x = _panStart.camX + (e.clientX - _panStart.x);
+      state.cam.y = _panStart.camY + (e.clientY - _panStart.y);
+      _isPanning = true;
     }
-    _ghostTile = tile;
-    return;
   }
-  const dist = Math.hypot(e.clientX-_panStart.x, e.clientY-_panStart.y);
-  if (dist > 5) {
-    state.cam.x = _panStart.camX + (e.clientX - _panStart.x);
-    state.cam.y = _panStart.camY + (e.clientY - _panStart.y);
-  }
+
+  // Surlignage de survol uniquement (pas de fantôme posé)
   _ghostTile = tile;
 }
 function onMouseUp(e) {
-  const dist = _panStart ? Math.hypot(e.clientX-_panStart.x, e.clientY-_panStart.y) : 0;
-  if (dist < 5) handleTap(e.clientX, e.clientY);
+  if (!_isPanning) {
+    handleTap(e.clientX, e.clientY);
+  }
   _mouseDown = false;
+  _isPanning = false;
   _panStart  = null;
 }
 function onWheel(e) {
@@ -169,10 +168,16 @@ function handleTap(sx, sy) {
 
   // Mode construction
   if (state.tool === 'build' && state.selectedBuilding) {
-    // Si fantôme déjà posé → ne rien faire (géré par ☑️/❌)
-    if (state.ghostBuilding) return;
-    // Poser le fantôme sur la tuile cliquée
-    placeGhost(col, row);
+    if (state.ghostBuilding) {
+      // Déplacer le fantôme à la nouvelle position
+      state.ghostBuilding.col   = col;
+      state.ghostBuilding.row   = row;
+      state.ghostBuilding.valid = isValidPlacement(col, row, state.ghostBuilding.type);
+      updateConfirmBar();
+    } else {
+      // Poser le fantôme sur la tuile cliquée
+      placeGhost(col, row);
+    }
     return;
   }
 
