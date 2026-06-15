@@ -111,6 +111,8 @@ function openBuildingPanel(key, type) {
   if (isFactory)   refreshFactoryPanel(key);
   if (isWarehouse) refreshWarehousePanel(key, type);
   if (hasWorkers)  refreshWorkersPanel(key, type);
+  if (type === 'house')    refreshHousePanel(key);
+  if (type === 'hospital') refreshHospitalPanel(key);
 
   // Camions en attente
   const waitingEl = document.getElementById('bp-waiting-trucks');
@@ -344,3 +346,47 @@ function toggleSection(header) {
   if (content) content.style.display = content.style.display === 'none' ? 'block' : 'none';
 }
 window.toggleSection = toggleSection;
+
+// ===== PANEL RÉSIDENCE =====
+function refreshHousePanel(key) {
+  const level     = state.buildingLevels[key] ?? 0;
+  const cap       = houseCapacity(level);
+  const occ       = state.houseOccupants[key];
+  const residents = occ?.residents ?? [];
+  const adults    = residents.filter(r => r.type === 'adult').length;
+  const children  = residents.filter(r => r.type === 'child').length;
+  const total     = residents.length;
+  const totalAssigned = Object.values(state.assignedWorkers).reduce((a,b)=>a+b,0);
+  const assigned  = state.assignedWorkers[key] ?? 0;
+
+  const el = document.getElementById('bp-prod-status');
+  if (el) {
+    el.innerHTML =
+      `<div class="th-row"><span>👥 Habitants</span><span class="th-val">${total}/${cap}</span></div>` +
+      `<div class="th-row"><span>👨 Adultes</span><span class="th-val">${adults}</span></div>` +
+      `<div class="th-row"><span>👶 Enfants</span><span class="th-val">${children}</span></div>` +
+      `<div class="th-row"><span>👷 Travailleurs</span><span class="th-val">${assigned}/${adults}</span></div>` +
+      `<div class="th-row"><span>😴 Sans travail</span><span class="th-val">${Math.max(0,adults-assigned)}</span></div>` +
+      `<div class="th-row"><span>🍼 Taux natalité</span><span class="th-val">${Math.round(getBirthRate()*100)}%</span></div>`;
+    el.style.color = 'var(--text)';
+    el.style.textAlign = 'left';
+  }
+}
+
+// ===== PANEL HÔPITAL =====
+function refreshHospitalPanel(key) {
+  const level   = state.buildingLevels[key] ?? 0;
+  const workers = state.assignedWorkers[key] ?? 0;
+  const bonus   = workers > 0 ? (0.02 + level * 0.005) : 0;
+  const total   = Math.round(getBirthRate() * 100);
+
+  const el = document.getElementById('bp-prod-status');
+  if (el) {
+    el.innerHTML =
+      `<div class="th-row"><span>🍼 Taux natalité global</span><span class="th-val">${total}%</span></div>` +
+      `<div class="th-row"><span>➕ Bonus cet hôpital</span><span class="th-val">+${Math.round(bonus*100)}%</span></div>` +
+      `<div class="th-row" style="font-size:0.65rem;color:var(--muted)"><span>Nécessite des travailleurs assignés</span></div>`;
+    el.style.color = 'var(--text)';
+    el.style.textAlign = 'left';
+  }
+}
