@@ -123,21 +123,20 @@ function drawBuilding(ctx, col, row, type) {
 
   const { cam } = state;
   const s    = tileToScreen(col, row);
-  const elev = tile.elevation * 14 * cam.zoom;
   const tw   = TW * cam.zoom;
   const th   = TH * cam.zoom;
   const bh   = (type === 'townhall' ? 36 : type === 'road' ? 4 : 22) * cam.zoom;
   const cx   = s.x;
-  const cy   = s.y + th/2 - elev;
+  const cy   = s.y + th/2;
   const bw   = tw / 2;
 
   // Route
   if (type === 'road') {
     ctx.beginPath();
-    ctx.moveTo(cx, cy - th/4);
-    ctx.lineTo(cx + bw/2, cy);
-    ctx.lineTo(cx, cy + th/4);
-    ctx.lineTo(cx - bw/2, cy);
+    ctx.moveTo(s.x,        s.y);
+    ctx.lineTo(s.x + tw/2, s.y + th/2);
+    ctx.lineTo(s.x,        s.y + th);
+    ctx.lineTo(s.x - tw/2, s.y + th/2);
     ctx.closePath();
     ctx.fillStyle = '#605040';
     ctx.fill();
@@ -273,12 +272,11 @@ function drawBuildingQueue(ctx) {
     const s    = tileToScreen(q.col, q.row);
     const def  = BUILDING_DEF[q.type];
     const prog = q.progress ?? 0;
-    const elev = tile.elevation * 14 * cam.zoom;
     const tw   = TW * cam.zoom;
     const th   = TH * cam.zoom;
     const bh   = (q.type === 'townhall' ? 36 : q.type === 'road' ? 4 : 22) * cam.zoom;
     const cx   = s.x;
-    const cy   = s.y + th/2 - elev;
+    const cy   = s.y + th/2;
     const bw   = tw / 2;
     const r2   = Math.round(200 * (1-prog));
     const g2   = Math.round(180 * prog);
