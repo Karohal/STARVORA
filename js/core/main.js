@@ -4,7 +4,6 @@
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Erreurs globales
   window.onerror = function(msg, src, line, col, err) {
     showError('JS: ' + msg + ' | src:' + src + ' L' + line + ':' + col + (err ? ' | ' + err.stack : ''));
     return false;
@@ -18,29 +17,27 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!hasSave) initNewGame();
 
   // Canvas APRÈS init
-  window.resizeCanvas?.();
+  resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
-
-  // Centrer sur la map de départ
-  if (!hasSave) window.centerCamera?.();
+  if (!hasSave) centerCamera();
 
   // UI
-  window.updateStats?.();
-  window.updatePopulation?.();
-  window.updateAvailableWorkers?.();
-  window.refreshBuildPanel?.();
-  window.updateExploreArrows?.();
+  updateStats();
+  updatePopulation();
+  updateAvailableWorkers();
+  refreshBuildPanel();
+  updateExploreArrows();
 
   // Ticks
-  window.startEconomyTick?.();
+  startEconomyTick();
   setInterval(productionTick, 60000);
   setInterval(() => { saveGame(); showSaveIndicator(); }, 60000);
 
   // Événements
-  window.setupInputEvents?.();
+  setupInputEvents();
 
   // Boucle de rendu
-  window.drawFrame_start?.();
+  drawFrame_start();
 });
 
 function initNewGame() {
@@ -55,7 +52,7 @@ function initNewGame() {
 // ============================================================
 // BOUCLE PRINCIPALE
 // ============================================================
-function window.drawFrame_start?.() {
+function drawFrame_start() {
   requestAnimationFrame(ts => {
     updateTrucks(ts);
     updateBuildingQueue();
@@ -116,16 +113,15 @@ function finalizeBuild(key, type, col, row) {
   }
   if (type === 'townhall') {
     state.hasTownhall = true;
-    window.refreshBuildPanel?.();
-    // Ouvrir le panel info au premier placement
-    setTimeout(() => window.openHdvInfo?.(), 500);
+    refreshBuildPanel();
+    setTimeout(() => openHdvInfo(), 500);
   }
-  if (type === 'house') window.scheduleHousing?.(key, type);
+  if (type === 'house') scheduleHousing(key, type);
 
-  window.updateAvailableWorkers?.();
-  window.updateStats?.();
-  window.refreshBuildPanel?.();
-  window.notify?.('✅ ' + (BUILDING_DEF[type]?.icon ?? '') + ' ' + (BUILDING_DEF[type]?.name ?? type) + ' construit !', 'ok');
+  updateAvailableWorkers();
+  updateStats();
+  refreshBuildPanel();
+  notify('✅ ' + (BUILDING_DEF[type]?.icon ?? '') + ' ' + (BUILDING_DEF[type]?.name ?? type) + ' construit !', 'ok');
 }
 
 function showError(msg) {
@@ -136,26 +132,33 @@ function showError(msg) {
   document.body.appendChild(div);
 }
 
-// Exposer les fonctions globales
-window.setTool         = setTool;
-window.adjustZoom      = adjustZoom;
-window.selectBuilding  = selectBuilding;
-window.toggleSection   = toggleSection;
-window.buildingLevelUp = buildingLevelUp;
-window.openTruckPanel  = openTruckPanel;
-window.closeTruckPanel = closeTruckPanel;
+// Exposer sur window
+window.setTool            = setTool;
+window.adjustZoom         = adjustZoom;
+window.selectBuilding     = selectBuilding;
+window.toggleSection      = toggleSection;
+window.buildingLevelUp    = buildingLevelUp;
+window.openTruckPanel     = openTruckPanel;
+window.closeTruckPanel    = closeTruckPanel;
 window.openBuildingPanel  = openBuildingPanel;
 window.closeBuildingPanel = closeBuildingPanel;
-window.removeStop      = removeStop;
-window.confirmStop     = confirmStop;
-window.cancelStop      = cancelStop;
-window.deleteTruck     = deleteTruck;
-window.buildTruck      = buildTruck;
-window.assignWorker    = assignWorker;
-window.saveGame        = saveGame;
-window.resetGame       = resetGame;
-window.showSaveIndicator = showSaveIndicator;
-window.openExplorePanel  = openExplorePanel;
-window.closeExplorePanel = closeExplorePanel;
-window.navigateToMap     = navigateToMap;
-window.startExploration  = startExploration;
+window.removeStop         = removeStop;
+window.confirmStop        = confirmStop;
+window.cancelStop         = cancelStop;
+window.deleteTruck        = deleteTruck;
+window.buildTruck         = buildTruck;
+window.assignWorker       = assignWorker;
+window.saveGame           = saveGame;
+window.resetGame          = resetGame;
+window.showSaveIndicator  = showSaveIndicator;
+window.openExplorePanel   = openExplorePanel;
+window.closeExplorePanel  = closeExplorePanel;
+window.navigateToMap      = navigateToMap;
+window.startExploration   = startExploration;
+window.openHdvInfo        = openHdvInfo;
+window.closeHdvInfo       = closeHdvInfo;
+window.confirmBuild       = confirmBuild;
+window.cancelBuild        = cancelBuild;
+window.showDestroyConfirm = showDestroyConfirm;
+window.cancelDestroy      = cancelDestroy;
+window.confirmDestroy     = confirmDestroy;
