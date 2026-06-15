@@ -117,6 +117,8 @@ function finalizeBuild(key, type, col, row) {
   if (type === 'townhall') {
     state.hasTownhall = true;
     refreshBuildPanel();
+    // Ouvrir le panel info au premier placement
+    setTimeout(() => openHdvInfo(), 500);
   }
   if (type === 'house') scheduleHousing(key, type);
 
