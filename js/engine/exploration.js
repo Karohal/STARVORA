@@ -211,3 +211,5 @@ function updateExploreArrows() {
     }
   });
 }
+
+window.updateExploreArrows = updateExploreArrows;
