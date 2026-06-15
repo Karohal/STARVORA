@@ -127,7 +127,7 @@ function drawBuilding(ctx, col, row, type) {
   const th   = TH * cam.zoom;
   const bh   = (type === 'townhall' ? 36 : type === 'road' ? 4 : 22) * cam.zoom;
   const cx   = s.x;
-  const cy   = s.y + th - th/4;  // base au coin bas du losange
+  const cy   = s.y + th/2;  // centre du losange
   const bw   = tw / 2;
 
   // Route
@@ -163,33 +163,43 @@ function drawBuilding(ctx, col, row, type) {
 }
 
 function drawCube(ctx, cx, cy, bw, bh, th, color) {
+  // cy = centre du losange (s.y + th/2)
+  // Base du cube = cy + th/4 (coin bas-centre du losange)
+  // Les 4 coins de la base iso :
+  //   bas-gauche : cx-bw/2, cy
+  //   bas-droite : cx+bw/2, cy
+  //   bas-centre : cx, cy+th/4
+  //   haut-centre: cx, cy-th/4  (pas utilisé)
+
   // Face gauche
   ctx.beginPath();
   ctx.moveTo(cx - bw/2, cy);
-  ctx.lineTo(cx,        cy + th/4);
-  ctx.lineTo(cx,        cy + th/4 - bh);
-  ctx.lineTo(cx - bw/2, cy - bh);
+  ctx.lineTo(cx,         cy + th/4);
+  ctx.lineTo(cx,         cy + th/4 - bh);
+  ctx.lineTo(cx - bw/2,  cy - bh);
   ctx.closePath();
   ctx.fillStyle = shadeColor(color, -30);
   ctx.fill();
   ctx.strokeStyle = 'rgba(0,0,0,0.2)';
   ctx.lineWidth = 0.5;
   ctx.stroke();
+
   // Face droite
   ctx.beginPath();
-  ctx.moveTo(cx,        cy + th/4);
-  ctx.lineTo(cx + bw/2, cy);
-  ctx.lineTo(cx + bw/2, cy - bh);
-  ctx.lineTo(cx,        cy + th/4 - bh);
+  ctx.moveTo(cx,         cy + th/4);
+  ctx.lineTo(cx + bw/2,  cy);
+  ctx.lineTo(cx + bw/2,  cy - bh);
+  ctx.lineTo(cx,         cy + th/4 - bh);
   ctx.closePath();
   ctx.fillStyle = shadeColor(color, -15);
   ctx.fill(); ctx.stroke();
-  // Toit
+
+  // Toit (losange)
   ctx.beginPath();
-  ctx.moveTo(cx,        cy - bh - th/4);
-  ctx.lineTo(cx + bw/2, cy - bh);
-  ctx.lineTo(cx,        cy + th/4 - bh);
-  ctx.lineTo(cx - bw/2, cy - bh);
+  ctx.moveTo(cx,         cy - bh - th/4);
+  ctx.lineTo(cx + bw/2,  cy - bh);
+  ctx.lineTo(cx,         cy + th/4 - bh);
+  ctx.lineTo(cx - bw/2,  cy - bh);
   ctx.closePath();
   ctx.fillStyle = color;
   ctx.fill(); ctx.stroke();
@@ -276,7 +286,7 @@ function drawBuildingQueue(ctx) {
     const th   = TH * cam.zoom;
     const bh   = (q.type === 'townhall' ? 36 : q.type === 'road' ? 4 : 22) * cam.zoom;
     const cx   = s.x;
-    const cy   = s.y + th - th/4;  // base au coin bas du losange
+    const cy   = s.y + th/2;  // centre du losange
     const bw   = tw / 2;
     const r2   = Math.round(200 * (1-prog));
     const g2   = Math.round(180 * prog);
@@ -396,13 +406,15 @@ function drawGhostPreview(ctx) {
     const def   = BUILDING_DEF[g.type];
     const bh    = 22 * cam.zoom;
     const cx    = s.x;
-    const cy    = s.y + th - th/4;  // base au coin bas du losange
+    const cy    = s.y + th/2;  // centre du losange
     const bw    = tw / 2;
 
     // Surligner la tuile
     ctx.beginPath();
-    ctx.moveTo(cx, s.y); ctx.lineTo(cx+tw/2, s.y+th/2);
-    ctx.lineTo(cx, s.y+th); ctx.lineTo(cx-tw/2, s.y+th/2);
+    ctx.moveTo(s.x,         s.y);
+    ctx.lineTo(s.x + tw/2,  s.y + th/2);
+    ctx.lineTo(s.x,         s.y + th);
+    ctx.lineTo(s.x - tw/2,  s.y + th/2);
     ctx.closePath();
     ctx.fillStyle = g.valid ? 'rgba(80,220,80,0.25)' : 'rgba(220,60,60,0.25)';
     ctx.fill();
