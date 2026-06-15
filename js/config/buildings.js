@@ -22,6 +22,15 @@ const BUILDING_DEF = {
     description: 'Loge 4 habitants. +2 par niveau tous les 5 niveaux.',
     unlockCondition: (s) => s.hasTownhall,
   },
+  hospital: {
+    icon: '🏥', name: 'Hôpital',
+    cost: 400, color: '#c04040',
+    workers: 6, w: 1, h: 1,
+    group: 'infrastructure',
+    description: 'Augmente le taux de natalité. +2% par hôpital, +0.5% par niveau.',
+    unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'house') ||
+                            Object.values(s.buildingQueue ?? {}).some(q => q.type === 'house'),
+  },
   road: {
     icon: '🛣️', name: 'Route',
     cost: 10, color: '#605040',
@@ -166,7 +175,7 @@ const BUILD_GROUPS = [
   {
     id: 'infrastructure',
     label: '🏛️ Infrastructure',
-    types: ['townhall', 'house', 'road', 'stargate'],
+    types: ['townhall', 'house', 'road', 'hospital', 'stargate'],
   },
   {
     id: 'extraction',
@@ -192,6 +201,7 @@ const BUILD_TIME = {
   townhall:     5,
   house:        10,
   road:         3,
+  hospital:     30,
   stargate:     60,
   mine:         15,
   quarry:       15,
@@ -212,7 +222,7 @@ const BUILD_TIME = {
 // COÛT DE NIVEAU UP (base × 1.2^niveau)
 // ============================================================
 const LEVELUP_BASE_COST = {
-  townhall: 50, house: 30,
+  townhall: 50, house: 30, hospital: 80,
   mine: 80, quarry: 60, well: 40,
   road: 5, stargate: 200,
   sorting: 100, crusher: 100, refinery: 150, water_plant: 120,
@@ -223,7 +233,7 @@ const LEVELUP_BASE_COST = {
 
 // Workers de base par bâtiment
 const BASE_WORKERS = {
-  townhall: 2, house: 0, road: 0, stargate: 2,
+  townhall: 2, house: 0, road: 0, hospital: 6, stargate: 2,
   mine: 4, quarry: 3, well: 2,
   sorting: 5, crusher: 4, refinery: 6, water_plant: 4,
   warehouse: 2, warehouse_liquid: 2, warehouse_waste: 2,
