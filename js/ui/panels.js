@@ -110,6 +110,8 @@ function openBuildingPanel(key, type) {
   document.getElementById('bp-prod-section').style.display      = isProducer  ? 'block' : 'none';
   const houseEl = document.getElementById('bp-house-section');
   if (houseEl) houseEl.style.display = 'none';
+  const hdvEl = document.getElementById('bp-hdv-stock');
+  if (hdvEl) hdvEl.style.display = 'none';
   document.getElementById('bp-factory-section').style.display   = isFactory   ? 'block' : 'none';
   document.getElementById('bp-warehouse-section').style.display = isWarehouse ? 'block' : 'none';
   document.getElementById('bp-workers-section').style.display   = hasWorkers  ? 'block' : 'none';
