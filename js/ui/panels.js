@@ -27,17 +27,12 @@ function updateStats() {
 // ===== PANEL CONSTRUCTION =====
 function refreshBuildPanel() {
   BUILD_GROUPS.forEach(group => {
-    let groupHasUnlocked = false;
     group.types.forEach(type => {
       const el = document.querySelector(`.build-item[data-type="${type}"]`);
       if (!el) return;
       const unlocked = BUILDING_DEF[type]?.unlockCondition?.(state) ?? true;
-      el.style.display = unlocked ? 'flex' : 'none';
-      if (unlocked) groupHasUnlocked = true;
+      el.classList.toggle('locked', !unlocked);
     });
-    // Cacher le groupe entier si aucun bâtiment débloqué dedans
-    const groupEl = document.getElementById('build-group-' + group.id);
-    if (groupEl) groupEl.style.display = groupHasUnlocked ? 'block' : 'none';
   });
 
   // Indicateur HdV
