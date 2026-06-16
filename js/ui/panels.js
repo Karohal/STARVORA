@@ -416,7 +416,7 @@ function refreshHdvStockPanel() {
     + 'display:flex;align-items:center;gap:6px;width:100%;margin-bottom:8px;'
     + 'background:rgba(240,192,64,0.08);border:1px solid var(--border);'
     + 'color:var(--gold);padding:6px 10px;cursor:pointer;font-size:0.72rem;">'
-    + 'ℹ️ Comment utiliser l'Hôtel de Ville ?</button>';
+    + "ℹ️ Comment utiliser l'Hôtel de Ville ?</button>";
 
   el.style.display = 'block';
 
