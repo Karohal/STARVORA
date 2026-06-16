@@ -114,9 +114,9 @@ function finalizeBuild(key, type, col, row) {
   if (type === 'townhall') {
     state.hasTownhall = true;
     refreshBuildPanel();
-    setTimeout(() => openHdvInfo(), 500);
   }
   if (type === 'house') scheduleHousing(key, type);
+  maybeShowBuildingInfo(type);
 
   updateAvailableWorkers();
   updateStats();
@@ -155,8 +155,8 @@ window.openExplorePanel   = openExplorePanel;
 window.closeExplorePanel  = closeExplorePanel;
 window.navigateToMap      = navigateToMap;
 window.startExploration   = startExploration;
-window.openHdvInfo        = openHdvInfo;
-window.closeHdvInfo       = closeHdvInfo;
+window.openBuildingInfo   = openBuildingInfo;
+window.closeBuildingInfo  = closeBuildingInfo;
 window.confirmBuild       = confirmBuild;
 window.cancelBuild        = cancelBuild;
 window.showDestroyConfirm = showDestroyConfirm;
