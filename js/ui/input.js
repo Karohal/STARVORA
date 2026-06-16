@@ -222,7 +222,7 @@ function findTruckAt(sx, sy) {
 
 // Montrer le sélecteur load/unload
 function showStopPicker(truckId, key) {
-  window._pendingStop = null;
+  window._pendingStopKey = key;
   const btype = state.buildings[key];
   const bdef  = BUILDING_DEF[btype];
   if (!bdef) return;
@@ -231,7 +231,10 @@ function showStopPicker(truckId, key) {
   if (!picker) return;
   document.getElementById('sp-building').textContent = bdef.icon + ' ' + bdef.name;
   document.getElementById('sp-truck-id').textContent = truckId;
+  picker.dataset.truckId = truckId;
   picker.classList.add('open');
+  const overlay = document.getElementById('stop-picker-overlay');
+  if (overlay) overlay.style.display = 'block';
 }
 
 function confirmStop(truckId, action) {
@@ -241,12 +244,14 @@ function confirmStop(truckId, action) {
   t.route.push({ key: window._pendingStopKey, action });
   window._pendingStopKey = null;
   document.getElementById('stop-picker')?.classList.remove('open');
+  document.getElementById('stop-picker-overlay').style.display = 'none';
   refreshTruckPanel(truckId);
 }
 window.confirmStop = confirmStop;
 
 function cancelStopUI() {
   document.getElementById('stop-picker')?.classList.remove('open');
+  document.getElementById('stop-picker-overlay').style.display = 'none';
   window._pendingStopKey = null;
 }
 window.cancelStop = cancelStopUI;
