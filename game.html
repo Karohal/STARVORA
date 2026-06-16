@@ -216,69 +216,25 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   </div>
 </div>
 
-<!-- PANEL INFO HOTEL DE VILLE -->
-<div id="hdv-info-overlay" onclick="closeHdvInfo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:59"></div>
-<div id="hdv-info-panel" style="
+<!-- PANEL INFO GÉNÉRIQUE BÂTIMENTS -->
+<div id="building-info-overlay" onclick="closeBuildingInfo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:59"></div>
+<div id="building-info-panel" style="
   display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
   background:rgba(5,5,15,0.97); border:1px solid var(--gold);
   padding:20px; z-index:60; width:min(380px,92vw);
   max-height:80vh; overflow-y:auto;
 ">
-  <button onclick="closeHdvInfo()" style="
+  <button onclick="closeBuildingInfo()" style="
     position:absolute; top:8px; right:8px;
     background:transparent; border:1px solid var(--border);
     color:var(--muted); width:28px; height:28px; cursor:pointer;
     font-size:1rem; display:flex; align-items:center; justify-content:center;
   ">✕</button>
 
-  <div style="font-size:1rem;color:var(--gold);margin-bottom:12px;letter-spacing:0.1em">🏛️ Hôtel de Ville</div>
+  <div id="building-info-title" style="font-size:1rem;color:var(--gold);margin-bottom:12px;letter-spacing:0.1em">—</div>
+  <div id="building-info-body" style="font-size:0.75rem;line-height:1.7;color:var(--text)"></div>
 
-  <div style="font-size:0.75rem;line-height:1.7;color:var(--text)">
-
-    <p style="margin-bottom:10px">
-      L'<strong style="color:var(--gold)">Hôtel de Ville</strong> est le cœur de votre colonie.
-      Sans lui, rien ne peut être construit.
-    </p>
-
-    <div style="border-left:2px solid var(--gold);padding-left:10px;margin-bottom:10px">
-      <div style="color:var(--gold);font-size:0.7rem;letter-spacing:0.1em;margin-bottom:4px">⚙️ FONCTIONNEMENT</div>
-      <p>Assignez des travailleurs à l'Hôtel de Ville pour accélérer les constructions.
-      Plus il y a de travailleurs, plus la vitesse de construction augmente.</p>
-      <p style="margin-top:6px">0 travailleur → construction <strong style="color:var(--error)">bloquée</strong><br>
-      50% travailleurs → vitesse <strong style="color:var(--gold)">normale</strong><br>
-      100% travailleurs → vitesse <strong style="color:var(--success)">maximale</strong></p>
-    </div>
-
-    <div style="border-left:2px solid var(--cyan);padding-left:10px;margin-bottom:10px">
-      <div style="color:var(--cyan);font-size:0.7rem;letter-spacing:0.1em;margin-bottom:4px">🔓 DÉBLOCAGE</div>
-      <p>L'Hôtel de Ville débloque progressivement les bâtiments :</p>
-      <p style="margin-top:6px">
-        🏛️ HdV construit → 🏠 Résidences + 🛣️ Routes<br>
-        🏠 Résidence → ⛏️ Mines + 🪨 Carrières + 💧 Puits<br>
-        ⛏️ Extracteur → 📦 Entrepôts<br>
-        📦 Entrepôt → 🔬 Centre de Recherche<br>
-        🔬 Recherche → 🏭 Toutes les usines
-      </p>
-    </div>
-
-    <div style="border-left:2px solid var(--success);padding-left:10px;margin-bottom:10px">
-      <div style="color:var(--success);font-size:0.7rem;letter-spacing:0.1em;margin-bottom:4px">📦 STOCKS DE DÉPART</div>
-      <p>Votre HdV contient des ressources de départ pour commencer :<br>
-      Pierre Brute ×30 · Minerais de Fer ×20 · Minerais de Charbon ×20 · Eau Brute ×10</p>
-      <p style="margin-top:6px;color:var(--muted);font-size:0.68rem">Ces ressources seront utilisées automatiquement lors des constructions.</p>
-    </div>
-
-    <div style="border-left:2px solid var(--error);padding-left:10px;">
-      <div style="color:var(--error);font-size:0.7rem;letter-spacing:0.1em;margin-bottom:4px">💡 CONSEILS</div>
-      <p>• Construisez d'abord des <strong>résidences</strong> pour avoir des travailleurs<br>
-      • Assignez des travailleurs à l'HdV pour accélérer les constructions<br>
-      • Améliorez l'HdV pour augmenter sa capacité en travailleurs<br>
-      • Consultez le panel HdV à tout moment via le bouton ℹ️</p>
-    </div>
-
-  </div>
-
-  <button onclick="closeHdvInfo()" style="
+  <button onclick="closeBuildingInfo()" style="
     display:block; width:100%; margin-top:16px;
     background:rgba(240,192,64,0.1); border:1px solid var(--gold);
     color:var(--gold); padding:8px; cursor:pointer; font-size:0.8rem;
@@ -443,25 +399,25 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=042"></script>
-<script src="js/config/buildings.js?v=042"></script>
-<script src="js/config/trucks.js?v=042"></script>
-<script src="js/config/map.js?v=042"></script>
+<script src="js/config/resources.js?v=043"></script>
+<script src="js/config/buildings.js?v=043"></script>
+<script src="js/config/trucks.js?v=043"></script>
+<script src="js/config/map.js?v=043"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=042"></script>
-<script src="js/core/save.js?v=042"></script>
+<script src="js/core/state.js?v=043"></script>
+<script src="js/core/save.js?v=043"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=042"></script>
-<script src="js/engine/production.js?v=042"></script>
-<script src="js/engine/logistics.js?v=042"></script>
-<script src="js/engine/exploration.js?v=042"></script>
+<script src="js/engine/economy.js?v=043"></script>
+<script src="js/engine/production.js?v=043"></script>
+<script src="js/engine/logistics.js?v=043"></script>
+<script src="js/engine/exploration.js?v=043"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=042"></script>
+<script src="js/render/renderer.js?v=043"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=042"></script>
-<script src="js/ui/input.js?v=042"></script>
+<script src="js/ui/panels.js?v=043"></script>
+<script src="js/ui/input.js?v=043"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=042"></script>
+<script src="js/core/main.js?v=043"></script>
 
 </body>
 </html>
