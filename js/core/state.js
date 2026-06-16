@@ -9,6 +9,8 @@ const state = {
   population:       10,
   homeless:         10,
   housed:           0,
+  adults:           0,
+  children:         0,
   availableWorkers: 0,
 
   // Carte active
