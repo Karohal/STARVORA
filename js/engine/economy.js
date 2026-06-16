@@ -183,13 +183,26 @@ function scheduleHousing(key, type) {
     if (!state.houseOccupants[key]) {
       state.houseOccupants[key] = { residents: [] };
     }
-    const occ      = state.houseOccupants[key];
-    const toMove   = Math.min(cap, state.homeless);
-    for (let i = 0; i < toMove; i++) {
+    const occ = state.houseOccupants[key];
+
+    // 1 sans-abri existant déménage (s'il y en a)
+    const moveIn = Math.min(1, state.homeless, cap - occ.residents.length);
+    for (let i = 0; i < moveIn; i++) {
       occ.residents.push({ type: 'adult', age: 18 + Math.floor(Math.random() * 30) });
     }
+    state.homeless = Math.max(0, state.homeless - moveIn);
+
+    // +1 nouvel habitant créé directement dans la maison (si place)
+    let created = 0;
+    if (occ.residents.length < cap) {
+      occ.residents.push({ type: 'adult', age: 18 + Math.floor(Math.random() * 30) });
+      state.population++;
+      created = 1;
+    }
+
     updatePopulation();
-    notify(`🏠 ${toMove} habitant(s) ont emménagé !`, 'ok');
+    const total = moveIn + created;
+    notify(`🏠 ${total} habitant(s) ont emménagé !`, 'ok');
   }, 30000);
 }
 
