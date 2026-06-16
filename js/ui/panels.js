@@ -30,9 +30,12 @@ function refreshBuildPanel() {
     group.types.forEach(type => {
       const el = document.querySelector(`.build-item[data-type="${type}"]`);
       if (!el) return;
+      el.style.display = ''; // reset un éventuel display:none résiduel
       const unlocked = BUILDING_DEF[type]?.unlockCondition?.(state) ?? true;
       el.classList.toggle('locked', !unlocked);
     });
+    const groupEl = document.getElementById('build-group-' + group.id);
+    if (groupEl) groupEl.style.display = ''; // reset aussi le groupe
   });
 
   // Indicateur HdV
