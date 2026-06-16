@@ -199,6 +199,7 @@ function handleTap(sx, sy) {
   // Bâtiment
   const key = `${col},${row}`;
   if (state.buildings[key]) {
+    closeTruckPanel();
     openBuildingPanel(key, state.buildings[key]);
   } else {
     closeBuildingPanel();
