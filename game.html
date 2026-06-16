@@ -81,8 +81,13 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   background: var(--surface); border: 1px solid var(--border);
   padding: 10px 12px; display: none; flex-direction: column; gap: 4px;
   z-index: 10; width: min(380px, 92vw);
-  max-height: 55vh; overflow-y: auto;
+  max-height: 70vh; overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-width: thin; scrollbar-color: var(--gold) transparent;
 }
+#build-panel::-webkit-scrollbar { width: 6px; }
+#build-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 #build-panel.open { display: flex; }
 
 .build-group-title {
@@ -438,25 +443,25 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=041"></script>
-<script src="js/config/buildings.js?v=041"></script>
-<script src="js/config/trucks.js?v=041"></script>
-<script src="js/config/map.js?v=041"></script>
+<script src="js/config/resources.js?v=042"></script>
+<script src="js/config/buildings.js?v=042"></script>
+<script src="js/config/trucks.js?v=042"></script>
+<script src="js/config/map.js?v=042"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=041"></script>
-<script src="js/core/save.js?v=041"></script>
+<script src="js/core/state.js?v=042"></script>
+<script src="js/core/save.js?v=042"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=041"></script>
-<script src="js/engine/production.js?v=041"></script>
-<script src="js/engine/logistics.js?v=041"></script>
-<script src="js/engine/exploration.js?v=041"></script>
+<script src="js/engine/economy.js?v=042"></script>
+<script src="js/engine/production.js?v=042"></script>
+<script src="js/engine/logistics.js?v=042"></script>
+<script src="js/engine/exploration.js?v=042"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=041"></script>
+<script src="js/render/renderer.js?v=042"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=041"></script>
-<script src="js/ui/input.js?v=041"></script>
+<script src="js/ui/panels.js?v=042"></script>
+<script src="js/ui/input.js?v=042"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=041"></script>
+<script src="js/core/main.js?v=042"></script>
 
 </body>
 </html>
