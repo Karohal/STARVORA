@@ -52,8 +52,7 @@ const BUILDING_DEF = {
     info: "<p>L'<strong style='color:var(--gold)'>Hôpital</strong> augmente le taux de natalité global de votre colonie.</p>"
       + "<p style='margin-top:8px'>Chaque hôpital actif (avec des travailleurs assignés) apporte <strong>+2%</strong> de natalité, plus <strong>+0.5%</strong> par niveau.</p>"
       + "<p style='margin-top:8px;color:var(--muted);font-size:0.68rem'>Un hôpital sans travailleur n'apporte aucun bonus.</p>",
-    unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'house') ||
-                            Object.values(s.buildingQueue ?? {}).some(q => q.type === 'house'),
+    unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'research_center'),
   },
   road: {
     icon: '🛣️', name: 'Route',
