@@ -99,7 +99,8 @@ function openBuildingPanel(key, type) {
   const btn = document.getElementById('bp-levelup-btn');
   if (btn) { btn.dataset.key = key; btn.dataset.type = type; }
 
-  document.getElementById('bp-title').textContent    = (def?.icon ?? '') + ' ' + (def?.name ?? type);
+  document.getElementById('bp-title').innerHTML = (def?.icon ?? '') + ' ' + (def?.name ?? type) +
+    (def?.info ? ' <button onclick="openBuildingInfo(\''+type+'\')" style="background:transparent;border:1px solid var(--border);color:var(--gold);width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.65rem;margin-left:4px;vertical-align:middle">ℹ️</button>' : '');
   document.getElementById('bp-level').textContent    = 'Niveau ' + level;
   document.getElementById('bp-levelup-cost').textContent = levelUpCost(type, level) + ' 💰';
 
@@ -412,39 +413,44 @@ function refreshHdvStockPanel() {
   const stock = state.hdvStock ?? {};
   const total = Object.values(stock).reduce((a,b)=>a+b,0);
 
-  // Bouton info toujours affiché dans le panel HdV
-  const infoBtn = '<button onclick="openHdvInfo()" style="'
-    + 'display:flex;align-items:center;gap:6px;width:100%;margin-bottom:8px;'
-    + 'background:rgba(240,192,64,0.08);border:1px solid var(--border);'
-    + 'color:var(--gold);padding:6px 10px;cursor:pointer;font-size:0.72rem;">'
-    + "ℹ️ Comment utiliser l'Hôtel de Ville ?</button>";
-
   el.style.display = 'block';
 
   if (total === 0) {
-    el.innerHTML = infoBtn;
+    el.innerHTML = '';
+    el.style.display = 'none';
     return;
   }
 
-  el.innerHTML = infoBtn
-    + '<div style="font-size:0.65rem;color:var(--gold);margin-bottom:4px;letter-spacing:0.1em">📦 STOCKS DE DÉPART</div>'
+  el.innerHTML = '<div style="font-size:0.65rem;color:var(--gold);margin-bottom:4px;letter-spacing:0.1em">📦 STOCKS DE DÉPART</div>'
     + Object.entries(stock)
       .filter(([,q]) => q > 0)
       .map(([r,q]) => `<div class="th-row"><span>${RESOURCE_LABELS[r]??r}</span><span class="th-val">${q}</span></div>`)
       .join('');
 }
 
-// ===== PANEL INFO HdV =====
-function openHdvInfo() {
-  document.getElementById('hdv-info-panel').style.display   = 'block';
-  document.getElementById('hdv-info-overlay').style.display = 'block';
+// ===== PANEL INFO GÉNÉRIQUE BÂTIMENTS =====
+function openBuildingInfo(type) {
+  const def = BUILDING_DEF[type];
+  if (!def || !def.info) return;
+  document.getElementById('building-info-title').textContent = (def.icon ?? '') + ' ' + (def.name ?? type);
+  document.getElementById('building-info-body').innerHTML    = def.info;
+  document.getElementById('building-info-panel').style.display   = 'block';
+  document.getElementById('building-info-overlay').style.display = 'block';
 }
-function closeHdvInfo() {
-  document.getElementById('hdv-info-panel').style.display   = 'none';
-  document.getElementById('hdv-info-overlay').style.display = 'none';
+function closeBuildingInfo() {
+  document.getElementById('building-info-panel').style.display   = 'none';
+  document.getElementById('building-info-overlay').style.display = 'none';
 }
-window.openHdvInfo  = openHdvInfo;
-window.closeHdvInfo = closeHdvInfo;
+// Afficher automatiquement à la 1ère construction de ce type
+function maybeShowBuildingInfo(type) {
+  if (!state.seenBuildingInfo) state.seenBuildingInfo = {};
+  if (state.seenBuildingInfo[type]) return;
+  state.seenBuildingInfo[type] = true;
+  setTimeout(() => openBuildingInfo(type), 500);
+}
+window.openBuildingInfo      = openBuildingInfo;
+window.closeBuildingInfo     = closeBuildingInfo;
+window.maybeShowBuildingInfo = maybeShowBuildingInfo;
 
 // ===== EXPOSITION GLOBALE =====
 window.refreshBuildPanel    = refreshBuildPanel;
