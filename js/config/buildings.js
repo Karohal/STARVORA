@@ -12,6 +12,21 @@ const BUILDING_DEF = {
     workers: 2, w: 1, h: 1,
     group: 'infrastructure',
     description: 'Centre de commandement. L\'efficacité des travailleurs affecte la vitesse de construction.',
+    info: "<p>L'<strong style='color:var(--gold)'>Hôtel de Ville</strong> est le cœur de votre colonie. Sans lui, rien ne peut être construit.</p>"
+      + "<div style='border-left:2px solid var(--gold);padding-left:10px;margin-top:10px'>"
+      + "<div style='color:var(--gold);font-size:0.7rem;letter-spacing:0.1em;margin-bottom:4px'>⚙️ FONCTIONNEMENT</div>"
+      + "<p>Assignez des travailleurs pour accélérer la vitesse de construction de tous vos bâtiments.</p>"
+      + "<p style='margin-top:6px'>0 travailleur → construction <strong style='color:var(--error)'>bloquée</strong><br>"
+      + "50% → vitesse <strong style='color:var(--gold)'>normale</strong><br>"
+      + "100% → vitesse <strong style='color:var(--success)'>maximale</strong></p></div>"
+      + "<div style='border-left:2px solid var(--cyan);padding-left:10px;margin-top:10px'>"
+      + "<div style='color:var(--cyan);font-size:0.7rem;letter-spacing:0.1em;margin-bottom:4px'>🔓 DÉBLOCAGE PROGRESSIF</div>"
+      + "<p>🏛️ HdV → 🏠 Résidences + 🛣️ Routes<br>"
+      + "🏠 Résidence → ⛏️ Mines + 🪨 Carrières + 💧 Puits<br>"
+      + "⛏️ Extracteur → 📦 Entrepôts<br>"
+      + "📦 Entrepôt → 🔬 Centre de Recherche<br>"
+      + "🔬 Recherche → 🏭 Toutes les usines</p></div>"
+      + "<p style='margin-top:10px;color:var(--muted);font-size:0.68rem'>Votre HdV contient des ressources de départ (visibles dans son panel) pour vous aider à démarrer.</p>",
     unlockCondition: () => true,
   },
   house: {
