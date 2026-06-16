@@ -20,6 +20,11 @@ const BUILDING_DEF = {
     workers: 0, w: 1, h: 1,
     group: 'infrastructure',
     description: 'Loge 4 habitants. +2 par niveau tous les 5 niveaux.',
+
+    info: "<p>La <strong style='color:var(--gold)'>Résidence</strong> loge vos habitants.</p>"
+      + "<p style='margin-top:8px'>Chaque résidence accueille <strong>4 habitants</strong> de base (+2 par tranche de 5 niveaux).</p>"
+      + "<p style='margin-top:8px'>2 adultes dans une même résidence ont une chance de donner naissance à un enfant toutes les 9 minutes de jeu. Les enfants deviennent adultes à 18 ans (18 minutes de jeu) et peuvent alors travailler.</p>"
+      + "<p style='margin-top:8px;color:var(--muted);font-size:0.68rem'>Astuce : améliorez vos hôpitaux pour augmenter le taux de natalité.</p>",
     unlockCondition: (s) => s.hasTownhall,
   },
   hospital: {
@@ -28,6 +33,10 @@ const BUILDING_DEF = {
     workers: 6, w: 1, h: 1,
     group: 'infrastructure',
     description: 'Augmente le taux de natalité. +2% par hôpital, +0.5% par niveau.',
+
+    info: "<p>L'<strong style='color:var(--gold)'>Hôpital</strong> augmente le taux de natalité global de votre colonie.</p>"
+      + "<p style='margin-top:8px'>Chaque hôpital actif (avec des travailleurs assignés) apporte <strong>+2%</strong> de natalité, plus <strong>+0.5%</strong> par niveau.</p>"
+      + "<p style='margin-top:8px;color:var(--muted);font-size:0.68rem'>Un hôpital sans travailleur n'apporte aucun bonus.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'house') ||
                             Object.values(s.buildingQueue ?? {}).some(q => q.type === 'house'),
   },
@@ -37,6 +46,9 @@ const BUILDING_DEF = {
     workers: 0, w: 1, h: 1,
     group: 'infrastructure',
     description: 'Accélère les camions (x5).',
+
+    info: "<p>La <strong style='color:var(--gold)'>Route</strong> accélère vos camions sur le trajet.</p>"
+      + "<p style='margin-top:8px'>Construisez des routes entre vos extracteurs, usines et entrepôts pour optimiser votre logistique.</p>",
     unlockCondition: (s) => s.hasTownhall,
   },
   stargate: {
@@ -45,6 +57,9 @@ const BUILDING_DEF = {
     workers: 2, w: 1, h: 1,
     group: 'infrastructure',
     description: 'Transfère ressources et camions vers une autre map.',
+
+    info: "<p>Le <strong style='color:var(--gold)'>Portail de Transfert</strong> permet d'échanger ressources et véhicules entre deux maps.</p>"
+      + "<p style='margin-top:8px;color:var(--muted);font-size:0.68rem'>Fonctionnalité en cours de développement.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'vehiclefactory'),
   },
 
@@ -55,6 +70,11 @@ const BUILDING_DEF = {
     workers: 4, w: 1, h: 1,
     group: 'extraction',
     description: 'Extrait minerais de fer, charbon, or, uranium, rutile, bauxite.',
+
+    info: "<p>La <strong style='color:var(--gold)'>Mine</strong> extrait des minerais bruts du sol.</p>"
+      + "<p style='margin-top:8px'>Elle ne peut être posée que sur une tuile contenant du <strong>Minerai de Fer</strong>, de <strong>Charbon</strong>, d'<strong>Or</strong>, d'<strong>Uranium</strong>, de <strong>Rutile</strong> ou de <strong>Bauxite</strong>.</p>"
+      + "<p style='margin-top:8px'>Assignez des travailleurs pour démarrer l'extraction. Les minerais sont stockés dans son entrepôt interne, à récupérer par camion.</p>"
+      + "<p style='margin-top:8px;color:var(--muted);font-size:0.68rem'>Les minerais bruts doivent être traités dans une usine pour devenir utilisables.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'house') ||
                             Object.values(s.buildingQueue).some(q => q.type === 'house'),
   },
@@ -64,6 +84,10 @@ const BUILDING_DEF = {
     workers: 3, w: 1, h: 1,
     group: 'extraction',
     description: 'Extrait pierre brute.',
+
+    info: "<p>La <strong style='color:var(--gold)'>Carrière</strong> extrait de la pierre brute.</p>"
+      + "<p style='margin-top:8px'>Elle ne peut être posée que sur une tuile de <strong>Pierre Brute</strong>.</p>"
+      + "<p style='margin-top:8px'>La pierre brute doit être envoyée vers un <strong>Concasseur</strong> pour être transformée en pierre traitée, cristaux et pierres précieuses.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'house') ||
                             Object.values(s.buildingQueue).some(q => q.type === 'house'),
   },
@@ -73,6 +97,10 @@ const BUILDING_DEF = {
     workers: 2, w: 1, h: 1,
     group: 'extraction',
     description: 'Extrait eau brute et pétrole brut.',
+
+    info: "<p>Le <strong style='color:var(--gold)'>Puits</strong> extrait des liquides bruts.</p>"
+      + "<p style='margin-top:8px'>Il ne peut être posé que sur une tuile d'<strong>Eau Brute</strong> ou de <strong>Pétrole Brut</strong>.</p>"
+      + "<p style='margin-top:8px'>L'eau brute doit aller vers l'<strong>Usine de Traitement de l'Eau</strong>, le pétrole vers la <strong>Raffinerie</strong>.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'house') ||
                             Object.values(s.buildingQueue).some(q => q.type === 'house'),
   },
@@ -84,6 +112,10 @@ const BUILDING_DEF = {
     workers: 2, w: 1, h: 1,
     group: 'storage',
     description: 'Stocke les ressources solides.',
+
+    info: "<p>L'<strong style='color:var(--gold)'>Entrepôt</strong> stocke les ressources <strong>solides</strong> uniquement.</p>"
+      + "<p style='margin-top:8px'>Seuls les camions transportant des solides (minerais, pierre, gravats...) peuvent y décharger.</p>"
+      + "<p style='margin-top:8px;color:var(--muted);font-size:0.68rem'>Les liquides, déchets et matières dangereuses nécessitent leurs propres entrepôts.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t =>
       ['mine','quarry','well'].includes(t)),
   },
@@ -93,6 +125,9 @@ const BUILDING_DEF = {
     workers: 2, w: 1, h: 1,
     group: 'storage',
     description: 'Stocke les liquides (eau, pétrole, carburant, eau potable).',
+
+    info: "<p>La <strong style='color:var(--gold)'>Citerne</strong> stocke uniquement les <strong>liquides</strong> (eau, pétrole, carburant...).</p>"
+      + "<p style='margin-top:8px'>Sa forme cylindrique est spécialement conçue pour le stockage de fluides sous pression.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t =>
       ['mine','quarry','well'].includes(t)),
   },
@@ -102,6 +137,9 @@ const BUILDING_DEF = {
     workers: 2, w: 1, h: 1,
     group: 'storage',
     description: 'Stocke les déchets et incinérables.',
+
+    info: "<p>Le <strong style='color:var(--gold)'>Dépôt Déchets</strong> stocke les déchets issus du traitement des ressources.</p>"
+      + "<p style='margin-top:8px'>Pensez à vider régulièrement vos usines vers ce dépôt pour ne pas bloquer la production.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t =>
       ['mine','quarry','well'].includes(t)),
   },
@@ -111,6 +149,9 @@ const BUILDING_DEF = {
     workers: 2, w: 1, h: 1,
     group: 'storage',
     description: 'Stocke les matières dangereuses (uranium, hazmat).',
+
+    info: "<p>L'<strong style='color:var(--gold)'>Entrepôt Dangereux</strong> stocke les matières radioactives ou toxiques (uranium...).</p>"
+      + "<p style='margin-top:8px;color:var(--error)'>⚠️ Manipulez ces matériaux avec précaution — seul le Camion Dangereux peut les transporter.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t =>
       ['mine','quarry','well'].includes(t)),
   },
@@ -120,6 +161,9 @@ const BUILDING_DEF = {
     workers: 2, w: 1, h: 1,
     group: 'storage',
     description: 'Stocke le gaz. Forme sphérique pressurisée.',
+
+    info: "<p>Le <strong style='color:var(--gold)'>Réservoir de Gaz</strong> stocke le gaz extrait lors du raffinage du pétrole.</p>"
+      + "<p style='margin-top:8px'>Sa forme sphérique résiste à la pression interne du gaz stocké.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'refinery'),
   },
 
@@ -130,6 +174,10 @@ const BUILDING_DEF = {
     workers: 5, w: 1, h: 1,
     group: 'factory',
     description: 'Traite les minerais solides bruts. Input: fer, charbon, or, uranium, rutile, bauxite.',
+
+    info: "<p>L'<strong style='color:var(--gold)'>Usine de Traitement</strong> transforme les minerais bruts en ressources utilisables.</p>"
+      + "<p style='margin-top:8px'>Elle dispose de deux quais : un quai de <strong>déchargement</strong> (input) où les camions déposent les minerais bruts, et un quai de <strong>chargement</strong> (output) où ils récupèrent les ressources traitées.</p>"
+      + "<p style='margin-top:8px'>Rendement de base : <strong>30%</strong> ressource utile, <strong>50%</strong> gravats, <strong>20%</strong> déchets. Le niveau améliore ce rendement.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t =>
       ['mine','quarry','well'].includes(t)),
   },
@@ -139,6 +187,9 @@ const BUILDING_DEF = {
     workers: 4, w: 1, h: 1,
     group: 'factory',
     description: 'Concasse la pierre brute → pierre traitée, cristaux, gemmes.',
+
+    info: "<p>Le <strong style='color:var(--gold)'>Concasseur</strong> transforme la pierre brute en pierre traitée, cristaux et pierres précieuses.</p>"
+      + "<p style='margin-top:8px'>Rendement : 50% pierre traitée, 30% déchets, 15% cristaux de roche, 5% pierres précieuses.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'quarry'),
   },
   refinery: {
@@ -147,6 +198,9 @@ const BUILDING_DEF = {
     workers: 6, w: 1, h: 1,
     group: 'factory',
     description: 'Raffine le pétrole brut → gaz, carburant, résidu.',
+
+    info: "<p>La <strong style='color:var(--gold)'>Raffinerie</strong> transforme le pétrole brut en produits dérivés.</p>"
+      + "<p style='margin-top:8px'>Rendement : 20% gaz, 30% carburant, 30% résidu pétrolier (réutilisable plus tard), 20% déchets.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'well'),
   },
   water_plant: {
@@ -155,6 +209,9 @@ const BUILDING_DEF = {
     workers: 4, w: 1, h: 1,
     group: 'factory',
     description: 'Traite l\'eau brute → eau potable, calcaire.',
+
+    info: "<p>L'<strong style='color:var(--gold)'>Usine de Traitement de l'Eau</strong> purifie l'eau brute.</p>"
+      + "<p style='margin-top:8px'>Rendement : 50% eau potable, 20% calcaire, 30% déchets.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'well'),
   },
   research_center: {
@@ -163,6 +220,10 @@ const BUILDING_DEF = {
     workers: 8, w: 1, h: 1,
     group: 'factory',
     description: "Débloque les usines de traitement via l'arbre de recherche.",
+
+    info: "<p>Le <strong style='color:var(--gold)'>Centre de Recherche Industriel</strong> débloque les usines de transformation avancées.</p>"
+      + "<p style='margin-top:8px'>Une fois construit, vous pourrez bâtir : Usine de Traitement, Concasseur, Raffinerie, Usine d'Eau et Usine de Véhicules.</p>"
+      + "<p style='margin-top:8px;color:var(--muted);font-size:0.68rem'>Un arbre de recherche plus complet sera disponible prochainement.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t =>
       Object.keys(WAREHOUSE_TYPES ?? {}).includes(t)
     ),
@@ -173,6 +234,10 @@ const BUILDING_DEF = {
     workers: 6, w: 1, h: 1,
     group: 'factory',
     description: 'Construit camions et véhicules d\'exploration.',
+
+    info: "<p>L'<strong style='color:var(--gold)'>Usine de Véhicules</strong> construit vos camions et véhicules d'exploration.</p>"
+      + "<p style='margin-top:8px'>Choisissez le type de camion adapté à la ressource à transporter : Minerais, Citerne, Déchets ou Dangereux.</p>"
+      + "<p style='margin-top:8px;color:var(--muted);font-size:0.68rem'>Un seul véhicule peut être en construction à la fois par usine.</p>",
     unlockCondition: (s) => Object.values(s.buildings).some(t =>
       ['mine','quarry','well'].includes(t)),
   },
