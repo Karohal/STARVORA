@@ -244,6 +244,22 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   ">✕ Fermer</button>
 </div>
 
+<!-- STOP PICKER (choix Charger/Vider pour camion) -->
+<div id="stop-picker" class="panel" style="
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:min(300px,90vw); z-index:60; text-align:center;
+">
+  <div class="panel-title">🚛 Ajouter un arrêt</div>
+  <div style="margin:10px 0;font-size:0.8rem" id="sp-building">—</div>
+  <div style="display:none" id="sp-truck-id"></div>
+  <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+    <button class="assign-btn" onclick="confirmStop(document.getElementById('stop-picker').dataset.truckId,'load')" style="border-color:var(--success);color:var(--success)">⬆ Charger</button>
+    <button class="assign-btn" onclick="confirmStop(document.getElementById('stop-picker').dataset.truckId,'unload')" style="border-color:var(--cyan);color:var(--cyan)">⬇ Vider</button>
+  </div>
+  <button class="assign-btn" onclick="cancelStop()" style="margin-top:10px;border-color:var(--error);color:var(--error)">❌ Annuler</button>
+</div>
+<div id="stop-picker-overlay" onclick="cancelStop()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:59"></div>
+
 <!-- POPUP DESTRUCTION -->
 <div id="destroy-confirm" style="
   display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
@@ -401,25 +417,25 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=046"></script>
-<script src="js/config/buildings.js?v=046"></script>
-<script src="js/config/trucks.js?v=046"></script>
-<script src="js/config/map.js?v=046"></script>
+<script src="js/config/resources.js?v=047"></script>
+<script src="js/config/buildings.js?v=047"></script>
+<script src="js/config/trucks.js?v=047"></script>
+<script src="js/config/map.js?v=047"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=046"></script>
-<script src="js/core/save.js?v=046"></script>
+<script src="js/core/state.js?v=047"></script>
+<script src="js/core/save.js?v=047"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=046"></script>
-<script src="js/engine/production.js?v=046"></script>
-<script src="js/engine/logistics.js?v=046"></script>
-<script src="js/engine/exploration.js?v=046"></script>
+<script src="js/engine/economy.js?v=047"></script>
+<script src="js/engine/production.js?v=047"></script>
+<script src="js/engine/logistics.js?v=047"></script>
+<script src="js/engine/exploration.js?v=047"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=046"></script>
+<script src="js/render/renderer.js?v=047"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=046"></script>
-<script src="js/ui/input.js?v=046"></script>
+<script src="js/ui/panels.js?v=047"></script>
+<script src="js/ui/input.js?v=047"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=046"></script>
+<script src="js/core/main.js?v=047"></script>
 
 </body>
 </html>
