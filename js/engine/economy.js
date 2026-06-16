@@ -124,7 +124,7 @@ function tryFindNewHome(fromKey, adults) {
   for (const [key, type] of Object.entries(state.buildings)) {
     if (type !== 'house' || key === fromKey) continue;
     const level = state.buildingLevels[key] ?? 0;
-    const cap   = houseCapacity(key);
+    const cap   = houseCapacity(level);
     const occ   = state.houseOccupants[key];
     if (!occ) continue;
     const residents  = occ.residents ?? [];
@@ -165,7 +165,8 @@ function updatePopulation() {
 function updateAvailableWorkers() {
   const totalAssigned = Object.values(state.assignedWorkers).reduce((a,b)=>a+b,0);
   // Seuls les adultes logés peuvent travailler
-  state.availableWorkers = Math.max(0, (state.adults ?? state.housed) - totalAssigned);
+  const adultsCount = state.adults ?? 0;
+  state.availableWorkers = Math.max(0, adultsCount - totalAssigned);
 }
 
 function houseCapacity(level) {
