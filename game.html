@@ -76,6 +76,9 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 #explore-panel   { top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(320px, 90vw); }
 
 /* Panel construction */
+#build-panel, #build-panel * {
+  touch-action: pan-y !important;
+}
 #build-panel {
   position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%);
   background: var(--surface); border: 1px solid var(--border);
@@ -83,7 +86,6 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   z-index: 10; width: min(380px, 92vw);
   max-height: 70vh; overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
   scrollbar-width: thin; scrollbar-color: var(--gold) transparent;
 }
 #build-panel::-webkit-scrollbar { width: 6px; }
@@ -399,25 +401,25 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=044"></script>
-<script src="js/config/buildings.js?v=044"></script>
-<script src="js/config/trucks.js?v=044"></script>
-<script src="js/config/map.js?v=044"></script>
+<script src="js/config/resources.js?v=045"></script>
+<script src="js/config/buildings.js?v=045"></script>
+<script src="js/config/trucks.js?v=045"></script>
+<script src="js/config/map.js?v=045"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=044"></script>
-<script src="js/core/save.js?v=044"></script>
+<script src="js/core/state.js?v=045"></script>
+<script src="js/core/save.js?v=045"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=044"></script>
-<script src="js/engine/production.js?v=044"></script>
-<script src="js/engine/logistics.js?v=044"></script>
-<script src="js/engine/exploration.js?v=044"></script>
+<script src="js/engine/economy.js?v=045"></script>
+<script src="js/engine/production.js?v=045"></script>
+<script src="js/engine/logistics.js?v=045"></script>
+<script src="js/engine/exploration.js?v=045"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=044"></script>
+<script src="js/render/renderer.js?v=045"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=044"></script>
-<script src="js/ui/input.js?v=044"></script>
+<script src="js/ui/panels.js?v=045"></script>
+<script src="js/ui/input.js?v=045"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=044"></script>
+<script src="js/core/main.js?v=045"></script>
 
 </body>
 </html>
