@@ -308,7 +308,7 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 <!-- PANEL CONSTRUCTION -->
 <div id="build-panel">
   <!-- Infrastructure -->
-  <div class="build-group">
+  <div class="build-group" id="build-group-infrastructure">
     <div class="build-group-title">🏛️ Infrastructure</div>
     <div class="build-group-items">
       <div class="build-item" data-type="townhall"  onclick="selectBuilding('townhall',this)"><div class="b-icon">🏛️</div><div>Hôtel de Ville</div><div class="b-cost">Gratuit</div></div>
@@ -319,7 +319,7 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
     </div>
   </div>
   <!-- Extraction -->
-  <div class="build-group">
+  <div class="build-group" id="build-group-extraction">
     <div class="build-group-title">⛏️ Extraction</div>
     <div class="build-group-items">
       <div class="build-item" data-type="mine"   onclick="selectBuilding('mine',this)"><div class="b-icon">⛏️</div><div>Mine</div><div class="b-cost">150 💰</div></div>
@@ -328,7 +328,7 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
     </div>
   </div>
   <!-- Entrepôts -->
-  <div class="build-group">
+  <div class="build-group" id="build-group-storage">
     <div class="build-group-title">📦 Entrepôts</div>
     <div class="build-group-items">
       <div class="build-item" data-type="warehouse"        onclick="selectBuilding('warehouse',this)"><div class="b-icon">🏪</div><div>Entrepôt</div><div class="b-cost">180 💰</div></div>
@@ -339,7 +339,7 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
     </div>
   </div>
   <!-- Usines -->
-  <div class="build-group">
+  <div class="build-group" id="build-group-factory">
     <div class="build-group-title">🏭 Usines</div>
     <div class="build-group-items">
       <div class="build-item" data-type="sorting"       onclick="selectBuilding('sorting',this)"><div class="b-icon">🔻</div><div>Traitement</div><div class="b-cost">200 💰</div></div>
@@ -438,25 +438,25 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=038"></script>
-<script src="js/config/buildings.js?v=038"></script>
-<script src="js/config/trucks.js?v=038"></script>
-<script src="js/config/map.js?v=038"></script>
+<script src="js/config/resources.js?v=039"></script>
+<script src="js/config/buildings.js?v=039"></script>
+<script src="js/config/trucks.js?v=039"></script>
+<script src="js/config/map.js?v=039"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=038"></script>
-<script src="js/core/save.js?v=038"></script>
+<script src="js/core/state.js?v=039"></script>
+<script src="js/core/save.js?v=039"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=038"></script>
-<script src="js/engine/production.js?v=038"></script>
-<script src="js/engine/logistics.js?v=038"></script>
-<script src="js/engine/exploration.js?v=038"></script>
+<script src="js/engine/economy.js?v=039"></script>
+<script src="js/engine/production.js?v=039"></script>
+<script src="js/engine/logistics.js?v=039"></script>
+<script src="js/engine/exploration.js?v=039"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=038"></script>
+<script src="js/render/renderer.js?v=039"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=038"></script>
-<script src="js/ui/input.js?v=038"></script>
+<script src="js/ui/panels.js?v=039"></script>
+<script src="js/ui/input.js?v=039"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=038"></script>
+<script src="js/core/main.js?v=039"></script>
 
 </body>
 </html>
