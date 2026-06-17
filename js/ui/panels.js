@@ -208,12 +208,14 @@ function refreshProductionPanel(key, type) {
 
     const inputHtml = Object.entries(stock.input??{})
       .filter(([,q])=>q>0).map(([r,q])=>(RESOURCE_LABELS[r]??r)+':'+q).join(' | ') || 'Vide';
-    const outputHtml = Object.entries(stock.output??{})
-      .filter(([,q])=>q>0).map(([r,q])=>(RESOURCE_LABELS[r]??r)+':'+q).join(' | ') || 'Vide';
+    const outputRows = Object.entries(stock.output??{})
+      .filter(([,q])=>q>0)
+      .map(([r,q])=>`<div class="th-row"><span>${RESOURCE_LABELS[r]??r}</span><span class="th-val">${q}</span></div>`)
+      .join('') || '<div class="th-muted">Vide</div>';
 
     if (prodEl) prodEl.textContent = '⬇ Input : ' + inputHtml;
     if (capEl)  capEl.textContent  = `In ${inTotal}/${inCap} · Out ${outTotal}/${outCap}`;
-    if (wRow)   { wRow.style.display='flex'; document.getElementById('bp-prod-waste').textContent='⬆ Output : '+outputHtml; }
+    if (wRow)   { wRow.style.display='block'; document.getElementById('bp-prod-waste').innerHTML='<div style="margin-bottom:2px">⬆ Output :</div>'+outputRows; }
     if (yRow)   { yRow.style.display='flex'; document.getElementById('bp-prod-yield').textContent='30% ressource / 50% gravats / 20% déchets'; }
   }
 }
