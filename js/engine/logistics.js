@@ -158,11 +158,24 @@ function handleTruckStop(t, stop) {
       const inCap     = recipe ? recipe.inputCapacity(state.buildingLevels[stop.key] ?? 0) : 5;
       const inTotal   = Object.values(s.input).reduce((a,b)=>a+b,0);
       if (inTotal < inCap) {
+        let free = inCap - inTotal;
+        const remainingCargo = {};
         for (const [res, qty] of Object.entries(t.cargo)) {
-          if (validIn.includes(res)) s.input[res] = (s.input[res] ?? 0) + qty;
+          if (validIn.includes(res) && free > 0) {
+            const add = Math.min(qty, free);
+            s.input[res] = (s.input[res] ?? 0) + add;
+            free -= add;
+            if (qty - add > 0) remainingCargo[res] = qty - add;
+          } else {
+            remainingCargo[res] = qty;
+          }
         }
-        t.cargo = {};
-        advanceTruck(t);
+        t.cargo = remainingCargo;
+        if (Object.keys(t.cargo).length === 0) {
+          advanceTruck(t);
+        } else {
+          t.status = 'unloading';
+        }
         updateProductionUI();
       } else { t.status = 'unloading'; }
       return;
