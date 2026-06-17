@@ -93,17 +93,18 @@ function productionTick() {
 
       stock.input[r.input] = Math.max(0, inQty - take);
 
-      // Calculer outputs
-      let totalOut = 0;
-      const outputs = r.outputs.map(o => {
-        const qty = Math.floor(take * o.pct);
-        totalOut += qty;
-        return { resource: o.resource, qty };
-      });
+      // Accumulateur de fractions par bâtiment+ressource (évite la perte d'arrondi)
+      if (!state.factoryRemainder) state.factoryRemainder = {};
+      if (!state.factoryRemainder[key]) state.factoryRemainder[key] = {};
+      const remainder = state.factoryRemainder[key];
 
-      // Ajuster pour éviter perte (donner le reste au premier output)
-      const diff = take - totalOut;
-      if (diff > 0 && outputs.length > 0) outputs[0].qty += diff;
+      const outputs = r.outputs.map(o => {
+        const exact = take * o.pct + (remainder[o.resource] ?? 0);
+        const qty   = Math.floor(exact * 100) / 100; // précision 2 décimales en mémoire
+        const whole = Math.floor(qty);
+        remainder[o.resource] = Math.round((qty - whole) * 100) / 100;
+        return { resource: o.resource, qty: whole };
+      });
 
       // Stocker dans output
       const free = outCap - outTotal;
