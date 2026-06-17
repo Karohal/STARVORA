@@ -177,32 +177,44 @@ function houseCapacity(level) {
 // Peuplement initial d'une résidence
 function scheduleHousing(key, type) {
   if (type !== 'house') return;
-  setTimeout(() => {
-    const level = state.buildingLevels[key] ?? 0;
-    const cap   = houseCapacity(level);
-    if (!state.houseOccupants[key]) {
-      state.houseOccupants[key] = { residents: [] };
-    }
-    const occ = state.houseOccupants[key];
 
-    // 1 sans-abri existant déménage (s'il y en a)
-    const moveIn = Math.min(1, state.homeless, cap - occ.residents.length);
-    for (let i = 0; i < moveIn; i++) {
-      occ.residents.push({ type: 'adult', age: 18 + Math.floor(Math.random() * 30) });
-    }
-    state.homeless = Math.max(0, state.homeless - moveIn);
+  // +1 habitant créé immédiatement à la construction
+  if (!state.houseOccupants[key]) {
+    state.houseOccupants[key] = { residents: [] };
+  }
+  const level = state.buildingLevels[key] ?? 0;
+  const cap   = houseCapacity(level);
+  const occ   = state.houseOccupants[key];
 
-    // +1 nouvel habitant créé directement dans la maison (si place)
-    let created = 0;
-    if (occ.residents.length < cap) {
-      occ.residents.push({ type: 'adult', age: 18 + Math.floor(Math.random() * 30) });
-      state.population++;
-      created = 1;
-    }
-
+  if (occ.residents.length < cap) {
+    occ.residents.push({ type: 'adult', age: 18 + Math.floor(Math.random() * 30) });
+    state.population++;
     updatePopulation();
-    const total = moveIn + created;
-    notify(`🏠 ${total} habitant(s) ont emménagé !`, 'ok');
+    notify('🏠 1 nouvel habitant a emménagé !', 'ok');
+  }
+
+  // Boucle continue : toutes les 30s, faire emménager 1 sans-abri si place et dispo
+  const interval = setInterval(() => {
+    // Maison détruite entre temps → arrêter la boucle
+    if (state.buildings[key] !== 'house') {
+      clearInterval(interval);
+      return;
+    }
+    const lvl = state.buildingLevels[key] ?? 0;
+    const c   = houseCapacity(lvl);
+    const o   = state.houseOccupants[key];
+    if (!o) { clearInterval(interval); return; }
+
+    if (o.residents.length >= c) {
+      clearInterval(interval); // maison pleine, plus besoin de vérifier
+      return;
+    }
+    if (state.homeless > 0) {
+      o.residents.push({ type: 'adult', age: 18 + Math.floor(Math.random() * 30) });
+      updatePopulation();
+      notify('🏠 1 sans-abri a emménagé !', 'ok');
+    }
+    // Si pas de sans-abri ce tour, on ne fait rien et on réessaiera au prochain tick
   }, 30000);
 }
 
