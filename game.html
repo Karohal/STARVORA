@@ -399,7 +399,7 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   <div class="th-row"><span>Cargo</span><span class="th-val" id="tp-cargo">—</span></div>
   <div class="section-header" onclick="toggleSection(this)">▸ ITINÉRAIRES</div>
   <div id="tp-stops"></div>
-  <button class="assign-btn" id="btn-add-stop" style="margin-top:4px" onclick="notify('Cliquez sur un bâtiment pour ajouter un arrêt','ok')">🗺 Ajouter un itinéraire</button>
+  <button class="assign-btn" id="btn-add-stop" style="margin-top:4px" onclick="window._addingStopTruckId=window._activeTruckId; window._addingStop=true; closeTruckPanel(); notify('Tapez sur un bâtiment pour l\'ajouter à l\'itinéraire','ok')">🗺 Ajouter un itinéraire</button>
   <button class="assign-btn" style="margin-top:4px;border-color:var(--error);color:var(--error)" onclick="deleteTruck(window._activeTruckId)">🗑 Supprimer ce camion</button>
 </div>
 
@@ -417,25 +417,25 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=051"></script>
-<script src="js/config/buildings.js?v=051"></script>
-<script src="js/config/trucks.js?v=051"></script>
-<script src="js/config/map.js?v=051"></script>
+<script src="js/config/resources.js?v=052"></script>
+<script src="js/config/buildings.js?v=052"></script>
+<script src="js/config/trucks.js?v=052"></script>
+<script src="js/config/map.js?v=052"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=051"></script>
-<script src="js/core/save.js?v=051"></script>
+<script src="js/core/state.js?v=052"></script>
+<script src="js/core/save.js?v=052"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=051"></script>
-<script src="js/engine/production.js?v=051"></script>
-<script src="js/engine/logistics.js?v=051"></script>
-<script src="js/engine/exploration.js?v=051"></script>
+<script src="js/engine/economy.js?v=052"></script>
+<script src="js/engine/production.js?v=052"></script>
+<script src="js/engine/logistics.js?v=052"></script>
+<script src="js/engine/exploration.js?v=052"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=051"></script>
+<script src="js/render/renderer.js?v=052"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=051"></script>
-<script src="js/ui/input.js?v=051"></script>
+<script src="js/ui/panels.js?v=052"></script>
+<script src="js/ui/input.js?v=052"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=051"></script>
+<script src="js/core/main.js?v=052"></script>
 
 </body>
 </html>
