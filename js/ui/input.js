@@ -181,17 +181,20 @@ function handleTap(sx, sy) {
     return;
   }
 
+  // Mode ajout de stop (panel camion ouvert + bouton "Ajouter un itinéraire" actif)
+  if (window._addingStop && window._addingStopTruckId) {
+    const key = `${col},${row}`;
+    if (state.buildings[key] || state.buildingQueue[key]) {
+      window._addingStop = false;
+      showStopPicker(window._addingStopTruckId, key);
+      window._addingStopTruckId = null;
+      return;
+    }
+  }
+
   // Sélectionner camion ou bâtiment
   const truck = findTruckAt(sx, sy);
   if (truck) {
-    // Mode ajout de stop
-    if (window._activeTruckId) {
-      const key = `${col},${row}`;
-      if (state.buildings[key] || state.buildingQueue[key]) {
-        showStopPicker(window._activeTruckId, key);
-      }
-      return;
-    }
     openTruckPanel(truck.id);
     return;
   }
@@ -246,14 +249,16 @@ function confirmStop(truckId, action) {
   window._pendingStopKey = null;
   document.getElementById('stop-picker')?.classList.remove('open');
   document.getElementById('stop-picker-overlay').style.display = 'none';
-  refreshTruckPanel(truckId);
+  openTruckPanel(truckId);
 }
 window.confirmStop = confirmStop;
 
 function cancelStopUI() {
   document.getElementById('stop-picker')?.classList.remove('open');
   document.getElementById('stop-picker-overlay').style.display = 'none';
+  const truckId = document.getElementById('stop-picker')?.dataset.truckId;
   window._pendingStopKey = null;
+  if (truckId) openTruckPanel(truckId);
 }
 window.cancelStop = cancelStopUI;
 
