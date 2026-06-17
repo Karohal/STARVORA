@@ -146,7 +146,8 @@ function drawBuilding(ctx, col, row, type) {
   // Citerne = cylindre
   if (type === 'warehouse_liquid') {
     drawCylinder(ctx, cx, cy, tw/3.5, th/7, bh, def.color, cam);
-    drawBuildingLabel(ctx, cx, cy, bh, th/7, col, row, def, cam);  
+    drawBuildingLabel(ctx, cx, cy, bh, th/7, col, row, def, cam);
+    drawTruckActivityIndicator(ctx, `${col},${row}`, cx, cy, bh, cam);
     return;
   }
 
@@ -154,12 +155,14 @@ function drawBuilding(ctx, col, row, type) {
   if (type === 'warehouse_gas') {
     drawSphere(ctx, cx, cy, tw/3, bh, def.color, cam);
     drawBuildingLabel(ctx, cx, cy - tw/3, 0, 0, col, row, def, cam);
+    drawTruckActivityIndicator(ctx, `${col},${row}`, cx, cy, bh, cam);
     return;
   }
 
   // Cube standard
   drawCube(ctx, cx, cy, bw, bh, th, def.color);
   drawBuildingLabel(ctx, cx, cy, bh, th/4, col, row, def, cam);
+  drawTruckActivityIndicator(ctx, `${col},${row}`, cx, cy, bh, cam);
 }
 
 function drawCube(ctx, cx, cy, bw, bh, th, color) {
@@ -247,6 +250,56 @@ function drawSphere(ctx, cx, cy, r, bh, color, cam) {
   ctx.arc(cx - r*0.25, centerY - r*0.25, r*0.2, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(255,255,255,0.3)';
   ctx.fill();
+}
+
+// Indicateur d'activité camion (chargement/déchargement) avec pulsation lente
+function drawTruckActivityIndicator(ctx, key, cx, cy, bh, cam) {
+  const truck = Object.values(state.trucks).find(t =>
+    t.atStop && t.route[t.routeIndex % t.route.length]?.key === key &&
+    (t.status === 'loading' || t.status === 'unloading')
+  );
+  if (!truck) return;
+
+  const isLoading = truck.status === 'loading';
+  const size  = 14 * cam.zoom;
+  const ix    = cx;
+  const iy    = cy - bh - 26 * cam.zoom;
+
+  // Pulsation sur 3 secondes : opacité 0.3 → 1.0 → 0.3
+  const t     = (Date.now() % 3000) / 3000;
+  const pulse = 0.3 + 0.7 * (0.5 - 0.5 * Math.cos(t * Math.PI * 2));
+
+  ctx.save();
+  ctx.globalAlpha = pulse;
+  ctx.strokeStyle = isLoading ? '#60c060' : '#f0c040';
+  ctx.lineWidth   = 2 * cam.zoom;
+  ctx.lineCap     = 'round';
+
+  // Bac en U (3 côtés : gauche, bas, droite)
+  ctx.beginPath();
+  ctx.moveTo(ix - size/2, iy - size/2);
+  ctx.lineTo(ix - size/2, iy + size/2);
+  ctx.lineTo(ix + size/2, iy + size/2);
+  ctx.lineTo(ix + size/2, iy - size/2);
+  ctx.stroke();
+
+  // Flèche : vers le bas pour chargement (entre dans le bac), vers le haut pour déchargement
+  ctx.beginPath();
+  if (isLoading) {
+    ctx.moveTo(ix, iy - size/2);
+    ctx.lineTo(ix, iy + size/4);
+    ctx.lineTo(ix - size/4, iy);
+    ctx.moveTo(ix, iy + size/4);
+    ctx.lineTo(ix + size/4, iy);
+  } else {
+    ctx.moveTo(ix, iy + size/2);
+    ctx.lineTo(ix, iy - size/4);
+    ctx.lineTo(ix - size/4, iy);
+    ctx.moveTo(ix, iy - size/4);
+    ctx.lineTo(ix + size/4, iy);
+  }
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawBuildingLabel(ctx, cx, cy, bh, topOffset, col, row, def, cam) {
