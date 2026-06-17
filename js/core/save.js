@@ -34,6 +34,7 @@ function saveGame() {
       hasTownhall:      state.hasTownhall,
       hdvStock:         state.hdvStock,
       exploredMaps:     state.exploredMaps,
+      factoryRemainder: state.factoryRemainder,
       explorationQueue: state.explorationQueue,
       explorationCount: state.explorationCount,
       cam:              state.cam,
@@ -84,6 +85,7 @@ function loadGame() {
     state.hasTownhall      = save.hasTownhall      ?? false;
     state.hdvStock         = save.hdvStock         ?? { stone:30, iron:20, coal:20, water:10 };
     state.exploredMaps     = save.exploredMaps     ?? { '1,1': true };
+    state.factoryRemainder = save.factoryRemainder ?? {};
     state.explorationQueue = save.explorationQueue ?? null;
     state.explorationCount = save.explorationCount ?? 0;
 
