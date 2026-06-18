@@ -111,6 +111,9 @@ function finalizeBuild(key, type, col, row) {
   if (Object.keys(WAREHOUSE_CATEGORIES).includes(type)) {
     state.warehouseStock[key] = {};
   }
+  if (type === 'research_warehouse') {
+    state.warehouseStock[key] = {};
+  }
   if (type === 'townhall') {
     state.hasTownhall = true;
     refreshBuildPanel();
