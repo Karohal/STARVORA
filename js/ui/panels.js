@@ -117,6 +117,8 @@ function openBuildingPanel(key, type) {
   document.getElementById('bp-factory-section').style.display   = isFactory   ? 'block' : 'none';
   document.getElementById('bp-warehouse-section').style.display = isWarehouse ? 'block' : 'none';
   document.getElementById('bp-workers-section').style.display   = hasWorkers  ? 'block' : 'none';
+  const researchEl = document.getElementById('bp-research-section');
+  if (researchEl) researchEl.style.display = (type === 'research_center') ? 'block' : 'none';
 
   if (isProducer)  refreshProductionPanel(key, type);
   if (isFactory)   refreshFactoryPanel(key);
