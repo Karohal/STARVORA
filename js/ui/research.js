@@ -38,11 +38,55 @@ function showResearchSubcategories(catId) {
   const sorted = [...cat.subcategories].sort((a,b) => a.label.localeCompare(b.label, 'fr'));
   body.innerHTML =
     `<button onclick="showResearchCategories()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;font-size:0.7rem;cursor:pointer;margin-bottom:10px">← Retour</button>` +
-    sorted.map(s => `
-      <div class="th-row" style="padding:10px 0;border-bottom:1px solid rgba(240,192,64,0.08)">
-        <span>${s.label}</span>
-        <span class="th-muted" style="font-size:0.65rem">Bientôt</span>
-      </div>
-    `).join('');
+    sorted.map(s => {
+      const key   = catId + '.' + s.id;
+      const items = RESEARCH_ITEMS[key];
+      const itemsHtml = items
+        ? items.map(it => renderResearchItem(key, it)).join('')
+        : `<div class="th-muted" style="padding:6px 0;font-size:0.65rem">Bientôt</div>`;
+      return `
+        <div style="margin-bottom:14px">
+          <div style="font-size:0.78rem;color:var(--gold);border-bottom:1px solid rgba(240,192,64,0.15);padding-bottom:4px;margin-bottom:6px">${s.label}</div>
+          ${itemsHtml}
+        </div>
+      `;
+    }).join('');
 }
 window.showResearchSubcategories = showResearchSubcategories;
+
+function renderResearchItem(key, item) {
+  const unlocked = !!(state.unlockedResearch && state.unlockedResearch[item.id]);
+  const resHtml = Object.entries(item.resources || {})
+    .map(([r,q]) => (RESOURCE_LABELS[r] ?? r) + ' x' + q).join(', ');
+  if (unlocked) {
+    return `<div class="th-row" style="padding:8px 0;color:var(--success)"><span>✅ ${item.label}</span></div>`;
+  }
+  return `
+    <div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+      <div class="th-row"><span>${item.label}</span><span class="th-val">${item.cost} 💰</span></div>
+      <div class="th-muted" style="font-size:0.62rem;margin-bottom:6px">${resHtml}</div>
+      <button onclick="unlockResearch('${item.id}','${key}')" class="assign-btn" style="width:100%;border-color:var(--cyan);color:var(--cyan)">Débloquer</button>
+    </div>
+  `;
+}
+
+function unlockResearch(itemId, key) {
+  const item = (RESEARCH_ITEMS[key] || []).find(i => i.id === itemId);
+  if (!item) return;
+  if (state.money < item.cost) return notify('Pas assez d\'argent !', 'err');
+  for (const [r, q] of Object.entries(item.resources || {})) {
+    const have = state.hdvStock?.[r] ?? 0;
+    if (have < q) return notify('Ressources insuffisantes : ' + (RESOURCE_LABELS[r] ?? r), 'err');
+  }
+  state.money -= item.cost;
+  for (const [r, q] of Object.entries(item.resources || {})) {
+    state.hdvStock[r] -= q;
+  }
+  if (!state.unlockedResearch) state.unlockedResearch = {};
+  state.unlockedResearch[itemId] = true;
+  updateStats();
+  if (typeof refreshBuildPanel === 'function') refreshBuildPanel();
+  notify('🔬 ' + item.label + ' débloqué !', 'ok');
+  showResearchSubcategories(key.split('.')[0]);
+}
+window.unlockResearch = unlockResearch;
