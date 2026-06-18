@@ -118,7 +118,7 @@ const TRUCK_SPEED_NOROUTE = 0.05;
 function handleTruckStop(t, stop) {
   if (stop.action === 'load') {
     const bldTypeLoad = state.buildings[stop.key];
-    const isWarehouseLoad = bldTypeLoad && WAREHOUSE_CATEGORIES[bldTypeLoad] !== undefined;
+    const isWarehouseLoad = bldTypeLoad && (WAREHOUSE_CATEGORIES[bldTypeLoad] !== undefined || bldTypeLoad === 'research_warehouse');
 
     if (isWarehouseLoad) {
       const assignedW = state.assignedWorkers[stop.key] ?? 0;
@@ -215,12 +215,13 @@ function handleTruckStop(t, stop) {
 
     // Entrepôts
     const ws       = state.warehouseStock[stop.key];
+    const isResearchWh = bldType === 'research_warehouse';
     const allowCat = WAREHOUSE_CATEGORIES[bldType] ?? 'solid';
     const truckCat = TRUCK_TYPES[t.truckType ?? 'standard']?.category ?? 'solid';
     const assigned = state.assignedWorkers[stop.key] ?? 0;
     if (ws !== undefined && assigned === 0) {
       t.status = 'unloading'; // pas de travailleur, camion attend
-    } else if (ws !== undefined && allowCat === truckCat) {
+    } else if (ws !== undefined && (isResearchWh || allowCat === truckCat)) {
       for (const [res, qty] of Object.entries(t.cargo)) ws[res] = (ws[res] ?? 0) + qty;
       t.cargo = {};
       advanceTruck(t);
