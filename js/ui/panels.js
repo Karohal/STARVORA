@@ -106,7 +106,7 @@ function openBuildingPanel(key, type) {
 
   const isProducer  = ['mine','quarry','well','sorting','crusher','refinery','water_plant'].includes(type);
   const isFactory   = type === 'vehiclefactory';
-  const isWarehouse = Object.keys(WAREHOUSE_CATEGORIES).includes(type);
+  const isWarehouse = Object.keys(WAREHOUSE_CATEGORIES).includes(type) || type === 'research_warehouse';
   const hasWorkers  = (BASE_WORKERS[type] ?? 0) > 0;
 
   document.getElementById('bp-prod-section').style.display      = isProducer  ? 'block' : 'none';
@@ -228,11 +228,14 @@ function refreshWarehousePanel(key, type) {
   const level    = state.buildingLevels[key] ?? 0;
   const capacity = warehouseCapacity(level);
   const stock    = state.warehouseStock[key] ?? {};
+  const isResearchWh = type === 'research_warehouse';
   const allowCat = WAREHOUSE_CATEGORIES[type] ?? 'solid';
 
-  const filtered = Object.entries(RESOURCE_LABELS).filter(([res]) =>
-    (RESOURCE_CATEGORY[res] ?? 'solid') === allowCat
-  );
+  const filtered = isResearchWh
+    ? Object.entries(RESOURCE_LABELS)
+    : Object.entries(RESOURCE_LABELS).filter(([res]) =>
+        (RESOURCE_CATEGORY[res] ?? 'solid') === allowCat
+      );
   const total = filtered.reduce((sum,[res]) => sum+(stock[res]??0), 0);
   const html  = filtered.filter(([res])=>(stock[res]??0)>0)
     .map(([res,label])=>`<div class="th-row"><span>${label}</span><span class="th-val">${stock[res]}</span></div>`)
