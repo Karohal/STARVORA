@@ -89,18 +89,40 @@ function renderResearchItem(key, item) {
   `;
 }
 
+function getResearchWarehouseStock() {
+  const total = {};
+  for (const [key, type] of Object.entries(state.buildings)) {
+    if (type !== 'research_warehouse') continue;
+    const ws = state.warehouseStock[key] ?? {};
+    for (const [r, q] of Object.entries(ws)) total[r] = (total[r] ?? 0) + q;
+  }
+  return total;
+}
+
 function unlockResearch(itemId, key) {
   const item = (RESEARCH_ITEMS[key] || []).find(i => i.id === itemId);
   if (!item) return;
   if (state.money < item.cost) return notify('Pas assez d\'argent !', 'err');
+
+  const stockTotal = getResearchWarehouseStock();
   for (const [r, q] of Object.entries(item.resources || {})) {
-    const have = state.hdvStock?.[r] ?? 0;
-    if (have < q) return notify('Ressources insuffisantes : ' + (RESOURCE_LABELS[r] ?? r), 'err');
+    if ((stockTotal[r] ?? 0) < q) return notify('Ressources insuffisantes : ' + (RESOURCE_LABELS[r] ?? r), 'err');
   }
+
   state.money -= item.cost;
+  // Déduire en piochant dans les entrepôts de recherche disponibles
   for (const [r, q] of Object.entries(item.resources || {})) {
-    state.hdvStock[r] -= q;
+    let remaining = q;
+    for (const [whKey, type] of Object.entries(state.buildings)) {
+      if (type !== 'research_warehouse' || remaining <= 0) continue;
+      const ws = state.warehouseStock[whKey];
+      if (!ws || !ws[r]) continue;
+      const take = Math.min(ws[r], remaining);
+      ws[r] -= take;
+      remaining -= take;
+    }
   }
+
   if (!state.unlockedResearch) state.unlockedResearch = {};
   state.unlockedResearch[itemId] = true;
   updateStats();
