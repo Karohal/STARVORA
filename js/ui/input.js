@@ -269,6 +269,7 @@ function placeBuilding(col, row) {
   if (!isValidPlacement(col, row, type)) {
     const req = EXTRACTOR_RESOURCES[type];
     if (req) return notify('⛏️ Pose sur : ' + req.map(r => RESOURCE_LABELS[r]??r).join(' ou ') + ' !', 'err');
+    if (type === 'research_warehouse') return notify('📦 Doit être adjacent au Centre de Recherche !', 'err');
     return notify('Impossible ici !', 'err');
   }
   const def = BUILDING_DEF[type];
@@ -343,6 +344,14 @@ function isValidPlacement(col, row, type) {
   if (EXTRACTOR_RESOURCES[type]) {
     const res = state.resources[row]?.[col];
     if (!res || !EXTRACTOR_RESOURCES[type].includes(res)) return false;
+  }
+  if (type === 'research_warehouse') {
+    const adjacent = Object.entries(state.buildings).some(([key, t]) => {
+      if (t !== 'research_center') return false;
+      const [bc, br] = key.split(',').map(Number);
+      return Math.abs(bc - col) <= 1 && Math.abs(br - row) <= 1 && !(bc === col && br === row);
+    });
+    if (!adjacent) return false;
   }
   return true;
 }
