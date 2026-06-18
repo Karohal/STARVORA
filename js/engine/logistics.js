@@ -117,6 +117,38 @@ const TRUCK_SPEED_NOROUTE = 0.05;
 // ============================================================
 function handleTruckStop(t, stop) {
   if (stop.action === 'load') {
+    const bldTypeLoad = state.buildings[stop.key];
+    const isWarehouseLoad = bldTypeLoad && WAREHOUSE_CATEGORIES[bldTypeLoad] !== undefined;
+
+    if (isWarehouseLoad) {
+      const assignedW = state.assignedWorkers[stop.key] ?? 0;
+      if (assignedW === 0) { t.status = 'loading'; return; }
+
+      const ws = state.warehouseStock[stop.key];
+      if (!ws) { t.status = 'loading'; return; }
+
+      const loaded2 = Object.values(t.cargo).reduce((a,b)=>a+b,0);
+      const space2  = t.capacity - loaded2;
+      if (space2 <= 0) { advanceTruck(t); return; }
+
+      const truckCat2 = TRUCK_TYPES[t.truckType ?? 'standard']?.category ?? 'solid';
+      let resKey = null, availQty = 0;
+      for (const [r, q] of Object.entries(ws)) {
+        if (q > 0 && (RESOURCE_CATEGORY[r] ?? 'solid') === truckCat2) { resKey = r; availQty = q; break; }
+      }
+      if (!resKey) { t.status = 'loading'; return; }
+
+      const qty2 = Math.min(space2, availQty);
+      t.cargo[resKey] = (t.cargo[resKey] ?? 0) + qty2;
+      ws[resKey] -= qty2;
+      t.status = 'loading';
+      updateProductionUI();
+
+      const newLoaded2 = Object.values(t.cargo).reduce((a,b)=>a+b,0);
+      if (newLoaded2 >= t.capacity) advanceTruck(t);
+      return;
+    }
+
     const stock  = state.internalStock[stop.key];
     if (!stock) { t.status = 'loading'; return; }
 
