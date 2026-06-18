@@ -204,7 +204,7 @@ const BUILDING_DEF = {
 
     info: "<p>Le <strong style='color:var(--gold)'>Concasseur</strong> transforme la pierre brute en pierre traitée, cristaux et pierres précieuses.</p>"
       + "<p style='margin-top:8px'>Rendement : 50% pierre traitée, 30% déchets, 15% cristaux de roche, 5% pierres précieuses.</p>",
-    unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'quarry'),
+    unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'quarry') && !!s.unlockedResearch?.crusher_unlock,
   },
   refinery: {
     icon: '🏭', name: 'Raffinerie',
@@ -215,7 +215,7 @@ const BUILDING_DEF = {
 
     info: "<p>La <strong style='color:var(--gold)'>Raffinerie</strong> transforme le pétrole brut en produits dérivés.</p>"
       + "<p style='margin-top:8px'>Rendement : 20% gaz, 30% carburant, 30% résidu pétrolier (réutilisable plus tard), 20% déchets.</p>",
-    unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'well'),
+    unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'well') && !!s.unlockedResearch?.refinery_unlock,
   },
   water_plant: {
     icon: '💧', name: 'Usine de Traitement de l\'Eau',
@@ -226,7 +226,7 @@ const BUILDING_DEF = {
 
     info: "<p>L'<strong style='color:var(--gold)'>Usine de Traitement de l'Eau</strong> purifie l'eau brute.</p>"
       + "<p style='margin-top:8px'>Rendement : 50% eau potable, 20% calcaire, 30% déchets.</p>",
-    unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'well'),
+    unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'well') && !!s.unlockedResearch?.water_plant_unlock,
   },
   research_center: {
     icon: '🔬', name: 'Centre de Recherche Industriel',
