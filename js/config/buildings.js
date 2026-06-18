@@ -242,6 +242,17 @@ const BUILDING_DEF = {
       Object.keys(WAREHOUSE_TYPES ?? {}).includes(t)
     ),
   },
+  research_warehouse: {
+    icon: '📦', name: 'Entrepôt de Recherche',
+    cost: 350, color: '#806040',
+    workers: 2, w: 1, h: 1,
+    group: 'factory',
+    description: "Stocke toutes les ressources nécessaires aux recherches. Doit être construit autour du Centre de Recherche.",
+    info: "<p>L'<strong style='color:var(--gold)'>Entrepôt de Recherche</strong> accepte toutes les catégories de ressources (solide, liquide, gaz, déchet, dangereux).</p>"
+      + "<p style='margin-top:8px'>Il doit être construit sur une tuile adjacente au Centre de Recherche Industriel.</p>"
+      + "<p style='margin-top:8px;color:var(--muted);font-size:0.68rem'>Les ressources stockées ici sont consommées lors du déblocage des recherches.</p>",
+    unlockCondition: (s) => Object.values(s.buildings).some(t => t === 'research_center'),
+  },
   vehiclefactory: {
     icon: '🏗️', name: 'Usine de Véhicules',
     cost: 300, color: '#505050',
@@ -279,7 +290,7 @@ const BUILD_GROUPS = [
   {
     id: 'factory',
     label: '🏭 Usines',
-    types: ['research_center', 'sorting', 'crusher', 'refinery', 'water_plant', 'vehiclefactory'],
+    types: ['research_center', 'research_warehouse', 'sorting', 'crusher', 'refinery', 'water_plant', 'vehiclefactory'],
   },
 ];
 
@@ -292,6 +303,7 @@ const BUILD_TIME = {
   road:         3,
   hospital:     30,
   research_center: 45,
+  research_warehouse: 30,
   stargate:     60,
   mine:         15,
   quarry:       15,
@@ -312,7 +324,7 @@ const BUILD_TIME = {
 // COÛT DE NIVEAU UP (base × 1.2^niveau)
 // ============================================================
 const LEVELUP_BASE_COST = {
-  townhall: 50, house: 30, hospital: 80, research_center: 120,
+  townhall: 50, house: 30, hospital: 80, research_center: 120, research_warehouse: 90,
   mine: 80, quarry: 60, well: 40,
   road: 5, stargate: 200,
   sorting: 100, crusher: 100, refinery: 150, water_plant: 120,
@@ -323,7 +335,7 @@ const LEVELUP_BASE_COST = {
 
 // Workers de base par bâtiment
 const BASE_WORKERS = {
-  townhall: 2, house: 0, road: 0, hospital: 6, research_center: 8, stargate: 2,
+  townhall: 2, house: 0, road: 0, hospital: 6, research_center: 8, research_warehouse: 2, stargate: 2,
   mine: 4, quarry: 3, well: 2,
   sorting: 5, crusher: 4, refinery: 6, water_plant: 4,
   warehouse: 2, warehouse_liquid: 2, warehouse_waste: 2,
