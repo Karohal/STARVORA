@@ -49,6 +49,7 @@ const state = {
 
   // HdV
   hasTownhall: false,
+  unlockedResearch: {},
   hdvStock: {
     stone: 30,
     iron:  20,
