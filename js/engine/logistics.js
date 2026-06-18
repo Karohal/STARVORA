@@ -185,7 +185,10 @@ function handleTruckStop(t, stop) {
     const ws       = state.warehouseStock[stop.key];
     const allowCat = WAREHOUSE_CATEGORIES[bldType] ?? 'solid';
     const truckCat = TRUCK_TYPES[t.truckType ?? 'standard']?.category ?? 'solid';
-    if (ws !== undefined && allowCat === truckCat) {
+    const assigned = state.assignedWorkers[stop.key] ?? 0;
+    if (ws !== undefined && assigned === 0) {
+      t.status = 'unloading'; // pas de travailleur, camion attend
+    } else if (ws !== undefined && allowCat === truckCat) {
       for (const [res, qty] of Object.entries(t.cargo)) ws[res] = (ws[res] ?? 0) + qty;
       t.cargo = {};
       advanceTruck(t);
