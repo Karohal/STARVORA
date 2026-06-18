@@ -218,6 +218,21 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   </div>
 </div>
 
+<!-- PANEL RECHERCHE -->
+<div id="research-overlay" onclick="closeResearchPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:69"></div>
+<div id="research-panel" style="
+  display:none; position:fixed; top:5vh; left:50%; transform:translateX(-50%);
+  background:rgba(5,5,15,0.98); border:1px solid var(--gold);
+  width:min(420px,94vw); height:90vh; z-index:70;
+  display:none; flex-direction:column;
+">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;border-bottom:1px solid var(--border)">
+    <div id="research-title" style="font-size:0.95rem;color:var(--gold);letter-spacing:0.1em">🔬 Centre de Recherche</div>
+    <button onclick="closeResearchPanel()" style="background:transparent;border:1px solid var(--border);color:var(--muted);width:28px;height:28px;cursor:pointer">✕</button>
+  </div>
+  <div id="research-body" style="flex:1;overflow-y:auto;padding:14px;touch-action:pan-y"></div>
+</div>
+
 <!-- PANEL INFO GÉNÉRIQUE BÂTIMENTS -->
 <div id="building-info-overlay" onclick="closeBuildingInfo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:59"></div>
 <div id="building-info-panel" style="
@@ -385,6 +400,10 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   <div id="bp-hdv-stock" style="display:none;margin-bottom:4px"></div>
 
   <!-- Level up -->
+  <div id="bp-research-section" style="display:none;margin-bottom:6px">
+    <button class="assign-btn" onclick="openResearchPanel()" style="width:100%;border-color:var(--cyan);color:var(--cyan)">🔬 Ouvrir l'arbre de recherche</button>
+  </div>
+
   <button class="assign-btn" id="bp-levelup-btn" data-key="" data-type="" onclick="buildingLevelUp()" style="margin-top:6px;border-color:var(--gold);color:var(--gold)">
     ⬆ Améliorer — <span id="bp-levelup-cost">—</span>
   </button>
@@ -417,25 +436,27 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=058"></script>
-<script src="js/config/buildings.js?v=058"></script>
-<script src="js/config/trucks.js?v=058"></script>
-<script src="js/config/map.js?v=058"></script>
+<script src="js/config/resources.js?v=059"></script>
+<script src="js/config/buildings.js?v=059"></script>
+<script src="js/config/research.js?v=059"></script>
+<script src="js/config/trucks.js?v=059"></script>
+<script src="js/config/map.js?v=059"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=058"></script>
-<script src="js/core/save.js?v=058"></script>
+<script src="js/core/state.js?v=059"></script>
+<script src="js/core/save.js?v=059"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=058"></script>
-<script src="js/engine/production.js?v=058"></script>
-<script src="js/engine/logistics.js?v=058"></script>
-<script src="js/engine/exploration.js?v=058"></script>
+<script src="js/engine/economy.js?v=059"></script>
+<script src="js/engine/production.js?v=059"></script>
+<script src="js/engine/logistics.js?v=059"></script>
+<script src="js/engine/exploration.js?v=059"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=058"></script>
+<script src="js/render/renderer.js?v=059"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=058"></script>
-<script src="js/ui/input.js?v=058"></script>
+<script src="js/ui/panels.js?v=059"></script>
+<script src="js/ui/research.js?v=059"></script>
+<script src="js/ui/input.js?v=059"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=058"></script>
+<script src="js/core/main.js?v=059"></script>
 
 </body>
 </html>
