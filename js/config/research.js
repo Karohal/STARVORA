@@ -29,3 +29,14 @@ const RESEARCH_CATEGORIES = {
     ],
   },
 };
+
+// Recherches par sous-catégorie : "civil.industrie", "military.industrie", etc.
+const RESEARCH_ITEMS = {
+  'civil.industrie': [
+    { id: 'crusher_unlock',   label: 'Concasseur',          cost: 500, resources: { stone: 20 } },
+    { id: 'refinery_unlock',  label: 'Raffinerie',          cost: 800, resources: { iron_r: 30 } },
+    { id: 'water_plant_unlock', label: 'Usine d\'eau',      cost: 600, resources: { stone: 15 } },
+    { id: 'forge_unlock',     label: 'Usine de forge',      cost: 1200, resources: { iron_r: 50, coal_r: 30 } },
+    { id: 'metallurgy_unlock',label: 'Usine métallurgique', cost: 1500, resources: { iron_r: 60, coal_r: 40 } },
+  ],
+};
