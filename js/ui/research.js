@@ -45,14 +45,33 @@ function showResearchSubcategories(catId) {
         ? items.map(it => renderResearchItem(key, it)).join('')
         : `<div class="th-muted" style="padding:6px 0;font-size:0.65rem">Bientôt</div>`;
       return `
-        <div style="margin-bottom:14px">
-          <div style="font-size:0.78rem;color:var(--gold);border-bottom:1px solid rgba(240,192,64,0.15);padding-bottom:4px;margin-bottom:6px">${s.label}</div>
-          ${itemsHtml}
+        <div style="margin-bottom:10px">
+          <button onclick="toggleResearchGroup('${s.id}')" style="
+            display:flex;align-items:center;justify-content:space-between;width:100%;
+            background:rgba(240,192,64,0.05);border:1px solid var(--border);
+            color:var(--gold);padding:10px;font-size:0.78rem;cursor:pointer;text-align:left;
+          ">
+            <span>${s.label}</span>
+            <span id="research-arrow-${s.id}">▸</span>
+          </button>
+          <div id="research-group-${s.id}" style="display:none;padding:8px 4px 0">
+            ${itemsHtml}
+          </div>
         </div>
       `;
     }).join('');
 }
 window.showResearchSubcategories = showResearchSubcategories;
+
+function toggleResearchGroup(subId) {
+  const el    = document.getElementById('research-group-' + subId);
+  const arrow = document.getElementById('research-arrow-' + subId);
+  if (!el) return;
+  const open = el.style.display === 'block';
+  el.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.textContent = open ? '▸' : '▾';
+}
+window.toggleResearchGroup = toggleResearchGroup;
 
 function renderResearchItem(key, item) {
   const unlocked = !!(state.unlockedResearch && state.unlockedResearch[item.id]);
