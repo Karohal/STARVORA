@@ -63,27 +63,29 @@ function drawSelectedTileHighlight(ctx) {
   ctx.restore();
 }
 
-// Dessine une voie routière en rectangle allant du centre vers un bord de tuile (N/S/E/O)
+// Dessine une voie routière traversant toute la tuile selon un axe (NS ou OE)
 function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
-  const cx = s.x, cy = s.y + th/2; // centre du losange
   const corners = {
-    N: { x: s.x,        y: s.y        }, // coin haut
-    S: { x: s.x,        y: s.y + th   }, // coin bas
-    E: { x: s.x + tw/2, y: s.y + th/2 }, // coin droit
-    O: { x: s.x - tw/2, y: s.y + th/2 }, // coin gauche
+    N: { x: s.x,        y: s.y        },
+    S: { x: s.x,        y: s.y + th   },
+    E: { x: s.x + tw/2, y: s.y + th/2 },
+    O: { x: s.x - tw/2, y: s.y + th/2 },
   };
-  const target = corners[orientation] ?? corners.N;
-  const dx = target.x - cx, dy = target.y - cy;
-  // Vecteur perpendiculaire pour la largeur de la voie (moitié de la largeur tuile)
+  // Axe N-S ou O-E selon orientation choisie
+  const isNS = (orientation === 'N' || orientation === 'S');
+  const from = isNS ? corners.N : corners.O;
+  const to   = isNS ? corners.S : corners.E;
+
+  const dx = to.x - from.x, dy = to.y - from.y;
   const len = Math.sqrt(dx*dx + dy*dy) || 1;
   const px = -dy / len, py = dx / len;
-  const halfWidth = (orientation === 'N' || orientation === 'S' ? tw : th) * 0.18;
+  const halfWidth = (isNS ? tw : th) * 0.18;
 
   ctx.beginPath();
-  ctx.moveTo(cx + px*halfWidth, cy + py*halfWidth);
-  ctx.lineTo(cx - px*halfWidth, cy - py*halfWidth);
-  ctx.lineTo(target.x - px*halfWidth, target.y - py*halfWidth);
-  ctx.lineTo(target.x + px*halfWidth, target.y + py*halfWidth);
+  ctx.moveTo(from.x + px*halfWidth, from.y + py*halfWidth);
+  ctx.lineTo(from.x - px*halfWidth, from.y - py*halfWidth);
+  ctx.lineTo(to.x - px*halfWidth,   to.y - py*halfWidth);
+  ctx.lineTo(to.x + px*halfWidth,   to.y + py*halfWidth);
   ctx.closePath();
   ctx.fillStyle = '#605040';
   ctx.fill();
@@ -93,8 +95,8 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
   ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
   ctx.beginPath();
-  ctx.moveTo(cx, cy);
-  ctx.lineTo(target.x, target.y);
+  ctx.moveTo(from.x, from.y);
+  ctx.lineTo(to.x, to.y);
   ctx.stroke();
   ctx.setLineDash([]);
 }
