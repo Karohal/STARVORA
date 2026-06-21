@@ -73,52 +73,77 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const cx = s.x;
   const mid = (a, b) => ({ x: (a.x+b.x)/2, y: (a.y+b.y)/2 });
 
-  // Virages 90° (nouvelles orientations, branche séparée, ne touche pas au code droit)
+  // Virages 90° (4 orientations, arc rond compensé pour la perspective iso)
   if (orientation === 'NE' || orientation === 'NO' || orientation === 'SE' || orientation === 'SO') {
-    const midNO = mid(N, O), midNE = mid(N, E), midOSp = mid(O, Sp), midSpE = mid(Sp, E);
-    const center = { x: cx, y: cy };
-    const sideNO = { x: O.x - N.x, y: O.y - N.y };
-    const sideNE = { x: E.x - N.x, y: E.y - N.y };
-    const halfWidth = Math.min(tw, th) * 0.15;
+    const isoRatio = th / tw;
 
-    const buildSeg = (from, to, sideDir) => {
-      const sideLen = Math.sqrt(sideDir.x*sideDir.x + sideDir.y*sideDir.y) || 1;
-      const wxN = sideDir.x/sideLen, wyN = sideDir.y/sideLen;
-      return [
-        { x: from.x + wxN*halfWidth, y: from.y + wyN*halfWidth },
-        { x: to.x   + wxN*halfWidth, y: to.y   + wyN*halfWidth },
-        { x: to.x   - wxN*halfWidth, y: to.y   - wyN*halfWidth },
-        { x: from.x - wxN*halfWidth, y: from.y - wyN*halfWidth },
-      ];
+    const toIso   = (p, pivot) => ({ x: p.x - pivot.x, y: (p.y - pivot.y) / isoRatio });
+    const fromIso = (p, pivot) => ({ x: p.x + pivot.x, y: p.y * isoRatio + pivot.y });
+
+    const configs = {
+      NE: { pivot: N,  sideA: [N, O], sideB: [N, E]  },
+      NO: { pivot: O,  sideA: [N, O], sideB: [O, Sp] },
+      SE: { pivot: E,  sideA: [N, E], sideB: [E, Sp] },
+      SO: { pivot: Sp, sideA: [O, Sp],sideB: [E, Sp] },
     };
-    const drawPoly = (pts) => {
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-      ctx.closePath();
-      ctx.fillStyle = '#605040';
-      ctx.fill();
+    const { pivot, sideA, sideB } = configs[orientation];
+    const midA = mid(sideA[0], sideA[1]);
+    const midB = mid(sideB[0], sideB[1]);
+
+    // Largeur identique à la route droite (perpDist*0.55)
+    const midNO = mid(N, O), midNE = mid(N, E), midSpE = mid(Sp, E);
+    const axU = { x: midSpE.x - midNO.x, y: midSpE.y - midNO.y };
+    const axLen = Math.sqrt(axU.x*axU.x + axU.y*axU.y) || 1;
+    const axUN = { x: axU.x/axLen, y: axU.y/axLen };
+    const axV  = { x: -axUN.y, y: axUN.x };
+    const dxp  = midNE.x - midNO.x, dyp = midNE.y - midNO.y;
+    const halfWidth = Math.abs(dxp*axV.x + dyp*axV.y) * 0.55;
+
+    const midA_iso = toIso(midA, pivot);
+    const midB_iso = toIso(midB, pivot);
+    const rMidIso = Math.sqrt(midA_iso.x*midA_iso.x + midA_iso.y*midA_iso.y);
+    const rExtIso = rMidIso + halfWidth;
+    const rIntIso = rMidIso - halfWidth;
+
+    let angA = Math.atan2(midA_iso.y, midA_iso.x);
+    let angB = Math.atan2(midB_iso.y, midB_iso.x);
+    let diff = angB - angA;
+    if (diff > Math.PI) angB -= 2*Math.PI;
+    else if (diff < -Math.PI) angB += 2*Math.PI;
+
+    const arcPts = (r, a1, a2, steps) => {
+      const pts = [];
+      for (let i = 0; i <= steps; i++) {
+        const a = a1 + (a2-a1)*i/steps;
+        const pIso = { x: r*Math.cos(a), y: r*Math.sin(a) };
+        pts.push(fromIso(pIso, pivot));
+      }
+      return pts;
     };
 
-    // Chaque orientation relie 2 côtés adjacents distincts via le centre
-    const pairs = {
-      NE: [midNO, sideNO, midNE, sideNE],
-      NO: [midNE, sideNE, midNO, sideNO],
-      SE: [midOSp, sideNO, midSpE, sideNE],
-      SO: [midSpE, sideNE, midOSp, sideNO],
-    };
-    const [fromPt, fromSide, toPt, toSide] = pairs[orientation];
-    drawPoly(buildSeg(fromPt, center, fromSide));
-    drawPoly(buildSeg(center, toPt, toSide));
+    const arcIn  = arcPts(rIntIso, angA, angB, 24);
+    const arcOut = arcPts(rExtIso, angB, angA, 24);
 
-    // Trait blanc médian sur les 2 segments
+    ctx.beginPath();
+    ctx.moveTo(arcIn[0].x, arcIn[0].y);
+    for (let i = 1; i < arcIn.length; i++) ctx.lineTo(arcIn[i].x, arcIn[i].y);
+    for (let i = 0; i < arcOut.length; i++) ctx.lineTo(arcOut[i].x, arcOut[i].y);
+    ctx.closePath();
+    ctx.fillStyle = '#605040';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // Trait blanc médian (arc à rayon moyen)
+    const rMidArc = (rExtIso + rIntIso) / 2;
+    const arcMid = arcPts(rMidArc, angA, angB, 24);
     ctx.strokeStyle = 'rgba(255,255,255,0.7)';
     ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
     ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
     ctx.beginPath();
-    ctx.moveTo(fromPt.x, fromPt.y);
-    ctx.lineTo(center.x, center.y);
-    ctx.lineTo(toPt.x, toPt.y);
+    ctx.moveTo(arcMid[0].x, arcMid[0].y);
+    for (let i = 1; i < arcMid.length; i++) ctx.lineTo(arcMid[i].x, arcMid[i].y);
     ctx.stroke();
     ctx.setLineDash([]);
     return;
