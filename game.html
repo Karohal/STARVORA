@@ -422,9 +422,28 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   <div class="th-row"><span>Cargo</span><span class="th-val" id="tp-cargo">—</span></div>
   <div class="section-header" onclick="toggleSection(this)">▸ ITINÉRAIRES</div>
   <div id="tp-stops"></div>
+  <button class="assign-btn" id="btn-res-filter" style="margin-top:4px" onclick="openResourceFilterPanel()">📋 Ressources à transporter</button>
   <button class="assign-btn" id="btn-add-stop" style="margin-top:4px" onclick="window._addingStopTruckId=window._activeTruckId; window._addingStop=true; closeTruckPanel(); notify('Tapez sur un bâtiment pour l\'ajouter à l\'itinéraire','ok')">🗺 Ajouter un itinéraire</button>
   <button class="assign-btn" style="margin-top:4px;border-color:var(--error);color:var(--error)" onclick="deleteTruck(window._activeTruckId)">🗑 Supprimer ce camion</button>
 </div>
+
+<!-- PANEL FILTRE RESSOURCES CAMION -->
+<div id="resfilter-overlay" onclick="closeResourceFilterPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:69"></div>
+<div id="resfilter-panel" style="
+  display:none; position:fixed; top:8vh; left:50%; transform:translateX(-50%);
+  background:rgba(5,5,15,0.98); border:1px solid var(--gold);
+  width:min(340px,92vw); max-height:80vh; z-index:70; flex-direction:column;
+">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)">
+    <div style="font-size:0.85rem;color:var(--gold)">📋 Ressources à transporter</div>
+    <button onclick="closeResourceFilterPanel()" style="background:transparent;border:1px solid var(--border);color:var(--muted);width:26px;height:26px;cursor:pointer">✕</button>
+  </div>
+  <div id="resfilter-body" style="overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:12px;flex:1"></div>
+  <div style="padding:10px;border-top:1px solid var(--border)">
+    <button class="assign-btn" style="width:100%" onclick="closeResourceFilterPanel()">Valider</button>
+  </div>
+</div>
+<style>#resfilter-panel, #resfilter-panel * { touch-action: pan-y !important; }</style>
 
 <!-- NOTIFICATIONS -->
 <div id="notif" class="notif"></div>
@@ -440,27 +459,27 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=063"></script>
-<script src="js/config/buildings.js?v=063"></script>
-<script src="js/config/research.js?v=063"></script>
-<script src="js/config/trucks.js?v=063"></script>
-<script src="js/config/map.js?v=063"></script>
+<script src="js/config/resources.js?v=064"></script>
+<script src="js/config/buildings.js?v=064"></script>
+<script src="js/config/research.js?v=064"></script>
+<script src="js/config/trucks.js?v=064"></script>
+<script src="js/config/map.js?v=064"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=063"></script>
-<script src="js/core/save.js?v=063"></script>
+<script src="js/core/state.js?v=064"></script>
+<script src="js/core/save.js?v=064"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=063"></script>
-<script src="js/engine/production.js?v=063"></script>
-<script src="js/engine/logistics.js?v=063"></script>
-<script src="js/engine/exploration.js?v=063"></script>
+<script src="js/engine/economy.js?v=064"></script>
+<script src="js/engine/production.js?v=064"></script>
+<script src="js/engine/logistics.js?v=064"></script>
+<script src="js/engine/exploration.js?v=064"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=063"></script>
+<script src="js/render/renderer.js?v=064"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=063"></script>
-<script src="js/ui/research.js?v=063"></script>
-<script src="js/ui/input.js?v=063"></script>
+<script src="js/ui/panels.js?v=064"></script>
+<script src="js/ui/research.js?v=064"></script>
+<script src="js/ui/input.js?v=064"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=063"></script>
+<script src="js/core/main.js?v=064"></script>
 
 </body>
 </html>
