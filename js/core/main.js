@@ -94,14 +94,15 @@ function updateBuildingQueue() {
   const now = Date.now();
   for (const [key, q] of Object.entries(state.buildingQueue)) {
     q.progress = Math.min(1, (now - q.startTime) / q.duration);
-    if (q.progress >= 1) finalizeBuild(key, q.type, q.col, q.row);
+    if (q.progress >= 1) finalizeBuild(key, q.type, q.col, q.row, q.orientation);
   }
 }
 
-function finalizeBuild(key, type, col, row) {
+function finalizeBuild(key, type, col, row, orientation) {
   delete state.buildingQueue[key];
   state.buildings[key]      = type;
   state.buildingLevels[key] = 0;
+  if (orientation) state.buildingOrientation[key] = orientation;
 
   if (['mine','quarry','well'].includes(type)) {
     state.internalStock[key] = { solid: {}, liquid: {}, waste: 0 };
