@@ -223,10 +223,19 @@ function handleTruckStop(t, stop) {
     if (ws !== undefined && assigned === 0) {
       t.status = 'unloading'; // pas de travailleur, camion attend
     } else if (ws !== undefined && (isResearchWh || allowCat === truckCat)) {
+      const wLevel = state.buildingLevels[stop.key] ?? 0;
+      const wCap   = warehouseCapacity(wLevel);
+      let wTotal   = Object.values(ws).reduce((a,b)=>a+b,0);
       const remainingCargo2 = {};
       for (const [res, qty] of Object.entries(t.cargo)) {
         if (!t.resourceFilter || t.resourceFilter.includes(res)) {
-          ws[res] = (ws[res] ?? 0) + qty;
+          const free = Math.max(0, wCap - wTotal);
+          const add  = Math.min(qty, free);
+          if (add > 0) {
+            ws[res] = (ws[res] ?? 0) + add;
+            wTotal += add;
+          }
+          if (qty - add > 0) remainingCargo2[res] = qty - add;
         } else {
           remainingCargo2[res] = qty;
         }
