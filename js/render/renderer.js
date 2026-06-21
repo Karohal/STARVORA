@@ -97,7 +97,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
     const axUN = { x: axU.x/axLen, y: axU.y/axLen };
     const axV  = { x: -axUN.y, y: axUN.x };
     const dxp  = midNE.x - midNO.x, dyp = midNE.y - midNO.y;
-    const halfWidth = Math.abs(dxp*axV.x + dyp*axV.y) * 0.55 * 1.265;
+    const halfWidth = Math.abs(dxp*axV.x + dyp*axV.y) * 0.55;
 
     const midA_iso = toIso(midA, pivot);
     const midB_iso = toIso(midB, pivot);
@@ -164,7 +164,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const dxp = otherFrom.x - from.x, dyp = otherFrom.y - from.y;
   const perpDist = Math.abs(dxp*vxN + dyp*vyN);
 
-  const halfWidth = perpDist * 0.55;
+  const halfWidth = perpDist * 0.55 * 0.79;
   const halfLen   = ulen / 2;
 
   // Direction du côté du losange proche de 'from' (N-O pour axe1, N-E pour axe2)
