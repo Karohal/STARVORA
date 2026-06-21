@@ -18,6 +18,7 @@ function createTruck(factoryKey, truckType) {
     capacity: def.capacity,
     status: 'idle',
     atStop: false, atStopTs: 0,
+    resourceFilter: null, // null = toutes ressources de la catégorie autorisées
   };
   return id;
 }
@@ -134,7 +135,7 @@ function handleTruckStop(t, stop) {
       const truckCat2 = TRUCK_TYPES[t.truckType ?? 'standard']?.category ?? 'solid';
       let resKey = null, availQty = 0;
       for (const [r, q] of Object.entries(ws)) {
-        if (q > 0 && (RESOURCE_CATEGORY[r] ?? 'solid') === truckCat2) { resKey = r; availQty = q; break; }
+        if (q > 0 && (RESOURCE_CATEGORY[r] ?? 'solid') === truckCat2 && (!t.resourceFilter || t.resourceFilter.includes(r))) { resKey = r; availQty = q; break; }
       }
       if (!resKey) { t.status = 'loading'; return; }
 
@@ -156,7 +157,7 @@ function handleTruckStop(t, stop) {
     const space  = t.capacity - loaded;
     if (space <= 0) { advanceTruck(t); return; }
 
-    const found = getLoadableResource(stock, t.truckType ?? 'standard');
+    const found = getLoadableResource(stock, t.truckType ?? 'standard', t.resourceFilter);
     if (!found) { t.status = 'loading'; return; }
 
     const qty = Math.min(space, found.availQty);
@@ -193,7 +194,7 @@ function handleTruckStop(t, stop) {
         let free = inCap - inTotal;
         const remainingCargo = {};
         for (const [res, qty] of Object.entries(t.cargo)) {
-          if (validIn.includes(res) && free > 0) {
+          if (validIn.includes(res) && free > 0 && (!t.resourceFilter || t.resourceFilter.includes(res))) {
             const add = Math.min(qty, free);
             s.input[res] = (s.input[res] ?? 0) + add;
             free -= add;
@@ -222,9 +223,20 @@ function handleTruckStop(t, stop) {
     if (ws !== undefined && assigned === 0) {
       t.status = 'unloading'; // pas de travailleur, camion attend
     } else if (ws !== undefined && (isResearchWh || allowCat === truckCat)) {
-      for (const [res, qty] of Object.entries(t.cargo)) ws[res] = (ws[res] ?? 0) + qty;
-      t.cargo = {};
-      advanceTruck(t);
+      const remainingCargo2 = {};
+      for (const [res, qty] of Object.entries(t.cargo)) {
+        if (!t.resourceFilter || t.resourceFilter.includes(res)) {
+          ws[res] = (ws[res] ?? 0) + qty;
+        } else {
+          remainingCargo2[res] = qty;
+        }
+      }
+      t.cargo = remainingCargo2;
+      if (Object.keys(t.cargo).length === 0) {
+        advanceTruck(t);
+      } else {
+        t.status = 'unloading';
+      }
       updateProductionUI();
     } else if (ws === undefined) {
       t.status = 'unloading';
