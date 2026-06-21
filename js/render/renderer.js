@@ -69,45 +69,56 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const Sp= { x: s.x,        y: s.y + th   };
   const E = { x: s.x + tw/2, y: s.y + th/2 };
   const O = { x: s.x - tw/2, y: s.y + th/2 };
-  const cy = s.y + th/2; // centre vertical du losange
-  const cx = s.x;        // centre horizontal du losange
+  const cy = s.y + th/2;
+  const cx = s.x;
+
+  // Interpolation linéaire d'un point sur un segment à une coordonnée donnée
+  const xOnEdge = (p1, p2, y) => p1.x + (y - p1.y) / (p2.y - p1.y) * (p2.x - p1.x);
+  const yOnEdge = (p1, p2, x) => p1.y + (x - p1.x) / (p2.x - p1.x) * (p2.y - p1.y);
 
   const isOE = (orientation === 'N' || orientation === 'O'); // route horizontale O-E
 
+  ctx.beginPath();
   if (isOE) {
     const halfH = th * 0.22;
-    ctx.beginPath();
-    ctx.rect(O.x, cy - halfH, E.x - O.x, halfH * 2);
-    ctx.fillStyle = '#605040';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
+    const yTop = cy - halfH, yBot = cy + halfH;
+    const xTopL = xOnEdge(N, O, yTop), xTopR = xOnEdge(N, E, yTop);
+    const xBotL = xOnEdge(O, Sp, yBot), xBotR = xOnEdge(E, Sp, yBot);
+    ctx.moveTo(xTopL, yTop);
+    ctx.lineTo(xTopR, yTop);
+    ctx.lineTo(xBotR, yBot);
+    ctx.lineTo(xBotL, yBot);
+    ctx.closePath();
+    ctx.fillStyle = '#605040'; ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
 
     ctx.strokeStyle = 'rgba(255,255,255,0.7)';
     ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
     ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
     ctx.beginPath();
-    ctx.moveTo(O.x, cy);
-    ctx.lineTo(E.x, cy);
+    ctx.moveTo(xTopL, cy);
+    ctx.lineTo(xTopR, cy);
     ctx.stroke();
     ctx.setLineDash([]);
   } else {
     const halfW = tw * 0.22;
-    ctx.beginPath();
-    ctx.rect(cx - halfW, N.y, halfW * 2, Sp.y - N.y);
-    ctx.fillStyle = '#605040';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
+    const xLeft = cx - halfW, xRight = cx + halfW;
+    const yLeftT  = yOnEdge(N, O, xLeft),  yRightT = yOnEdge(N, E, xRight);
+    const yLeftB  = yOnEdge(O, Sp, xLeft), yRightB = yOnEdge(E, Sp, xRight);
+    ctx.moveTo(xLeft,  yLeftT);
+    ctx.lineTo(xRight, yRightT);
+    ctx.lineTo(xRight, yRightB);
+    ctx.lineTo(xLeft,  yLeftB);
+    ctx.closePath();
+    ctx.fillStyle = '#605040'; ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
 
     ctx.strokeStyle = 'rgba(255,255,255,0.7)';
     ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
     ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
     ctx.beginPath();
-    ctx.moveTo(cx, N.y);
-    ctx.lineTo(cx, Sp.y);
+    ctx.moveTo(cx, yLeftT);
+    ctx.lineTo(cx, yLeftB);
     ctx.stroke();
     ctx.setLineDash([]);
   }
