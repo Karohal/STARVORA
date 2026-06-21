@@ -81,6 +81,7 @@ function drawFrame() {
     }
   }
 
+  drawSelectedTileHighlight(ctx);
   drawBuildingQueue(ctx);
   drawGhostPreview(ctx);
   drawTrucks(ctx);
