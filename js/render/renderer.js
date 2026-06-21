@@ -73,18 +73,22 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const cx = s.x;
   const mid = (a, b) => ({ x: (a.x+b.x)/2, y: (a.y+b.y)/2 });
 
-  const isOE = (orientation === 'N' || orientation === 'O'); // route horizontale O-E
-
-  // Axe principal décalé de 1/8 de tour (45°) : milieu de côté à milieu de côté opposé
-  const from = isOE ? mid(N, O) : mid(N, E);
-  const to   = isOE ? mid(Sp, E) : mid(Sp, O);
+  // 2 orientations distinctes : axe1 (N-O / Sp-E) ou axe2 (N-E / Sp-O)
+  const isAxis1 = (orientation === 'N');
+  const from = isAxis1 ? mid(N, O) : mid(N, E);
+  const to   = isAxis1 ? mid(Sp, E) : mid(Sp, O);
 
   const ux = to.x - from.x, uy = to.y - from.y;
   const ulen = Math.sqrt(ux*ux + uy*uy) || 1;
   const uxN = ux/ulen, uyN = uy/ulen;
   const vxN = -uyN, vyN = uxN;
 
-  const halfWidth = Math.min(tw, th) * 0.22;
+  // Largeur max sans dépasser : distance perpendiculaire à l'autre paire de milieux
+  const otherFrom = isAxis1 ? mid(N, E) : mid(N, O);
+  const dxp = otherFrom.x - from.x, dyp = otherFrom.y - from.y;
+  const perpDist = Math.abs(dxp*vxN + dyp*vyN);
+
+  const halfWidth = perpDist * 0.55;
   const halfLen   = ulen / 2;
 
   const p1 = { x: cx - uxN*halfLen + vxN*halfWidth, y: cy - uyN*halfLen + vyN*halfWidth };
