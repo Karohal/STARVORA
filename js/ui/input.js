@@ -287,7 +287,8 @@ function placeBuilding(col, row) {
   const duration= hdvEff > 0 ? Math.round(baseDur / hdvEff) : baseDur;
 
   state.money -= def.cost;
-  state.buildingQueue[`${col},${row}`] = { type, col, row, startTime: Date.now(), duration: duration*1000, progress: 0 };
+  const orientation = state.ghostBuilding?.orientation ?? 'N';
+  state.buildingQueue[`${col},${row}`] = { type, col, row, startTime: Date.now(), duration: duration*1000, progress: 0, orientation };
   updateStats();
   notify('🏗️ ' + def.icon + ' ' + def.name + ' en construction (' + duration + 's)...', 'ok');
 }
@@ -296,9 +297,17 @@ function placeBuilding(col, row) {
 function placeGhost(col, row) {
   const type  = state.selectedBuilding;
   const valid = isValidPlacement(col, row, type);
-  state.ghostBuilding = { type, col, row, valid };
+  state.ghostBuilding = { type, col, row, valid, orientation: 'N' };
   showConfirmBar();
 }
+
+function rotateGhostRoad() {
+  if (!state.ghostBuilding || state.ghostBuilding.type !== 'road') return;
+  const order = ['N','E','S','O'];
+  const idx   = order.indexOf(state.ghostBuilding.orientation ?? 'N');
+  state.ghostBuilding.orientation = order[(idx + 1) % 4];
+}
+window.rotateGhostRoad = rotateGhostRoad;
 
 function showConfirmBar() {
   const bar = document.getElementById('build-confirm-bar');
@@ -313,10 +322,13 @@ function updateConfirmBar() {
   const el  = document.getElementById('build-confirm-info');
   if (el) {
     const valid = g.valid;
-    el.textContent = (def?.icon ?? '') + ' ' + (def?.name ?? g.type) +
+    const orientText = g.type === 'road' ? ' (' + (g.orientation ?? 'N') + ')' : '';
+    el.textContent = (def?.icon ?? '') + ' ' + (def?.name ?? g.type) + orientText +
       ' — ' + (valid ? '✅ Emplacement valide' : '❌ Emplacement invalide');
     el.style.color = valid ? 'var(--success)' : 'var(--error)';
   }
+  const rotateBtn = document.getElementById('btn-rotate-road');
+  if (rotateBtn) rotateBtn.style.display = g.type === 'road' ? 'block' : 'none';
 }
 
 function confirmBuild() {
