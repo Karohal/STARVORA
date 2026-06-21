@@ -91,10 +91,19 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const halfWidth = perpDist * 0.55;
   const halfLen   = ulen / 2;
 
-  const p1 = { x: cx - uxN*halfLen + vxN*halfWidth, y: cy - uyN*halfLen + vyN*halfWidth };
-  const p2 = { x: cx + uxN*halfLen + vxN*halfWidth, y: cy + uyN*halfLen + vyN*halfWidth };
-  const p3 = { x: cx + uxN*halfLen - vxN*halfWidth, y: cy + uyN*halfLen - vyN*halfWidth };
-  const p4 = { x: cx - uxN*halfLen - vxN*halfWidth, y: cy - uyN*halfLen - vyN*halfWidth };
+  // Direction du côté du losange proche de 'from' (N-O pour axe1, N-E pour axe2)
+  // Les extrémités de la route sont parallèles à ce côté, pas perpendiculaires à l'axe
+  const sideRef = isAxis1 ? { x: O.x - N.x, y: O.y - N.y } : { x: E.x - N.x, y: E.y - N.y };
+  const sideLen = Math.sqrt(sideRef.x*sideRef.x + sideRef.y*sideRef.y) || 1;
+  const wxN = sideRef.x / sideLen, wyN = sideRef.y / sideLen;
+
+  const centerTo   = { x: cx + uxN*halfLen, y: cy + uyN*halfLen };
+  const centerFrom = { x: cx - uxN*halfLen, y: cy - uyN*halfLen };
+
+  const p1 = { x: centerFrom.x + wxN*halfWidth, y: centerFrom.y + wyN*halfWidth };
+  const p2 = { x: centerTo.x   + wxN*halfWidth, y: centerTo.y   + wyN*halfWidth };
+  const p3 = { x: centerTo.x   - wxN*halfWidth, y: centerTo.y   - wyN*halfWidth };
+  const p4 = { x: centerFrom.x - wxN*halfWidth, y: centerFrom.y - wyN*halfWidth };
 
   ctx.beginPath();
   ctx.moveTo(p1.x, p1.y);
