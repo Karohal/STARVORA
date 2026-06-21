@@ -94,6 +94,7 @@ function toggleResLayer() {
 function openBuildingPanel(key, type) {
   const def   = BUILDING_DEF[type];
   const level = state.buildingLevels[key] ?? 0;
+  state.selectedTileKey = key;
 
   // Stocker key/type pour mises à jour
   const btn = document.getElementById('bp-levelup-btn');
@@ -148,6 +149,7 @@ window.openBuildingPanel = openBuildingPanel;
 
 function closeBuildingPanel() {
   document.getElementById('building-panel')?.classList.remove('open');
+  state.selectedTileKey = null;
 }
 window.closeBuildingPanel = closeBuildingPanel;
 
