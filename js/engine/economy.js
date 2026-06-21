@@ -76,6 +76,7 @@ function agingTick() {
       r.age = (r.age ?? 0) + 1; // +1 minute = +1 an
       if (r.age === 18 && r.type === 'child') {
         r.type = 'adult';
+        r.workplace = null;
         changed = true;
         notify('🎓 Un enfant est devenu adulte !', 'ok');
       }
@@ -187,7 +188,7 @@ function scheduleHousing(key, type) {
   const occ   = state.houseOccupants[key];
 
   if (occ.residents.length < cap) {
-    occ.residents.push({ type: 'adult', age: 18 + Math.floor(Math.random() * 30) });
+    occ.residents.push({ type: 'adult', age: 18 + Math.floor(Math.random() * 30), workplace: null });
     state.population++;
     updatePopulation();
     notify('🏠 1 nouvel habitant a emménagé !', 'ok');
@@ -210,7 +211,7 @@ function scheduleHousing(key, type) {
       return;
     }
     if (state.homeless > 0) {
-      o.residents.push({ type: 'adult', age: 18 + Math.floor(Math.random() * 30) });
+      o.residents.push({ type: 'adult', age: 18 + Math.floor(Math.random() * 30), workplace: null });
       updatePopulation();
       notify('🏠 1 sans-abri a emménagé !', 'ok');
     }
@@ -231,9 +232,29 @@ function assignWorker(key, type, delta) {
   const level      = state.buildingLevels[key] ?? 0;
   const maxWorkers = (BASE_WORKERS[type] ?? 0) + Math.floor(level / 5);
   const current    = state.assignedWorkers[key] ?? 0;
-  const newVal     = Math.max(0, Math.min(maxWorkers, current + delta));
-  if (delta > 0 && state.availableWorkers <= 0) return notify('Pas de travailleur disponible !', 'err');
-  state.assignedWorkers[key] = newVal;
+
+  if (delta > 0) {
+    if (current >= maxWorkers) return;
+    // Chercher un adulte disponible (sans emploi) dans n'importe quelle maison
+    let found = null;
+    for (const occ of Object.values(state.houseOccupants ?? {})) {
+      found = occ.residents?.find(r => r.type === 'adult' && !r.workplace);
+      if (found) break;
+    }
+    if (!found) return notify('Pas de travailleur disponible !', 'err');
+    found.workplace = key;
+    state.assignedWorkers[key] = current + 1;
+  } else {
+    if (current <= 0) return;
+    // Libérer un résident travaillant à ce bâtiment précis
+    let freed = false;
+    for (const occ of Object.values(state.houseOccupants ?? {})) {
+      const r = occ.residents?.find(r => r.workplace === key);
+      if (r) { r.workplace = null; freed = true; break; }
+    }
+    if (freed) state.assignedWorkers[key] = Math.max(0, current - 1);
+  }
+
   updateAvailableWorkers();
   if (type === 'townhall') refreshBuildPanel();
   openBuildingPanel(key, type);
