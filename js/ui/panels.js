@@ -423,7 +423,7 @@ function refreshHousePanel(key) {
   const adults    = residents.filter(r => r.type === 'adult').length;
   const children  = residents.filter(r => r.type === 'child').length;
   const total     = residents.length;
-  const assigned  = state.assignedWorkers[key] ?? 0;
+  const assigned  = residents.filter(r => r.type === 'adult' && r.workplace).length;
   const birthBase = Math.round(getBirthRate() * 100);
   const birthBonus= (level * 0.1).toFixed(1);
 
