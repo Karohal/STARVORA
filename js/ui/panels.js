@@ -138,7 +138,7 @@ function openBuildingPanel(key, type) {
     waitingEl.innerHTML = waiting.map(t => {
       const badge  = TRUCK_BADGES[t.truckType ?? 'standard'] ?? '🚛';
       const action = t.status === 'loading' ? 'chargement' : 'déchargement';
-      return `<div class="th-row" style="color:var(--gold);font-size:0.7rem">${badge} en attente de ${action}</div>`;
+      return `<button onclick="closeBuildingPanel();openTruckPanel('${t.id}')" class="th-row" style="width:100%;background:transparent;border:none;color:var(--gold);font-size:0.7rem;cursor:pointer;text-align:left">${badge} en attente de ${action} →</button>`;
     }).join('');
     waitingEl.style.display = waiting.length > 0 ? 'block' : 'none';
   }
@@ -312,6 +312,49 @@ function closeTruckPanel() {
   window._activeTruckId = null;
 }
 window.closeTruckPanel = closeTruckPanel;
+
+function openResourceFilterPanel() {
+  const t = state.trucks[window._activeTruckId];
+  if (!t) return;
+  const cat = TRUCK_TYPES[t.truckType ?? 'standard']?.category ?? 'solid';
+  const candidates = Object.entries(RESOURCE_LABELS).filter(([r]) => (RESOURCE_CATEGORY[r] ?? 'solid') === cat);
+
+  const body = document.getElementById('resfilter-body');
+  body.innerHTML = candidates.map(([r, label]) => {
+    const checked = !t.resourceFilter || t.resourceFilter.includes(r);
+    return `<label style="display:flex;align-items:center;gap:8px;padding:7px 0;font-size:0.75rem">
+      <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleResourceFilterItem('${r}', this.checked)">
+      ${label}
+    </label>`;
+  }).join('') || '<div class="th-muted">Aucune ressource pour ce type de camion</div>';
+
+  document.getElementById('resfilter-panel').style.display    = 'flex';
+  document.getElementById('resfilter-overlay').style.display  = 'block';
+}
+window.openResourceFilterPanel = openResourceFilterPanel;
+
+function closeResourceFilterPanel() {
+  document.getElementById('resfilter-panel').style.display   = 'none';
+  document.getElementById('resfilter-overlay').style.display = 'none';
+}
+window.closeResourceFilterPanel = closeResourceFilterPanel;
+
+function toggleResourceFilterItem(resKey, checked) {
+  const t = state.trucks[window._activeTruckId];
+  if (!t) return;
+  const cat = TRUCK_TYPES[t.truckType ?? 'standard']?.category ?? 'solid';
+  const all = Object.keys(RESOURCE_LABELS).filter(r => (RESOURCE_CATEGORY[r] ?? 'solid') === cat);
+
+  if (!t.resourceFilter) t.resourceFilter = [...all];
+  if (checked) {
+    if (!t.resourceFilter.includes(resKey)) t.resourceFilter.push(resKey);
+  } else {
+    t.resourceFilter = t.resourceFilter.filter(r => r !== resKey);
+  }
+  // Si tout est coché, revenir à null (= aucun filtre actif)
+  if (t.resourceFilter.length === all.length) t.resourceFilter = null;
+}
+window.toggleResourceFilterItem = toggleResourceFilterItem;
 
 function refreshTruckPanel(truckId) {
   const t = state.trucks[truckId];
