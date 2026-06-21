@@ -41,6 +41,28 @@ function screenToTile(sx, sy) {
 // ============================================================
 // DESSIN CARTE
 // ============================================================
+// Surbrillance de la tuile sélectionnée (panel bâtiment ouvert)
+function drawSelectedTileHighlight(ctx) {
+  if (!state.selectedTileKey) return;
+  const [col, row] = state.selectedTileKey.split(',').map(Number);
+  const { cam } = state;
+  const s  = tileToScreen(col, row);
+  const tw = TW * cam.zoom;
+  const th = TH * cam.zoom;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(s.x,        s.y);
+  ctx.lineTo(s.x + tw/2, s.y + th/2);
+  ctx.lineTo(s.x,        s.y + th);
+  ctx.lineTo(s.x - tw/2, s.y + th/2);
+  ctx.closePath();
+  ctx.strokeStyle = '#f0c040';
+  ctx.lineWidth   = 2.5 * cam.zoom;
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawMap(ctx) {
   const { cam } = state;
   for (let r = 0; r < ROWS; r++) {
