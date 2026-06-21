@@ -392,8 +392,10 @@ function confirmDestroy() {
   addToHdvStock(refundMat);
 
   // Libérer les travailleurs
-  const assigned = state.assignedWorkers[key] ?? 0;
   delete state.assignedWorkers[key];
+  for (const occ of Object.values(state.houseOccupants ?? {})) {
+    occ.residents?.forEach(r => { if (r.workplace === key) r.workplace = null; });
+  }
 
   // Libérer les résidents si résidence
   if (type === 'house') {
