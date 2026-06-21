@@ -65,21 +65,24 @@ function drawSelectedTileHighlight(ctx) {
 
 // Dessine une voie routière traversant toute la tuile selon un axe (NS ou OE)
 function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
-  const corners = {
-    N: { x: s.x,        y: s.y        },
-    S: { x: s.x,        y: s.y + th   },
-    E: { x: s.x + tw/2, y: s.y + th/2 },
-    O: { x: s.x - tw/2, y: s.y + th/2 },
-  };
-  // Axe N-S ou O-E selon orientation choisie
-  const isNS = (orientation === 'N' || orientation === 'S');
-  const from = isNS ? corners.N : corners.O;
-  const to   = isNS ? corners.S : corners.E;
+  const N = { x: s.x,        y: s.y        };
+  const S = { x: s.x,        y: s.y + th   };
+  const E = { x: s.x + tw/2, y: s.y + th/2 };
+  const O = { x: s.x - tw/2, y: s.y + th/2 };
+  // Milieux des 4 côtés du losange
+  const mid = (a, b) => ({ x: (a.x+b.x)/2, y: (a.y+b.y)/2 });
+  const midNO = mid(N, O), midNE = mid(N, E);
+  const midSE = mid(S, E), midSO = mid(S, O);
+
+  // 2 axes possibles : NO↔SE ou NE↔SO
+  const isAxis1 = (orientation === 'N');
+  const from = isAxis1 ? midNO : midNE;
+  const to   = isAxis1 ? midSE : midSO;
 
   const dx = to.x - from.x, dy = to.y - from.y;
   const len = Math.sqrt(dx*dx + dy*dy) || 1;
   const px = -dy / len, py = dx / len;
-  const halfWidth = (isNS ? tw : th) * 0.18;
+  const halfWidth = Math.min(tw, th) * 0.22;
 
   ctx.beginPath();
   ctx.moveTo(from.x + px*halfWidth, from.y + py*halfWidth);
