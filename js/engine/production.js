@@ -164,37 +164,38 @@ function updateProductionUI() {
 // ============================================================
 // LOGIQUE DE CHARGEMENT CAMION (chercher dans le bon stock)
 // ============================================================
-function getLoadableResource(stock, truckType) {
+function getLoadableResource(stock, truckType, filter) {
   const truckCat = TRUCK_TYPES[truckType]?.category ?? 'solid';
+  const allow = (r) => !filter || filter.includes(r);
 
   if (truckCat === 'solid') {
     const src = stock.output ?? stock.solid ?? {};
     for (const [r, q] of Object.entries(src)) {
-      if (q > 0 && (RESOURCE_CATEGORY[r] ?? 'solid') === 'solid') {
+      if (q > 0 && (RESOURCE_CATEGORY[r] ?? 'solid') === 'solid' && allow(r)) {
         return { resKey: r, availQty: q, src: stock.output ? 'output' : 'solid' };
       }
     }
   } else if (truckCat === 'liquid') {
     const src = stock.output ?? stock.liquid ?? {};
     for (const [r, q] of Object.entries(src)) {
-      if (q > 0 && (RESOURCE_CATEGORY[r] ?? 'solid') === 'liquid') {
+      if (q > 0 && (RESOURCE_CATEGORY[r] ?? 'solid') === 'liquid' && allow(r)) {
         return { resKey: r, availQty: q, src: stock.output ? 'output' : 'liquid' };
       }
     }
   } else if (truckCat === 'gas') {
     const src = stock.output ?? {};
     for (const [r, q] of Object.entries(src)) {
-      if (q > 0 && RESOURCE_CATEGORY[r] === 'gas') {
+      if (q > 0 && RESOURCE_CATEGORY[r] === 'gas' && allow(r)) {
         return { resKey: r, availQty: q, src: 'output' };
       }
     }
   } else if (truckCat === 'waste') {
     const qty = stock.waste ?? stock.output?.waste ?? 0;
-    if (qty > 0) return { resKey: 'waste', availQty: qty, src: stock.waste !== undefined ? 'waste' : 'output' };
+    if (qty > 0 && allow('waste')) return { resKey: 'waste', availQty: qty, src: stock.waste !== undefined ? 'waste' : 'output' };
   } else if (truckCat === 'hazardous') {
     const src = stock.output ?? stock.solid ?? {};
     for (const [r, q] of Object.entries(src)) {
-      if (q > 0 && RESOURCE_CATEGORY[r] === 'hazardous') {
+      if (q > 0 && RESOURCE_CATEGORY[r] === 'hazardous' && allow(r)) {
         return { resKey: r, availQty: q, src: stock.output ? 'output' : 'solid' };
       }
     }
