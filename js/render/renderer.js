@@ -71,57 +71,47 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const O = { x: s.x - tw/2, y: s.y + th/2 };
   const cy = s.y + th/2;
   const cx = s.x;
-
-  // Interpolation linéaire d'un point sur un segment à une coordonnée donnée
-  const xOnEdge = (p1, p2, y) => p1.x + (y - p1.y) / (p2.y - p1.y) * (p2.x - p1.x);
-  const yOnEdge = (p1, p2, x) => p1.y + (x - p1.x) / (p2.x - p1.x) * (p2.y - p1.y);
+  const mid = (a, b) => ({ x: (a.x+b.x)/2, y: (a.y+b.y)/2 });
 
   const isOE = (orientation === 'N' || orientation === 'O'); // route horizontale O-E
 
+  // Axe principal décalé de 1/8 de tour (45°) : milieu de côté à milieu de côté opposé
+  const from = isOE ? mid(N, O) : mid(N, E);
+  const to   = isOE ? mid(Sp, E) : mid(Sp, O);
+
+  const ux = to.x - from.x, uy = to.y - from.y;
+  const ulen = Math.sqrt(ux*ux + uy*uy) || 1;
+  const uxN = ux/ulen, uyN = uy/ulen;
+  const vxN = -uyN, vyN = uxN;
+
+  const halfWidth = Math.min(tw, th) * 0.22;
+  const halfLen   = ulen / 2 * 0.85;
+
+  const p1 = { x: cx - uxN*halfLen + vxN*halfWidth, y: cy - uyN*halfLen + vyN*halfWidth };
+  const p2 = { x: cx + uxN*halfLen + vxN*halfWidth, y: cy + uyN*halfLen + vyN*halfWidth };
+  const p3 = { x: cx + uxN*halfLen - vxN*halfWidth, y: cy + uyN*halfLen - vyN*halfWidth };
+  const p4 = { x: cx - uxN*halfLen - vxN*halfWidth, y: cy - uyN*halfLen - vyN*halfWidth };
+
   ctx.beginPath();
-  if (isOE) {
-    const halfH = th * 0.22;
-    const yTop = cy - halfH, yBot = cy + halfH;
-    const xTopL = xOnEdge(N, O, yTop), xTopR = xOnEdge(N, E, yTop);
-    const xBotL = xOnEdge(O, Sp, yBot), xBotR = xOnEdge(E, Sp, yBot);
-    ctx.moveTo(xTopL, yTop);
-    ctx.lineTo(xTopR, yTop);
-    ctx.lineTo(xBotR, yBot);
-    ctx.lineTo(xBotL, yBot);
-    ctx.closePath();
-    ctx.fillStyle = '#605040'; ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.lineTo(p3.x, p3.y);
+  ctx.lineTo(p4.x, p4.y);
+  ctx.closePath();
+  ctx.fillStyle = '#605040';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-    ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
-    ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
-    ctx.beginPath();
-    ctx.moveTo(xTopL, cy);
-    ctx.lineTo(xTopR, cy);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  } else {
-    const halfW = tw * 0.22;
-    const xLeft = cx - halfW, xRight = cx + halfW;
-    const yLeftT  = yOnEdge(N, O, xLeft),  yRightT = yOnEdge(N, E, xRight);
-    const yLeftB  = yOnEdge(O, Sp, xLeft), yRightB = yOnEdge(E, Sp, xRight);
-    ctx.moveTo(xLeft,  yLeftT);
-    ctx.lineTo(xRight, yRightT);
-    ctx.lineTo(xRight, yRightB);
-    ctx.lineTo(xLeft,  yLeftB);
-    ctx.closePath();
-    ctx.fillStyle = '#605040'; ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
-
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-    ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
-    ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
-    ctx.beginPath();
-    ctx.moveTo(cx, yLeftT);
-    ctx.lineTo(cx, yLeftB);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
+  ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
+  ctx.beginPath();
+  ctx.moveTo(cx - uxN*halfLen, cy - uyN*halfLen);
+  ctx.lineTo(cx + uxN*halfLen, cy + uyN*halfLen);
+  ctx.stroke();
+  ctx.setLineDash([]);
 }
 
 function drawMap(ctx) {
