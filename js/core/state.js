@@ -51,6 +51,7 @@ const state = {
   hasTownhall: false,
   unlockedResearch: {},
   selectedTileKey: null,
+  buildingOrientation: {},
   hdvStock: {
     stone: 30,
     iron:  20,
