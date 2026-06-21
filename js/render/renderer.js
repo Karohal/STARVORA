@@ -66,39 +66,51 @@ function drawSelectedTileHighlight(ctx) {
 // Dessine une voie routière traversant toute la tuile selon un axe (NS ou OE)
 function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const N = { x: s.x,        y: s.y        };
-  const S = { x: s.x,        y: s.y + th   };
+  const Sp= { x: s.x,        y: s.y + th   };
   const E = { x: s.x + tw/2, y: s.y + th/2 };
   const O = { x: s.x - tw/2, y: s.y + th/2 };
-  const mid = (a, b) => ({ x: (a.x+b.x)/2, y: (a.y+b.y)/2 });
-  const midNE = mid(N, E), midSO = mid(S, O);
-  const midNO = mid(N, O), midSE = mid(S, E);
+  const cy = s.y + th/2; // centre vertical du losange
+  const cx = s.x;        // centre horizontal du losange
 
-  // Orientation 'N' = axe NE-SO (validé), 'O' = axe NO-SE (alternative)
-  const from = (orientation === 'N') ? midNE : midNO;
-  const to   = (orientation === 'N') ? midSO : midSE;
+  const isOE = (orientation === 'N' || orientation === 'O'); // route horizontale O-E
 
-  const dx = to.x - from.x, dy = to.y - from.y;
-  const len = Math.sqrt(dx*dx + dy*dy) || 1;
-  const px = -dy / len, py = dx / len;
-  const halfWidth = Math.min(tw, th) * 0.22;
+  if (isOE) {
+    const halfH = th * 0.22;
+    ctx.beginPath();
+    ctx.rect(O.x, cy - halfH, E.x - O.x, halfH * 2);
+    ctx.fillStyle = '#605040';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
 
-  ctx.beginPath();
-  ctx.moveTo(from.x + px*halfWidth, from.y + py*halfWidth);
-  ctx.lineTo(from.x - px*halfWidth, from.y - py*halfWidth);
-  ctx.lineTo(to.x - px*halfWidth,   to.y - py*halfWidth);
-  ctx.lineTo(to.x + px*halfWidth,   to.y + py*halfWidth);
-  ctx.closePath();
-  ctx.fillStyle = '#605040';
-  ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
+    ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
+    ctx.beginPath();
+    ctx.moveTo(O.x, cy);
+    ctx.lineTo(E.x, cy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  } else {
+    const halfW = tw * 0.22;
+    ctx.beginPath();
+    ctx.rect(cx - halfW, N.y, halfW * 2, Sp.y - N.y);
+    ctx.fillStyle = '#605040';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-  ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
-  ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
-  ctx.beginPath();
-  ctx.moveTo(from.x, from.y);
-  ctx.lineTo(to.x, to.y);
-  ctx.stroke();
-  ctx.setLineDash([]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
+    ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
+    ctx.beginPath();
+    ctx.moveTo(cx, N.y);
+    ctx.lineTo(cx, Sp.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
 }
 
 function drawMap(ctx) {
