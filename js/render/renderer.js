@@ -73,6 +73,57 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const cx = s.x;
   const mid = (a, b) => ({ x: (a.x+b.x)/2, y: (a.y+b.y)/2 });
 
+  // Virages 90° (nouvelles orientations, branche séparée, ne touche pas au code droit)
+  if (orientation === 'NE' || orientation === 'NO' || orientation === 'SE' || orientation === 'SO') {
+    const midNO = mid(N, O), midNE = mid(N, E), midOSp = mid(O, Sp), midSpE = mid(Sp, E);
+    const center = { x: cx, y: cy };
+    const sideNO = { x: O.x - N.x, y: O.y - N.y };
+    const sideNE = { x: E.x - N.x, y: E.y - N.y };
+    const halfWidth = Math.min(tw, th) * 0.15;
+
+    const buildSeg = (from, to, sideDir) => {
+      const sideLen = Math.sqrt(sideDir.x*sideDir.x + sideDir.y*sideDir.y) || 1;
+      const wxN = sideDir.x/sideLen, wyN = sideDir.y/sideLen;
+      return [
+        { x: from.x + wxN*halfWidth, y: from.y + wyN*halfWidth },
+        { x: to.x   + wxN*halfWidth, y: to.y   + wyN*halfWidth },
+        { x: to.x   - wxN*halfWidth, y: to.y   - wyN*halfWidth },
+        { x: from.x - wxN*halfWidth, y: from.y - wyN*halfWidth },
+      ];
+    };
+    const drawPoly = (pts) => {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.closePath();
+      ctx.fillStyle = '#605040';
+      ctx.fill();
+    };
+
+    // Chaque orientation relie 2 côtés adjacents distincts via le centre
+    const pairs = {
+      NE: [midNO, sideNO, midNE, sideNE],
+      NO: [midNE, sideNE, midNO, sideNO],
+      SE: [midOSp, sideNO, midSpE, sideNE],
+      SO: [midSpE, sideNE, midOSp, sideNO],
+    };
+    const [fromPt, fromSide, toPt, toSide] = pairs[orientation];
+    drawPoly(buildSeg(fromPt, center, fromSide));
+    drawPoly(buildSeg(center, toPt, toSide));
+
+    // Trait blanc médian sur les 2 segments
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
+    ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
+    ctx.beginPath();
+    ctx.moveTo(fromPt.x, fromPt.y);
+    ctx.lineTo(center.x, center.y);
+    ctx.lineTo(toPt.x, toPt.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    return;
+  }
+
   // 2 orientations distinctes : axe1 (N-O / Sp-E) ou axe2 (N-E / Sp-O)
   const isAxis1 = (orientation === 'N');
   const from = isAxis1 ? mid(N, O) : mid(N, E);
