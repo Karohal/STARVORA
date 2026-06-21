@@ -85,7 +85,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const vxN = -uyN, vyN = uxN;
 
   const halfWidth = Math.min(tw, th) * 0.22;
-  const halfLen   = ulen / 2 * 0.85;
+  const halfLen   = ulen / 2;
 
   const p1 = { x: cx - uxN*halfLen + vxN*halfWidth, y: cy - uyN*halfLen + vyN*halfWidth };
   const p2 = { x: cx + uxN*halfLen + vxN*halfWidth, y: cy + uyN*halfLen + vyN*halfWidth };
