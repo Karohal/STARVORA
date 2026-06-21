@@ -206,6 +206,10 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   backdrop-filter:blur(8px); width:min(320px,90vw);
 ">
   <div id="build-confirm-info" style="font-size:0.75rem;letter-spacing:0.05em">—</div>
+  <button id="btn-rotate-road" onclick="rotateGhostRoad();updateConfirmBar()" style="
+    display:none; background:rgba(64,160,240,0.15); border:1px solid var(--cyan);
+    color:var(--cyan); padding:6px 16px; font-size:0.8rem; cursor:pointer;
+  ">🔄 Tourner la route</button>
   <div style="display:flex;gap:12px">
     <button onclick="cancelBuild()" style="
       background:rgba(200,50,50,0.2); border:1px solid var(--error);
@@ -459,27 +463,27 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=067"></script>
-<script src="js/config/buildings.js?v=067"></script>
-<script src="js/config/research.js?v=067"></script>
-<script src="js/config/trucks.js?v=067"></script>
-<script src="js/config/map.js?v=067"></script>
+<script src="js/config/resources.js?v=068"></script>
+<script src="js/config/buildings.js?v=068"></script>
+<script src="js/config/research.js?v=068"></script>
+<script src="js/config/trucks.js?v=068"></script>
+<script src="js/config/map.js?v=068"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=067"></script>
-<script src="js/core/save.js?v=067"></script>
+<script src="js/core/state.js?v=068"></script>
+<script src="js/core/save.js?v=068"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=067"></script>
-<script src="js/engine/production.js?v=067"></script>
-<script src="js/engine/logistics.js?v=067"></script>
-<script src="js/engine/exploration.js?v=067"></script>
+<script src="js/engine/economy.js?v=068"></script>
+<script src="js/engine/production.js?v=068"></script>
+<script src="js/engine/logistics.js?v=068"></script>
+<script src="js/engine/exploration.js?v=068"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=067"></script>
+<script src="js/render/renderer.js?v=068"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=067"></script>
-<script src="js/ui/research.js?v=067"></script>
-<script src="js/ui/input.js?v=067"></script>
+<script src="js/ui/panels.js?v=068"></script>
+<script src="js/ui/research.js?v=068"></script>
+<script src="js/ui/input.js?v=068"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=067"></script>
+<script src="js/core/main.js?v=068"></script>
 
 </body>
 </html>
