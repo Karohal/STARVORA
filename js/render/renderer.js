@@ -69,31 +69,40 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const S = { x: s.x,        y: s.y + th   };
   const E = { x: s.x + tw/2, y: s.y + th/2 };
   const O = { x: s.x - tw/2, y: s.y + th/2 };
-  // Milieux des 4 côtés du losange
-  const mid = (a, b) => ({ x: (a.x+b.x)/2, y: (a.y+b.y)/2 });
-  const midNO = mid(N, O), midNE = mid(N, E);
-  const midSE = mid(S, E), midSO = mid(S, O);
 
-  // 2 axes possibles : NO↔SE ou NE↔SO
-  const isAxis1 = (orientation === 'N');
-  const from = isAxis1 ? midNO : midNE;
-  const to   = isAxis1 ? midSE : midSO;
+  const widthRatio = 0.4; // largeur de la voie en fraction de la hauteur/largeur opposée
 
-  const dx = to.x - from.x, dy = to.y - from.y;
-  const len = Math.sqrt(dx*dx + dy*dy) || 1;
-  const px = -dy / len, py = dx / len;
-  const halfWidth = Math.min(tw, th) * 0.22;
+  let p1, p2, p3, p4; // parallélogramme dans l'ordre de tracé
+  if (orientation === 'N') {
+    // Route O <-> E, bords parallèles à l'axe N-S
+    const halfNS_x = (N.x - S.x) * widthRatio / 2;
+    const halfNS_y = (N.y - S.y) * widthRatio / 2;
+    p1 = { x: O.x + halfNS_x, y: O.y + halfNS_y };
+    p2 = { x: E.x + halfNS_x, y: E.y + halfNS_y };
+    p3 = { x: E.x - halfNS_x, y: E.y - halfNS_y };
+    p4 = { x: O.x - halfNS_x, y: O.y - halfNS_y };
+  } else {
+    // Route N <-> S, bords parallèles à l'axe O-E
+    const halfOE_x = (E.x - O.x) * widthRatio / 2;
+    const halfOE_y = (E.y - O.y) * widthRatio / 2;
+    p1 = { x: N.x + halfOE_x, y: N.y + halfOE_y };
+    p2 = { x: S.x + halfOE_x, y: S.y + halfOE_y };
+    p3 = { x: S.x - halfOE_x, y: S.y - halfOE_y };
+    p4 = { x: N.x - halfOE_x, y: N.y - halfOE_y };
+  }
 
   ctx.beginPath();
-  ctx.moveTo(from.x + px*halfWidth, from.y + py*halfWidth);
-  ctx.lineTo(from.x - px*halfWidth, from.y - py*halfWidth);
-  ctx.lineTo(to.x - px*halfWidth,   to.y - py*halfWidth);
-  ctx.lineTo(to.x + px*halfWidth,   to.y + py*halfWidth);
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.lineTo(p3.x, p3.y);
+  ctx.lineTo(p4.x, p4.y);
   ctx.closePath();
   ctx.fillStyle = '#605040';
   ctx.fill();
 
-  // Trait blanc médian dans l'axe de la voie
+  // Trait blanc médian le long de l'axe principal
+  const from = orientation === 'N' ? O : N;
+  const to   = orientation === 'N' ? E : S;
   ctx.strokeStyle = 'rgba(255,255,255,0.7)';
   ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
   ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
