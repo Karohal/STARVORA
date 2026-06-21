@@ -63,6 +63,42 @@ function drawSelectedTileHighlight(ctx) {
   ctx.restore();
 }
 
+// Dessine une voie routière en rectangle allant du centre vers un bord de tuile (N/S/E/O)
+function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
+  const cx = s.x, cy = s.y + th/2; // centre du losange
+  const corners = {
+    N: { x: s.x,        y: s.y        }, // coin haut
+    S: { x: s.x,        y: s.y + th   }, // coin bas
+    E: { x: s.x + tw/2, y: s.y + th/2 }, // coin droit
+    O: { x: s.x - tw/2, y: s.y + th/2 }, // coin gauche
+  };
+  const target = corners[orientation] ?? corners.N;
+  const dx = target.x - cx, dy = target.y - cy;
+  // Vecteur perpendiculaire pour la largeur de la voie (moitié de la largeur tuile)
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
+  const px = -dy / len, py = dx / len;
+  const halfWidth = (orientation === 'N' || orientation === 'S' ? tw : th) * 0.18;
+
+  ctx.beginPath();
+  ctx.moveTo(cx + px*halfWidth, cy + py*halfWidth);
+  ctx.lineTo(cx - px*halfWidth, cy - py*halfWidth);
+  ctx.lineTo(target.x - px*halfWidth, target.y - py*halfWidth);
+  ctx.lineTo(target.x + px*halfWidth, target.y + py*halfWidth);
+  ctx.closePath();
+  ctx.fillStyle = '#605040';
+  ctx.fill();
+
+  // Trait blanc médian dans l'axe de la voie
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
+  ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(target.x, target.y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
 function drawMap(ctx) {
   const { cam } = state;
   for (let r = 0; r < ROWS; r++) {
@@ -154,26 +190,8 @@ function drawBuilding(ctx, col, row, type) {
 
   // Route
   if (type === 'road') {
-    // Voie centrée occupant la moitié de la tuile
-    const hw = tw * 0.25, hh = th * 0.25;
-    ctx.beginPath();
-    ctx.moveTo(s.x,      s.y + th/2 - hh);
-    ctx.lineTo(s.x + hw, s.y + th/2);
-    ctx.lineTo(s.x,      s.y + th/2 + hh);
-    ctx.lineTo(s.x - hw, s.y + th/2);
-    ctx.closePath();
-    ctx.fillStyle = '#605040';
-    ctx.fill();
-
-    // Trait blanc médian (axe horizontal de la voie, dans le sens iso)
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-    ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
-    ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
-    ctx.beginPath();
-    ctx.moveTo(s.x - hw, s.y + th/2);
-    ctx.lineTo(s.x + hw, s.y + th/2);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    const orientation = state.buildingOrientation?.[`${col},${row}`] ?? 'N';
+    drawRoadSegment(ctx, s, tw, th, orientation, cam);
     return;
   }
 
@@ -510,11 +528,15 @@ function drawGhostPreview(ctx) {
 
     // Bâtiment fantôme semi-transparent
     ctx.globalAlpha = 0.5;
-    drawCube(ctx, cx, cy, bw, bh, th, def?.color ?? '#888');
+    if (g.type === 'road') {
+      drawRoadSegment(ctx, s, tw, th, g.orientation ?? 'N', cam);
+    } else {
+      drawCube(ctx, cx, cy, bw, bh, th, def?.color ?? '#888');
+    }
     ctx.globalAlpha = 1;
 
     // Icône
-    if (cam.zoom > 0.4 && def) {
+    if (cam.zoom > 0.4 && def && g.type !== 'road') {
       ctx.font = `${Math.floor(14 * cam.zoom)}px serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(def.icon, cx, cy - bh - 8 * cam.zoom);
