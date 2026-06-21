@@ -154,14 +154,26 @@ function drawBuilding(ctx, col, row, type) {
 
   // Route
   if (type === 'road') {
+    // Voie centrée occupant la moitié de la tuile
+    const hw = tw * 0.25, hh = th * 0.25;
     ctx.beginPath();
-    ctx.moveTo(s.x,        s.y);
-    ctx.lineTo(s.x + tw/2, s.y + th/2);
-    ctx.lineTo(s.x,        s.y + th);
-    ctx.lineTo(s.x - tw/2, s.y + th/2);
+    ctx.moveTo(s.x,      s.y + th/2 - hh);
+    ctx.lineTo(s.x + hw, s.y + th/2);
+    ctx.lineTo(s.x,      s.y + th/2 + hh);
+    ctx.lineTo(s.x - hw, s.y + th/2);
     ctx.closePath();
     ctx.fillStyle = '#605040';
     ctx.fill();
+
+    // Trait blanc médian (axe horizontal de la voie, dans le sens iso)
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
+    ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
+    ctx.beginPath();
+    ctx.moveTo(s.x - hw, s.y + th/2);
+    ctx.lineTo(s.x + hw, s.y + th/2);
+    ctx.stroke();
+    ctx.setLineDash([]);
     return;
   }
 
