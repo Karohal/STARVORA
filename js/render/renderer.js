@@ -97,7 +97,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
     const axUN = { x: axU.x/axLen, y: axU.y/axLen };
     const axV  = { x: -axUN.y, y: axUN.x };
     const dxp  = midNE.x - midNO.x, dyp = midNE.y - midNO.y;
-    const halfWidth = Math.abs(dxp*axV.x + dyp*axV.y) * 0.55;
+    const halfWidth = Math.abs(dxp*axV.x + dyp*axV.y) * 0.55 * 1.265;
 
     const midA_iso = toIso(midA, pivot);
     const midB_iso = toIso(midB, pivot);
