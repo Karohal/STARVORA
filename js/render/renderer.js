@@ -164,7 +164,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const dxp = otherFrom.x - from.x, dyp = otherFrom.y - from.y;
   const perpDist = Math.abs(dxp*vxN + dyp*vyN);
 
-  const halfWidth = perpDist * 0.55 * 0.55;
+  const halfWidth = perpDist * 0.55 * 0.52;
   const halfLen   = ulen / 2;
 
   // Direction du côté du losange proche de 'from' (N-O pour axe1, N-E pour axe2)
