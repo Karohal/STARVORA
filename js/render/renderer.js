@@ -73,6 +73,62 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   const cx = s.x;
   const mid = (a, b) => ({ x: (a.x+b.x)/2, y: (a.y+b.y)/2 });
 
+  // Croisement 4 côtés
+  if (orientation === 'X') {
+    const midNO = mid(N, O), midNE = mid(N, E), midOSp = mid(O, Sp), midSpE = mid(Sp, E);
+    const center = { x: cx, y: cy };
+
+    const axU = { x: midSpE.x - midNO.x, y: midSpE.y - midNO.y };
+    const axLen = Math.sqrt(axU.x*axU.x + axU.y*axU.y) || 1;
+    const axUN = { x: axU.x/axLen, y: axU.y/axLen };
+    const axV  = { x: -axUN.y, y: axUN.x };
+    const dxp  = midNE.x - midNO.x, dyp = midNE.y - midNO.y;
+    const halfWidth = Math.abs(dxp*axV.x + dyp*axV.y) * 0.55 * 0.70;
+
+    const drawArm = (from) => {
+      const dx = center.x - from.x, dy = center.y - from.y;
+      const l = Math.sqrt(dx*dx + dy*dy) || 1;
+      const ox = -dy/l * halfWidth, oy = dx/l * halfWidth;
+      ctx.beginPath();
+      ctx.moveTo(from.x+ox, from.y+oy);
+      ctx.lineTo(center.x+ox, center.y+oy);
+      ctx.lineTo(center.x-ox, center.y-oy);
+      ctx.lineTo(from.x-ox, from.y-oy);
+      ctx.closePath();
+      ctx.fillStyle = '#605040';
+      ctx.fill();
+    };
+
+    [midNO, midNE, midOSp, midSpE].forEach(drawArm);
+
+    // Carré central pour boucher le trou
+    const sideRef = { x: O.x - N.x, y: O.y - N.y };
+    const sideLen = Math.sqrt(sideRef.x*sideRef.x + sideRef.y*sideRef.y) || 1;
+    const wx = sideRef.x/sideLen * halfWidth, wy = sideRef.y/sideLen * halfWidth;
+    const vx = -wy, vy = wx;
+    ctx.beginPath();
+    ctx.moveTo(center.x+wx+vx, center.y+wy+vy);
+    ctx.lineTo(center.x-wx+vx, center.y-wy+vy);
+    ctx.lineTo(center.x-wx-vx, center.y-wy-vy);
+    ctx.lineTo(center.x+wx-vx, center.y+wy-vy);
+    ctx.closePath();
+    ctx.fillStyle = '#605040';
+    ctx.fill();
+
+    // Traits blancs médians
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
+    ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
+    [midNO, midNE, midOSp, midSpE].forEach(from => {
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(center.x, center.y);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    return;
+  }
+
   // Virages 90° (4 orientations, arc rond compensé pour la perspective iso)
   if (orientation === 'NE' || orientation === 'NO' || orientation === 'SE' || orientation === 'SO') {
     const isoRatio = th / tw;
