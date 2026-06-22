@@ -97,8 +97,7 @@ function findPath(fx, fy, tx, ty) {
 
   const key = (c, r) => `${c},${r}`;
   const neighbors = (c, r) => [
-    [c-1,r],[c+1,r],[c,r-1],[c,r+1],
-    [c-1,r-1],[c+1,r-1],[c-1,r+1],[c+1,r+1]
+    [c-1,r],[c+1,r],[c,r-1],[c,r+1]
   ].filter(([nc,nr]) => isPassable(nc, nr));
 
   // BFS avec coût : route = 1, hors route = 3 (on préfère les routes)
@@ -112,7 +111,7 @@ function findPath(fx, fy, tx, ty) {
     if (c === tc && r === tr) break;
     for (const [nc, nr] of neighbors(c, r)) {
       const k = key(nc, nr);
-      const cost = d + (isRoad(nc, nr) ? 1 : 3);
+      const cost = d + (isRoad(nc, nr) ? 1 : 20);
       if (dist[k] === undefined || cost < dist[k]) {
         dist[k] = cost;
         prev[k] = key(c, r);
@@ -143,11 +142,13 @@ function updateTrucks(timestamp) {
     const stop     = t.route[t.routeIndex % t.route.length];
     const [tx, ty] = stop.key.split(',').map(Number);
 
-    // Recalculer le path si destination changée ou path vide
+    // Recalculer le path si destination changée ou path vide ou camion a bougé de case
     const destKey = stop.key;
-    if (t._pathDest !== destKey || !t.path || t.path.length === 0) {
+    const curKey = `${Math.round(t.x)},${Math.round(t.y)}`;
+    if (t._pathDest !== destKey || !t.path || t.path.length === 0 || t._pathFrom !== curKey) {
       t.path = findPath(t.x, t.y, tx, ty);
       t._pathDest = destKey;
+      t._pathFrom = curKey;
     }
 
     // Waypoint courant : prochain point du path, sinon destination directe
