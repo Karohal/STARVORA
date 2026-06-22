@@ -85,32 +85,43 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
     const dxp  = midNE.x - midNO.x, dyp = midNE.y - midNO.y;
     const halfWidth = Math.abs(dxp*axV.x + dyp*axV.y) * 0.55 * 0.70;
 
-    const drawArm = (from) => {
-      const dx = center.x - from.x, dy = center.y - from.y;
-      const l = Math.sqrt(dx*dx + dy*dy) || 1;
-      const ox = -dy/l * halfWidth, oy = dx/l * halfWidth;
+    // Vecteurs côtés du losange (comme route droite validée)
+    const sNO = { x: O.x - N.x, y: O.y - N.y };
+    const sNE = { x: E.x - N.x, y: E.y - N.y };
+    const sNOl = Math.sqrt(sNO.x*sNO.x + sNO.y*sNO.y) || 1;
+    const sNEl = Math.sqrt(sNE.x*sNE.x + sNE.y*sNE.y) || 1;
+    const wNO = { x: sNO.x/sNOl, y: sNO.y/sNOl };  // direction côté N-O (et O-Sp)
+    const wNE = { x: sNE.x/sNEl, y: sNE.y/sNEl };  // direction côté N-E (et Sp-E)
+
+    // Chaque bras utilise le vecteur côté du losange qui lui correspond
+    const arms = [
+      { from: midNO,  w: wNO },   // côté N-O : bras vers coin N (via route droite axe1)
+      { from: midNE,  w: wNE },   // côté N-E : bras vers coin N (via route droite axe2)
+      { from: midOSp, w: wNO },   // côté O-Sp : parallèle à N-O
+      { from: midSpE, w: wNE },   // côté Sp-E : parallèle à N-E
+    ];
+
+    arms.forEach(({ from, w }) => {
+      const p1 = { x: from.x + w.x*halfWidth,   y: from.y + w.y*halfWidth   };
+      const p2 = { x: center.x + w.x*halfWidth, y: center.y + w.y*halfWidth };
+      const p3 = { x: center.x - w.x*halfWidth, y: center.y - w.y*halfWidth };
+      const p4 = { x: from.x - w.x*halfWidth,   y: from.y - w.y*halfWidth   };
       ctx.beginPath();
-      ctx.moveTo(from.x+ox, from.y+oy);
-      ctx.lineTo(center.x+ox, center.y+oy);
-      ctx.lineTo(center.x-ox, center.y-oy);
-      ctx.lineTo(from.x-ox, from.y-oy);
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.lineTo(p3.x, p3.y);
+      ctx.lineTo(p4.x, p4.y);
       ctx.closePath();
       ctx.fillStyle = '#605040';
       ctx.fill();
-    };
+    });
 
-    [midNO, midNE, midOSp, midSpE].forEach(drawArm);
-
-    // Carré central pour boucher le trou
-    const sideRef = { x: O.x - N.x, y: O.y - N.y };
-    const sideLen = Math.sqrt(sideRef.x*sideRef.x + sideRef.y*sideRef.y) || 1;
-    const wx = sideRef.x/sideLen * halfWidth, wy = sideRef.y/sideLen * halfWidth;
-    const vx = -wy, vy = wx;
+    // Centre : losange plein pour boucher le trou entre les 4 bras
     ctx.beginPath();
-    ctx.moveTo(center.x+wx+vx, center.y+wy+vy);
-    ctx.lineTo(center.x-wx+vx, center.y-wy+vy);
-    ctx.lineTo(center.x-wx-vx, center.y-wy-vy);
-    ctx.lineTo(center.x+wx-vx, center.y+wy-vy);
+    ctx.moveTo(center.x + wNO.x*halfWidth, center.y + wNO.y*halfWidth);
+    ctx.lineTo(center.x + wNE.x*halfWidth, center.y + wNE.y*halfWidth);
+    ctx.lineTo(center.x - wNO.x*halfWidth, center.y - wNO.y*halfWidth);
+    ctx.lineTo(center.x - wNE.x*halfWidth, center.y - wNE.y*halfWidth);
     ctx.closePath();
     ctx.fillStyle = '#605040';
     ctx.fill();
