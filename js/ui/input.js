@@ -303,7 +303,7 @@ function placeGhost(col, row) {
 
 function rotateGhostRoad() {
   if (!state.ghostBuilding || state.ghostBuilding.type !== 'road') return;
-  const order = ['N', 'O', 'NE', 'NO', 'SE', 'SO'];
+  const order = ['N', 'O', 'NE', 'NO', 'SE', 'SO', 'X'];
   const idx = order.indexOf(state.ghostBuilding.orientation ?? 'N');
   state.ghostBuilding.orientation = order[(idx + 1) % order.length];
 }
