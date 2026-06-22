@@ -95,8 +95,8 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
     const arms = [
       { from: midNO,  w: sv(N, O)  },
       { from: midNE,  w: sv(N, E)  },
-      { from: midOSp, w: sv(O, Sp) },
-      { from: midSpE, w: sv(Sp, E) },
+      { from: midOSp, w: sv(Sp, O) },  // inversé
+      { from: midSpE, w: sv(E, Sp) },  // inversé
     ];
 
     arms.forEach(({ from, w }) => {
