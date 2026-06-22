@@ -135,6 +135,68 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
     return;
   }
 
+  // Routes en T (4 orientations : bras manquant = NO, NE, OSp, SpE)
+  if (orientation === 'TNO' || orientation === 'TNE' || orientation === 'TOSp' || orientation === 'TSpE') {
+    const midNO = mid(N, O), midNE = mid(N, E), midOSp = mid(O, Sp), midSpE = mid(Sp, E);
+    const center = { x: cx, y: cy };
+
+    const axU = { x: midSpE.x - midNO.x, y: midSpE.y - midNO.y };
+    const axLen = Math.sqrt(axU.x*axU.x + axU.y*axU.y) || 1;
+    const axUN = { x: axU.x/axLen, y: axU.y/axLen };
+    const axV  = { x: -axUN.y, y: axUN.x };
+    const dxp  = midNE.x - midNO.x, dyp = midNE.y - midNO.y;
+    const halfWidth = Math.abs(dxp*axV.x + dyp*axV.y) * 0.55 * 0.70;
+
+    const sv = (p1, p2) => {
+      const dx = p2.x-p1.x, dy = p2.y-p1.y;
+      const l = Math.sqrt(dx*dx+dy*dy) || 1;
+      return { x: dx/l, y: dy/l };
+    };
+
+    const allArms = [
+      { from: midNO,  w: sv(N, O),  name: 'TNO'  },
+      { from: midNE,  w: sv(N, E),  name: 'TNE'  },
+      { from: midOSp, w: sv(Sp, O), name: 'TOSp' },
+      { from: midSpE, w: sv(E, Sp), name: 'TSpE' },
+    ];
+
+    // Dessiner les 3 bras actifs (tout sauf celui dont le nom = orientation)
+    allArms.filter(a => a.name !== orientation).forEach(({ from, w }) => {
+      ctx.beginPath();
+      ctx.moveTo(from.x + w.x*halfWidth, from.y + w.y*halfWidth);
+      ctx.lineTo(center.x + w.x*halfWidth, center.y + w.y*halfWidth);
+      ctx.lineTo(center.x - w.x*halfWidth, center.y - w.y*halfWidth);
+      ctx.lineTo(from.x - w.x*halfWidth, from.y - w.y*halfWidth);
+      ctx.closePath();
+      ctx.fillStyle = '#605040';
+      ctx.fill();
+    });
+
+    // Centre
+    const wNO = sv(N, O), wNE = sv(N, E);
+    ctx.beginPath();
+    ctx.moveTo(center.x + wNO.x*halfWidth, center.y + wNO.y*halfWidth);
+    ctx.lineTo(center.x + wNE.x*halfWidth, center.y + wNE.y*halfWidth);
+    ctx.lineTo(center.x - wNO.x*halfWidth, center.y - wNO.y*halfWidth);
+    ctx.lineTo(center.x - wNE.x*halfWidth, center.y - wNE.y*halfWidth);
+    ctx.closePath();
+    ctx.fillStyle = '#605040';
+    ctx.fill();
+
+    // Traits blancs médians
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
+    ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
+    allArms.filter(a => a.name !== orientation).forEach(({ from }) => {
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(center.x, center.y);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    return;
+  }
+
   // Virages 90° (4 orientations, arc rond compensé pour la perspective iso)
   if (orientation === 'NE' || orientation === 'NO' || orientation === 'SE' || orientation === 'SO') {
     const isoRatio = th / tw;
