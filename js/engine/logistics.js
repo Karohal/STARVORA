@@ -76,6 +76,62 @@ function updateTruckBuildQueue() {
 // ============================================================
 // MISE À JOUR POSITION CAMIONS
 // ============================================================
+// ============================================================
+// PATHFINDING — BFS simple (routes prioritaires, évite montagnes)
+// ============================================================
+function isRoad(col, row) {
+  return state.buildings[`${col},${row}`] === 'road';
+}
+
+function isPassable(col, row) {
+  if (col < 0 || row < 0 || col >= COLS || row >= ROWS) return false;
+  const terrain = state.map?.[row]?.[col]?.terrain;
+  if (terrain === 'mountain' || terrain === 'water') return false;
+  return true;
+}
+
+function findPath(fx, fy, tx, ty) {
+  const fc = Math.round(fx), fr = Math.round(fy);
+  const tc = Math.round(tx), tr = Math.round(ty);
+  if (fc === tc && fr === tr) return [];
+
+  const key = (c, r) => `${c},${r}`;
+  const neighbors = (c, r) => [
+    [c-1,r],[c+1,r],[c,r-1],[c,r+1],
+    [c-1,r-1],[c+1,r-1],[c-1,r+1],[c+1,r+1]
+  ].filter(([nc,nr]) => isPassable(nc, nr));
+
+  // BFS avec coût : route = 1, hors route = 3 (on préfère les routes)
+  const dist = {}, prev = {};
+  const queue = [[fc, fr, 0]];
+  dist[key(fc,fr)] = 0;
+
+  while (queue.length) {
+    queue.sort((a,b) => a[2]-b[2]);
+    const [c, r, d] = queue.shift();
+    if (c === tc && r === tr) break;
+    for (const [nc, nr] of neighbors(c, r)) {
+      const k = key(nc, nr);
+      const cost = d + (isRoad(nc, nr) ? 1 : 3);
+      if (dist[k] === undefined || cost < dist[k]) {
+        dist[k] = cost;
+        prev[k] = key(c, r);
+        queue.push([nc, nr, cost]);
+      }
+    }
+  }
+
+  // Reconstituer le chemin
+  const path = [];
+  let cur = key(tc, tr);
+  while (cur && cur !== key(fc, fr)) {
+    const [c, r] = cur.split(',').map(Number);
+    path.unshift({ x: c, y: r });
+    cur = prev[cur];
+  }
+  return path;
+}
+
 function updateTrucks(timestamp) {
   if (!lastTruckUpdate) lastTruckUpdate = timestamp;
   const dt = (timestamp - lastTruckUpdate) / 1000;
@@ -86,22 +142,41 @@ function updateTrucks(timestamp) {
 
     const stop     = t.route[t.routeIndex % t.route.length];
     const [tx, ty] = stop.key.split(',').map(Number);
-    const dx = tx - t.x, dy = ty - t.y;
+
+    // Recalculer le path si destination changée ou path vide
+    const destKey = stop.key;
+    if (t._pathDest !== destKey || !t.path || t.path.length === 0) {
+      t.path = findPath(t.x, t.y, tx, ty);
+      t._pathDest = destKey;
+    }
+
+    // Waypoint courant : prochain point du path, sinon destination directe
+    const waypoint = t.path && t.path.length > 0 ? t.path[0] : { x: tx, y: ty };
+    const dx = waypoint.x - t.x, dy = waypoint.y - t.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
 
     if (dist < 0.05) {
-      t.x = tx; t.y = ty;
-      t.status = stop.action === 'load' ? 'loading' : 'unloading';
-      if (!t.atStop) {
-        t.atStop = true; t.atStopTs = Date.now();
-        handleTruckStop(t, stop);
-      } else if (Date.now() - (t.atStopTs ?? 0) > 1000) {
-        t.atStopTs = Date.now();
-        handleTruckStop(t, stop);
+      t.x = waypoint.x; t.y = waypoint.y;
+      // Waypoint atteint, passer au suivant
+      if (t.path && t.path.length > 0) {
+        t.path.shift();
+      }
+      // Destination finale atteinte
+      if (t.path.length === 0 && Math.abs(t.x - tx) < 0.05 && Math.abs(t.y - ty) < 0.05) {
+        t.x = tx; t.y = ty;
+        t.status = stop.action === 'load' ? 'loading' : 'unloading';
+        if (!t.atStop) {
+          t.atStop = true; t.atStopTs = Date.now();
+          handleTruckStop(t, stop);
+        } else if (Date.now() - (t.atStopTs ?? 0) > 1000) {
+          t.atStopTs = Date.now();
+          handleTruckStop(t, stop);
+        }
       }
     } else {
-      const speed = TRUCK_SPEED_ROUTE;
-      const move  = Math.min(speed * dt, dist);
+      const onRoad = isRoad(Math.round(t.x), Math.round(t.y));
+      const speed  = onRoad ? TRUCK_SPEED_ROUTE : TRUCK_SPEED_NOROUTE;
+      const move   = Math.min(speed * dt, dist);
       t.x += (dx / dist) * move;
       t.y += (dy / dist) * move;
       t.status = 'moving';
