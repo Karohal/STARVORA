@@ -344,6 +344,14 @@ function removeStop(truckId, index) {
   if (!t) return;
   t.route.splice(index, 1);
   if (t.routeIndex >= t.route.length) t.routeIndex = 0;
+  // Si plus d'itinéraire : camion reste sur place, visible, en attente
+  if (t.route.length === 0) {
+    t.status = 'idle';
+    t.atStop = false;
+    t.atStopTs = 0;
+    t.path = [];
+    t._pathDest = null;
+  }
   refreshTruckPanel(truckId);
 }
 window.removeStop = removeStop;
