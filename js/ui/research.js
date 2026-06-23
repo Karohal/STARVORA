@@ -80,11 +80,16 @@ function renderResearchItem(key, item) {
   if (unlocked) {
     return `<div class="th-row" style="padding:8px 0;color:var(--success)"><span>✅ ${item.label}</span></div>`;
   }
+  const hasMoney = state.money >= item.cost;
+  const stock = getResearchWarehouseStock();
+  const hasRes = Object.entries(item.resources || {}).every(([r,q]) => (stock[r] ?? 0) >= q);
+  const canUnlock = hasMoney && hasRes;
+  const btnColor = canUnlock ? 'var(--success)' : 'var(--cyan)';
   return `
     <div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
       <div class="th-row"><span>${item.label}</span><span class="th-val">${item.cost} 💰</span></div>
       <div class="th-muted" style="font-size:0.62rem;margin-bottom:6px">${resHtml}</div>
-      <button onclick="unlockResearch('${item.id}','${key}')" class="assign-btn" style="width:100%;border-color:var(--cyan);color:var(--cyan)">Débloquer</button>
+      <button onclick="unlockResearch('${item.id}','${key}')" class="assign-btn" style="width:100%;border-color:${btnColor};color:${btnColor}">Débloquer</button>
     </div>
   `;
 }
