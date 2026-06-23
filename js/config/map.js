@@ -81,6 +81,38 @@ function generateTerrain(cols, rows, isStartMap, mapX, mapY) {
       }
     }
   }
+
+  // Sur la map de départ : garantir entre 1 et 3 cases d'eau
+  if (isStartMap) {
+    const waterCells = [];
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++)
+        if (map[r][c].terrain === 'water') waterCells.push([r, c]);
+
+    if (waterCells.length === 0) {
+      // Forcer 1 à 3 cases d'eau sur des cases grass/dirt intérieures
+      const target = 1 + Math.floor(Math.random() * 3);
+      const candidates = [];
+      for (let r = 2; r < rows-2; r++)
+        for (let c = 2; c < cols-2; c++)
+          if (map[r][c].terrain === 'grass' || map[r][c].terrain === 'dirt')
+            candidates.push([r, c]);
+      // Mélanger et prendre les premiers
+      candidates.sort(() => Math.random() - 0.5);
+      for (let i = 0; i < Math.min(target, candidates.length); i++) {
+        const [r, c] = candidates[i];
+        map[r][c] = { terrain: 'water', elevation: 0 };
+      }
+    } else if (waterCells.length > 3) {
+      // Trop d'eau : convertir le surplus en grass
+      waterCells.sort(() => Math.random() - 0.5);
+      for (let i = 3; i < waterCells.length; i++) {
+        const [r, c] = waterCells[i];
+        map[r][c] = { terrain: 'grass', elevation: 1 };
+      }
+    }
+  }
+
   return map;
 }
 
