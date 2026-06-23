@@ -35,6 +35,7 @@ window.deleteTruck = deleteTruck;
 
 function buildTruck(factoryKey, truckType) {
   const def = TRUCK_TYPES[truckType] ?? TRUCK_TYPES.standard;
+  if ((state.assignedWorkers[factoryKey] ?? 0) === 0) return notify('Assignez un travailleur à l\'usine d\'abord !', 'err');
   if (state.money < def.cost) return notify(`Pas assez d'argent ! (${def.cost} 💰)`, 'err');
   if (state.availableWorkers <= 0) return notify('Pas de conducteur disponible !', 'err');
   if (state.truckBuildQueue[factoryKey]) return notify('Construction déjà en cours dans cette usine !', 'err');
@@ -55,6 +56,15 @@ window.buildTruck = buildTruck;
 function updateTruckBuildQueue() {
   const now = Date.now();
   for (const [factoryKey, q] of Object.entries(state.truckBuildQueue)) {
+    // Pause si pas de travailleur assigné à l'usine
+    const assigned = state.assignedWorkers[factoryKey] ?? 0;
+    if (assigned === 0) {
+      q.startTime += Date.now() - now; // décaler le timer pour simuler une pause
+      const fkSafe = factoryKey.replace(',', '-');
+      const timerEl = document.getElementById('truck-build-timer-' + fkSafe);
+      if (timerEl) timerEl.textContent = '⏸ En attente de travailleur';
+      continue;
+    }
     q.progress = Math.min(1, (now - q.startTime) / q.duration);
     const fkSafe = factoryKey.replace(',', '-');
     const timerEl = document.getElementById('truck-build-timer-' + fkSafe);
