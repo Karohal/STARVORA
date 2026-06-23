@@ -214,12 +214,13 @@ function handleTap(sx, sy) {
 function findTruckAt(sx, sy) {
   const { cam } = state;
   for (const t of Object.values(state.trucks)) {
-    if (t.atStop && (t.status === 'loading' || t.status === 'unloading')) continue;
+    if (t.driver === 0) continue;
+    if (t.atStop && (t.status === 'loading' || t.status === 'unloading') && t.route.length > 0) continue;
     const ts = {
       x: (t.x - t.y) * (TW/2) * cam.zoom + cam.x,
       y: (t.x + t.y) * (TH/2) * cam.zoom + cam.y + (TH/2-4) * cam.zoom,
     };
-    if (Math.hypot(sx-ts.x, sy-ts.y) < 16 * cam.zoom) return t;
+    if (Math.hypot(sx-ts.x, sy-ts.y) < 24 * cam.zoom) return t;
   }
   return null;
 }
