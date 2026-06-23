@@ -701,7 +701,7 @@ function drawTrucks(ctx) {
   const { cam } = state;
   for (const t of Object.values(state.trucks)) {
     if (t.driver === 0) continue;
-    if (t.atStop && (t.status === 'loading' || t.status === 'unloading')) continue;
+    if (t.atStop && (t.status === 'loading' || t.status === 'unloading') && t.route.length > 0) continue;
     const s = {
       x: (t.x - t.y) * (TW/2) * cam.zoom + cam.x,
       y: (t.x + t.y) * (TH/2) * cam.zoom + cam.y,
