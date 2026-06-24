@@ -275,7 +275,7 @@ function placeBuilding(col, row) {
   }
   const def = BUILDING_DEF[type];
   if (!def) return;
-  if (state.money < def.cost) return notify('Pas assez d\'argent ! (' + def.cost + ' 💰)', 'err');
+  if (state.money < def.cost) return notify("Pas assez d'argent ! (" + def.cost + " 💰)", 'err');
   if (type === 'townhall' && (state.hasTownhall || Object.values(state.buildingQueue).some(q=>q.type==='townhall')))
     return notify('Hôtel de Ville déjà construit !', 'err');
   if (state.buildingQueue[`${col},${row}`])
@@ -283,16 +283,30 @@ function placeBuilding(col, row) {
   if (!['townhall','house','road'].includes(type) && state.hasTownhall && getTownhallEfficiency() === 0)
     return notify("🏛️ Assignez un travailleur a l'Hotel de Ville !", 'err');
 
+  // Vérifier camion constructeur (sauf bâtiments de base gratuits)
+  const needsBuilder = !FREE_BUILD_TYPES.has(type);
+  if (needsBuilder && !getAvailableBuilder()) {
+    return notify('🚧 Aucun camion constructeur disponible !', 'err');
+  }
+
   const hdvEff  = getTownhallEfficiency();
   const baseDur = BUILD_TIME[type] ?? 10;
   const duration= hdvEff > 0 ? Math.round(baseDur / hdvEff) : baseDur;
+  const key = `${col},${row}`;
+  const orientation = state.ghostBuilding?.orientation ?? 'N';
 
   state.money -= def.cost;
-  const orientation = state.ghostBuilding?.orientation ?? 'N';
-  state.buildingQueue[`${col},${row}`] = { type, col, row, startTime: Date.now(), duration: duration*1000, progress: 0, orientation };
+  state.buildingQueue[key] = { type, col, row, startTime: Date.now(), duration: duration*1000, progress: 0, orientation };
+
+  // Assigner le camion constructeur si nécessaire
+  if (needsBuilder) {
+    assignBuilderToConstruction(key, type, duration*1000);
+  }
+
   updateStats();
   notify('🏗️ ' + def.icon + ' ' + def.name + ' en construction (' + duration + 's)...', 'ok');
 }
+
 
 // ===== FANTÔME DE CONSTRUCTION =====
 function placeGhost(col, row) {
@@ -399,6 +413,13 @@ function confirmDestroy() {
   const type = state.buildings[key];
   const def  = BUILDING_DEF[type];
   const level = state.buildingLevels[key] ?? 0;
+
+  // Libérer le camion constructeur si construction en cours
+  if (state.buildingQueue[key]) {
+    freeBuilderTruck(key);
+    delete state.buildingQueue[key];
+    state.money += def?.cost ?? 0; // rembourser le coût de construction
+  }
 
   // Rembourser 50% matériaux dans stock HdV
   const refundMat = getDestroyRefund(type, level);
