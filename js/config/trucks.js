@@ -52,6 +52,14 @@ const TRUCK_TYPES = {
     buildTime: 60,
     badge: '🗺️',
   },
+  builder: {
+    icon: '🚧', name: 'Camion Constructeur',
+    cost: 300, capacity: 0,
+    category: 'builder',
+    color: '#e0a000', truckColor: '#c08000',
+    buildTime: 30,
+    badge: '🏗️',
+  },
 };
 
 // Badges visuels (camion + badge)
@@ -62,6 +70,7 @@ const TRUCK_BADGES = {
   hazmat:    '🚛☢️',
   gas_truck: '🚛🌀',
   explorer:  '🚙🗺️',
+  builder:   '🚧🏗️',
 };
 
 // Catégories acceptées par chaque entrepôt
