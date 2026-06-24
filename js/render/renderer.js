@@ -416,6 +416,17 @@ function drawBuilding(ctx, col, row, type) {
   const cy   = s.y + th/2;
   const bw   = tw / 2;
 
+  // Sprite PNG si disponible
+  if (BUILDING_SPRITES[type]) {
+    const sprite = BUILDING_SPRITES[type];
+    const sw = sprite.width * cam.zoom;
+    const sh = sprite.height * cam.zoom;
+    ctx.drawImage(sprite, cx - sw/2, cy - sh + th/2, sw, sh);
+    drawBuildingLabel(ctx, cx, cy, bh, th/4, col, row, def, cam);
+    drawTruckActivityIndicator(ctx, `${col},${row}`, cx, cy, bh, cam);
+    return;
+  }
+
   // Route
   if (type === 'road') {
     const orientation = state.buildingOrientation?.[`${col},${row}`] ?? 'N';
@@ -796,6 +807,23 @@ function drawExploreArrows() {
   // Les flèches sont des éléments HTML, pas canvas
   updateExploreArrows();
 }
+
+// ============================================================
+// SPRITES PNG — chargement au démarrage
+// ============================================================
+const BUILDING_SPRITES = {};
+const SPRITE_FILES = {
+  townhall: 'assets/buildings/townhall.png',
+};
+
+function loadBuildingSprites() {
+  for (const [type, src] of Object.entries(SPRITE_FILES)) {
+    const img = new Image();
+    img.onload = () => { BUILDING_SPRITES[type] = img; };
+    img.src = src;
+  }
+}
+loadBuildingSprites();
 
 window.resizeCanvas  = resizeCanvas;
 window.centerCamera  = centerCamera;
