@@ -61,6 +61,7 @@ function setTool(t) {
   const bp = document.getElementById('build-panel');
   if (t === 'build') {
     bp?.classList.add('open');
+    switchBuildTab(window._activeBuildTab ?? 'infrastructure');
     refreshBuildPanel();
   } else {
     bp?.classList.remove('open');
@@ -71,12 +72,11 @@ function setTool(t) {
 window._ui = { setTool, selectBuilding, toggleResLayer, adjustZoom };
 
 function switchBuildTab(group) {
-  // Masquer tous les groupes
+  window._activeBuildTab = group;
   ['infrastructure','extraction','storage','factory'].forEach(g => {
     const el = document.getElementById('build-group-' + g);
     if (el) el.style.display = g === group ? 'flex' : 'none';
   });
-  // Mettre à jour les onglets
   document.querySelectorAll('.build-tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.group === group);
   });
