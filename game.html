@@ -322,10 +322,10 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 <div id="build-panel">
   <!-- Onglets catégories -->
   <div id="build-tabs" style="display:flex;border-bottom:2px solid var(--border);margin-bottom:6px;overflow-x:auto;flex-shrink:0">
-    <button class="build-tab active" data-group="infrastructure" onclick="switchBuildTab('infrastructure')">🏛️</button>
-    <button class="build-tab" data-group="extraction"     onclick="switchBuildTab('extraction')">⛏️</button>
-    <button class="build-tab" data-group="storage"        onclick="switchBuildTab('storage')">📦</button>
-    <button class="build-tab" data-group="factory"        onclick="switchBuildTab('factory')">🏭</button>
+    <button class="build-tab active" data-group="infrastructure" onclick="switchBuildTab('infrastructure')">🏛️<br><span style="font-size:0.5rem">Infra</span></button>
+    <button class="build-tab" data-group="extraction"     onclick="switchBuildTab('extraction')">⛏️<br><span style="font-size:0.5rem">Extract</span></button>
+    <button class="build-tab" data-group="storage"        onclick="switchBuildTab('storage')">📦<br><span style="font-size:0.5rem">Stock</span></button>
+    <button class="build-tab" data-group="factory"        onclick="switchBuildTab('factory')">🏭<br><span style="font-size:0.5rem">Usines</span></button>
   </div>
   <!-- Contenu par catégorie -->
   <div class="build-group-items" id="build-group-infrastructure">
@@ -467,27 +467,27 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=124"></script>
-<script src="js/config/buildings.js?v=124"></script>
-<script src="js/config/research.js?v=124"></script>
-<script src="js/config/trucks.js?v=124"></script>
-<script src="js/config/map.js?v=124"></script>
+<script src="js/config/resources.js?v=125"></script>
+<script src="js/config/buildings.js?v=125"></script>
+<script src="js/config/research.js?v=125"></script>
+<script src="js/config/trucks.js?v=125"></script>
+<script src="js/config/map.js?v=125"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=124"></script>
-<script src="js/core/save.js?v=124"></script>
+<script src="js/core/state.js?v=125"></script>
+<script src="js/core/save.js?v=125"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=124"></script>
-<script src="js/engine/production.js?v=124"></script>
-<script src="js/engine/logistics.js?v=124"></script>
-<script src="js/engine/exploration.js?v=124"></script>
+<script src="js/engine/economy.js?v=125"></script>
+<script src="js/engine/production.js?v=125"></script>
+<script src="js/engine/logistics.js?v=125"></script>
+<script src="js/engine/exploration.js?v=125"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=124"></script>
+<script src="js/render/renderer.js?v=125"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=124"></script>
-<script src="js/ui/research.js?v=124"></script>
-<script src="js/ui/input.js?v=124"></script>
+<script src="js/ui/panels.js?v=125"></script>
+<script src="js/ui/research.js?v=125"></script>
+<script src="js/ui/input.js?v=125"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=124"></script>
+<script src="js/core/main.js?v=125"></script>
 
 </body>
 </html>
