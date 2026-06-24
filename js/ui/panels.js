@@ -453,18 +453,21 @@ function refreshTruckPanel(truckId) {
     if (t.truckType === 'builder') {
       addBtn.textContent = '📍 Déplacer';
       addBtn.title = 'Envoyer le camion constructeur vers un bâtiment';
+    } else if (t.truckType === 'explorer') {
+      addBtn.textContent = '🌍 Explorer';
+      addBtn.title = 'Lancer une mission d\'exploration';
+      addBtn.onclick = () => { closeTruckPanel(); document.getElementById('explore-panel')?.classList.add('open'); };
     } else {
       addBtn.textContent = '🗺 Ajouter un itinéraire';
       addBtn.title = '';
+      addBtn.onclick = () => addStopOrMove();
     }
   }
 
-  // Masquer les stops pour le builder (il est automatique)
-  const stopsSection = document.getElementById('tp-stops')?.parentNode;
-  if (stopsSection && t.truckType === 'builder') {
-    document.getElementById('tp-stops').style.display = 'none';
-  } else if (stopsSection) {
-    document.getElementById('tp-stops').style.display = '';
+  // Masquer les stops pour builder et explorer
+  const stopsEl2 = document.getElementById('tp-stops');
+  if (stopsEl2) {
+    stopsEl2.style.display = (t.truckType === 'builder' || t.truckType === 'explorer') ? 'none' : '';
   }
 }
 
