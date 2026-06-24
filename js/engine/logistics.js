@@ -94,7 +94,7 @@ function updateTruckBuildQueue() {
 // ============================================================
 
 // Bâtiments de base construisibles sans camion constructeur
-const FREE_BUILD_TYPES = new Set(['townhall','house','mine','well','warehouse','road','sorting']);
+const FREE_BUILD_TYPES = new Set(['townhall','house','mine','well','warehouse','road','sorting','vehiclefactory','quarry']);
 
 function completeBuildingConstruction(buildingKey, buildingType) {
   const [col, row] = buildingKey.split(',').map(Number);
