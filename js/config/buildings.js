@@ -400,12 +400,12 @@ function hasResearch(state, id) {
 // Patch des unlockConditions sur BUILDING_DEF
 Object.assign(BUILDING_DEF.townhall, { unlockCondition: () => true });
 Object.assign(BUILDING_DEF.road,     { unlockCondition: () => true });
-Object.assign(BUILDING_DEF.mine,     { unlockCondition: () => true });
-Object.assign(BUILDING_DEF.well,     { unlockCondition: () => true });
+Object.assign(BUILDING_DEF.mine,     { unlockCondition: s => Object.values(s.buildings).includes('house') });
+Object.assign(BUILDING_DEF.well,     { unlockCondition: s => Object.values(s.buildings).includes('house') });
 
 // Déverrouillés par chaîne de construction
 Object.assign(BUILDING_DEF.house,          { unlockCondition: s => s.hasTownhall });
-Object.assign(BUILDING_DEF.warehouse,      { unlockCondition: s => hasBuilt(s, 'house') });
+Object.assign(BUILDING_DEF.warehouse,      { unlockCondition: s => hasBuilt(s, 'mine') || hasBuilt(s, 'well') || hasBuilt(s, 'quarry') });
 Object.assign(BUILDING_DEF.vehiclefactory, { unlockCondition: s => hasBuilt(s, 'warehouse') });
 Object.assign(BUILDING_DEF.research_center,{ unlockCondition: s => hasBuilt(s, 'vehiclefactory') });
 Object.assign(BUILDING_DEF.research_warehouse,{ unlockCondition: s => hasBuilt(s, 'research_center') });
@@ -413,7 +413,7 @@ Object.assign(BUILDING_DEF.research_warehouse,{ unlockCondition: s => hasBuilt(s
 // Nécessitent une recherche dans le CRI
 Object.assign(BUILDING_DEF.hospital,          { unlockCondition: s => hasResearch(s, 'hospital_unlock') });
 Object.assign(BUILDING_DEF.stargate,          { unlockCondition: s => hasResearch(s, 'stargate_unlock') });
-Object.assign(BUILDING_DEF.quarry,            { unlockCondition: s => hasResearch(s, 'quarry_unlock') });
+Object.assign(BUILDING_DEF.quarry,            { unlockCondition: s => Object.values(s.buildings).includes('house') });
 Object.assign(BUILDING_DEF.warehouse_liquid,  { unlockCondition: s => hasResearch(s, 'warehouse_liquid_unlock') });
 Object.assign(BUILDING_DEF.warehouse_waste,   { unlockCondition: s => hasResearch(s, 'warehouse_waste_unlock') });
 Object.assign(BUILDING_DEF.warehouse_hazmat,  { unlockCondition: s => hasResearch(s, 'warehouse_hazmat_unlock') });
