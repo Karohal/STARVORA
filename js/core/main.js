@@ -69,7 +69,7 @@ function drawFrame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (!state.map || state.map.length === 0) {
-    requestAnimationFrame(ts => { updateTrucks(ts); updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); drawFrame(); });
+    requestAnimationFrame(ts => { updateTrucks(ts); updateBuilderTrucks((ts - (window._lastTs??ts))/1000); window._lastTs=ts; updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); drawFrame(); });
     return;
   }
 
@@ -87,7 +87,7 @@ function drawFrame() {
   drawGhostPreview(ctx);
   drawTrucks(ctx);
 
-  requestAnimationFrame(ts => { updateTrucks(ts); updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); drawFrame(); });
+  requestAnimationFrame(ts => { updateTrucks(ts); updateBuilderTrucks((ts - (window._lastTs??ts))/1000); window._lastTs=ts; updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); drawFrame(); });
 }
 
 // File de construction bâtiments
