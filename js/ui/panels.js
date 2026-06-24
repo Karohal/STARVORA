@@ -435,14 +435,12 @@ function refreshTruckPanel(truckId) {
       const label  = bdef ? bdef.icon+' '+bdef.name : stop.key;
       const action = stop.action === 'load' ? '⬆ Charger' : '⬇ Vider';
       const waitFull = stop.waitFull ?? false;
-      const toggleLabel = waitFull ? '⏳ Attendre plein' : '▶ Continuer vide';
-      const toggleColor = waitFull ? 'var(--gold)' : 'var(--muted)';
-      return `<div class="th-row"${active} style="flex-direction:column;align-items:stretch;padding:4px 0">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="flex:1;font-size:0.7rem">${i+1}. ${label} — ${action}</span>
-          <button onclick="removeStop('${truckId}',${i})" style="width:22px;height:22px;flex-shrink:0;margin-left:8px;background:#c00;border:none;color:#fff;font-size:0.8rem;cursor:pointer;border-radius:2px">✕</button>
-        </div>
-        <button onclick="toggleStopWait('${truckId}',${i})" style="margin-top:3px;background:transparent;border:1px solid ${toggleColor};color:${toggleColor};font-size:0.6rem;padding:2px 6px;border-radius:3px;cursor:pointer;text-align:left">${toggleLabel}</button>
+      return `<div class="th-row"${active} style="justify-content:space-between;align-items:center">
+        <span style="flex:1;font-size:0.7rem">${i+1}. ${label} — ${action}</span>
+        <label style="font-size:0.62rem;color:var(--muted);margin:0 6px;white-space:nowrap;cursor:pointer">
+          Rester <input type="checkbox" ${waitFull?'checked':''} onchange="toggleStopWait('${truckId}',${i})" style="cursor:pointer;vertical-align:middle">
+        </label>
+        <button onclick="removeStop('${truckId}',${i})" style="width:22px;height:22px;flex-shrink:0;background:#c00;border:none;color:#fff;font-size:0.8rem;cursor:pointer;border-radius:2px">✕</button>
       </div>`;
     }).join('') || '<div class="th-muted">Aucun itinéraire défini</div>';
   }
