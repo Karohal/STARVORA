@@ -16,9 +16,10 @@ function createTruck(factoryKey, truckType) {
     route: [], routeIndex: 0,
     driver: 0, cargo: {},
     capacity: def.capacity,
+    level: 0,
     status: 'idle',
     atStop: false, atStopTs: 0,
-    resourceFilter: null, // null = toutes ressources de la catégorie autorisées
+    resourceFilter: null,
   };
   return id;
 }
@@ -39,32 +40,6 @@ function buildTruck(factoryKey, truckType) {
   if (state.money < def.cost) return notify(`Pas assez d'argent ! (${def.cost} 💰)`, 'err');
   if (state.availableWorkers <= 0) return notify('Pas de conducteur disponible !', 'err');
   if (state.truckBuildQueue[factoryKey]) return notify('Construction déjà en cours dans cette usine !', 'err');
-
-  // Coûts en ressources spécifiques par type de camion
-  const TRUCK_RESOURCE_COST = { builder: { iron_r: 5 } };
-  const resCost = TRUCK_RESOURCE_COST[truckType] ?? null;
-  if (resCost) {
-    const total = {};
-    for (const s of Object.values(state.warehouseStock ?? {}))
-      for (const [r,q] of Object.entries(s)) total[r] = (total[r]??0)+q;
-    for (const [res, qty] of Object.entries(resCost)) {
-      if ((total[res]??0) < qty) {
-        const label = RESOURCE_LABELS?.[res] ?? res;
-        return notify(`Pas assez de ${label} ! (${qty} requis)`, 'err');
-      }
-    }
-    // Prélever
-    for (const [res, qty] of Object.entries(resCost)) {
-      let rem = qty;
-      for (const wKey of Object.keys(state.warehouseStock ?? {})) {
-        if (rem <= 0) break;
-        const s = state.warehouseStock[wKey][res] ?? 0;
-        const take = Math.min(s, rem);
-        state.warehouseStock[wKey][res] = s - take;
-        rem -= take;
-      }
-    }
-  }
 
   state.money -= def.cost;
   state.availableWorkers--;
@@ -119,7 +94,7 @@ function updateTruckBuildQueue() {
 // ============================================================
 
 // Bâtiments de base construisibles sans camion constructeur
-const FREE_BUILD_TYPES = new Set(['townhall','house','mine','well','warehouse','road']);
+const FREE_BUILD_TYPES = new Set(['townhall','house','mine','well','warehouse','road','sorting']);
 
 function completeBuildingConstruction(buildingKey, buildingType) {
   const [col, row] = buildingKey.split(',').map(Number);
@@ -188,7 +163,7 @@ function updateBuilderTrucks(dt) {
           t._buildStart = Date.now();
         }
       } else {
-        const speed = isRoad(Math.round(t.x), Math.round(t.y)) ? TRUCK_SPEED_ROUTE : TRUCK_SPEED_NOROUTE;
+        const speed = truckSpeed(t, isRoad(Math.round(t.x), Math.round(t.y)));
         const move = Math.min(speed * dt, dist);
         t.x += (dx/dist)*move; t.y += (dy/dist)*move;
       }
@@ -220,7 +195,7 @@ function updateBuilderTrucks(dt) {
           t._buildStart = null; t._buildDuration = null;
         }
       } else {
-        const speed = isRoad(Math.round(t.x), Math.round(t.y)) ? TRUCK_SPEED_ROUTE : TRUCK_SPEED_NOROUTE;
+        const speed = truckSpeed(t, isRoad(Math.round(t.x), Math.round(t.y)));
         const move = Math.min(speed * dt, dist);
         t.x += (dx/dist)*move; t.y += (dy/dist)*move;
       }
@@ -328,7 +303,7 @@ function updateTrucks(timestamp) {
       }
     } else {
       const onRoad = isRoad(Math.round(t.x), Math.round(t.y));
-      const speed  = onRoad ? TRUCK_SPEED_ROUTE : TRUCK_SPEED_NOROUTE;
+      const speed  = truckSpeed(t, onRoad);
       const move   = Math.min(speed * dt, dist);
       t.x += (dx / dist) * move;
       t.y += (dy / dist) * move;
@@ -340,6 +315,15 @@ function updateTrucks(timestamp) {
 
 const TRUCK_SPEED_ROUTE   = 0.3;
 const TRUCK_SPEED_NOROUTE = 0.05;
+
+function truckCapacity(t) {
+  const base = TRUCK_TYPES[t.truckType ?? 'standard']?.capacity ?? 5;
+  return base + (t.level ?? 0) * 2;
+}
+function truckSpeed(t, onRoad) {
+  const base = onRoad ? TRUCK_SPEED_ROUTE : TRUCK_SPEED_NOROUTE;
+  return base * (1 + (t.level ?? 0) * 0.1);
+}
 
 // ============================================================
 // CHARGEMENT / DÉCHARGEMENT
@@ -357,7 +341,7 @@ function handleTruckStop(t, stop) {
       if (!ws) { t.status = 'loading'; return; }
 
       const loaded2 = Object.values(t.cargo).reduce((a,b)=>a+b,0);
-      const space2  = t.capacity - loaded2;
+      const space2  = truckCapacity(t) - loaded2;
       if (space2 <= 0) { advanceTruck(t); return; }
 
       const truckCat2 = TRUCK_TYPES[t.truckType ?? 'standard']?.category ?? 'solid';
@@ -374,7 +358,7 @@ function handleTruckStop(t, stop) {
       updateProductionUI();
 
       const newLoaded2 = Object.values(t.cargo).reduce((a,b)=>a+b,0);
-      if (newLoaded2 >= t.capacity) advanceTruck(t);
+      if (newLoaded2 >= truckCapacity(t)) advanceTruck(t);
       return;
     }
 
@@ -382,7 +366,7 @@ function handleTruckStop(t, stop) {
     if (!stock) { t.status = 'loading'; return; }
 
     const loaded = Object.values(t.cargo).reduce((a,b)=>a+b,0);
-    const space  = t.capacity - loaded;
+    const space  = truckCapacity(t) - loaded;
     if (space <= 0) { advanceTruck(t); return; }
 
     const found = getLoadableResource(stock, t.truckType ?? 'standard', t.resourceFilter);
@@ -401,7 +385,7 @@ function handleTruckStop(t, stop) {
     updateProductionUI();
 
     const newLoaded = Object.values(t.cargo).reduce((a,b)=>a+b,0);
-    if (newLoaded >= t.capacity) advanceTruck(t);
+    if (newLoaded >= truckCapacity(t)) advanceTruck(t);
 
   } else if (stop.action === 'unload') {
     const loaded = Object.values(t.cargo).reduce((a,b)=>a+b,0);
@@ -524,3 +508,51 @@ function cancelStop() {
   cancelStopUI();
 }
 window.cancelStop = cancelStop;
+
+// ============================================================
+// AMÉLIORATION CAMION
+// ============================================================
+const TRUCK_UPGRADE_COST = [100, 300, 600]; // coût crédits pour passer au niveau 1, 2, 3
+
+function upgradeTruck(truckId) {
+  const t = state.trucks[truckId];
+  if (!t) return;
+  const level = t.level ?? 0;
+  const maxLevel = 3;
+  if (level >= maxLevel) return notify('Niveau maximum atteint !', 'err');
+
+  const creditCost = TRUCK_UPGRADE_COST[level] ?? 999;
+  if (state.money < creditCost) return notify(`Pas assez d'argent ! (${creditCost} 💰)`, 'err');
+
+  // Vérifier ressources
+  const resCost = (TRUCK_LEVEL_RESOURCE_COST[t.truckType] ?? [])[level + 1] ?? null;
+  if (resCost) {
+    const total = {};
+    for (const s of Object.values(state.warehouseStock ?? {}))
+      for (const [r,q] of Object.entries(s)) total[r] = (total[r]??0)+q;
+    for (const [res, qty] of Object.entries(resCost)) {
+      if ((total[res]??0) < qty) {
+        const label = RESOURCE_LABELS?.[res] ?? res;
+        return notify(`Pas assez de ${label} ! (${qty} requis)`, 'err');
+      }
+    }
+    // Prélever
+    for (const [res, qty] of Object.entries(resCost)) {
+      let rem = qty;
+      for (const wKey of Object.keys(state.warehouseStock ?? {})) {
+        if (rem <= 0) break;
+        const s = state.warehouseStock[wKey][res] ?? 0;
+        const take = Math.min(s, rem);
+        state.warehouseStock[wKey][res] = s - take;
+        rem -= take;
+      }
+    }
+  }
+
+  state.money -= creditCost;
+  t.level = level + 1;
+  updateStats();
+  notify(`✅ ${TRUCK_BADGES[t.truckType] ?? '🚛'} Niveau ${t.level} — Capacité +2, Vitesse +10% !`, 'ok');
+  openTruckPanel(truckId);
+}
+window.upgradeTruck = upgradeTruck;
