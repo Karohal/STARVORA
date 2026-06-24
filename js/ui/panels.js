@@ -440,6 +440,26 @@ function refreshTruckPanel(truckId) {
       </div>`;
     }).join('') || '<div class="th-muted">Aucun itinéraire défini</div>';
   }
+
+  // Adapter bouton selon type de camion
+  const addBtn = document.getElementById('btn-add-stop');
+  if (addBtn) {
+    if (t.truckType === 'builder') {
+      addBtn.textContent = '📍 Déplacer';
+      addBtn.title = 'Envoyer le camion constructeur vers un bâtiment';
+    } else {
+      addBtn.textContent = '🗺 Ajouter un itinéraire';
+      addBtn.title = '';
+    }
+  }
+
+  // Masquer les stops pour le builder (il est automatique)
+  const stopsSection = document.getElementById('tp-stops')?.parentNode;
+  if (stopsSection && t.truckType === 'builder') {
+    document.getElementById('tp-stops').style.display = 'none';
+  } else if (stopsSection) {
+    document.getElementById('tp-stops').style.display = '';
+  }
 }
 
 // ===== LEVEL UP =====
