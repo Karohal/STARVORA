@@ -43,7 +43,6 @@ const RESEARCH_ITEMS = {
   ],
   'civil.infrastructure': [
     { id: 'hospital_unlock',         label: 'Hôpital',              cost: 600,  resources: { stone_r: 10, water_r: 5 } },
-    { id: 'quarry_unlock',           label: 'Carrière',             cost: 300,  resources: { stone_r: 5 } },
     { id: 'warehouse_liquid_unlock', label: 'Citerne',              cost: 400,  resources: { stone_r: 8 } },
     { id: 'warehouse_waste_unlock',  label: 'Dépôt déchets',        cost: 400,  resources: { stone_r: 8 } },
     { id: 'warehouse_hazmat_unlock', label: 'Entrepôt dangereux',   cost: 700,  resources: { iron_r: 10 } },
