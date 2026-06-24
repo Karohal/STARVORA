@@ -105,6 +105,27 @@ function openBuildingPanel(key, type) {
   document.getElementById('bp-level').textContent    = 'Niveau ' + level;
   document.getElementById('bp-levelup-cost').textContent = levelUpCost(type, level) + ' 💰';
 
+  // Afficher les ressources requises pour l'upgrade
+  const resCost = (LEVELUP_RESOURCE_COST[type] ?? [])[level + 1] ?? null;
+  let resEl = document.getElementById('bp-levelup-res');
+  if (!resEl) {
+    resEl = document.createElement('div');
+    resEl.id = 'bp-levelup-res';
+    resEl.style.cssText = 'font-size:0.62rem;color:var(--muted);margin-top:2px;';
+    document.getElementById('bp-levelup-cost')?.parentNode?.appendChild(resEl);
+  }
+  if (resCost) {
+    const totalStock = getTotalWarehouseStock();
+    resEl.innerHTML = Object.entries(resCost).map(([res, qty]) => {
+      const have = totalStock[res] ?? 0;
+      const ok = have >= qty;
+      const label = RESOURCE_LABELS?.[res] ?? res;
+      return `<span style="color:${ok ? 'var(--success)' : '#c04040'}">${label} ${have}/${qty}</span>`;
+    }).join(' · ');
+  } else {
+    resEl.innerHTML = '';
+  }
+
   const isProducer  = ['mine','quarry','well','sorting','crusher','refinery','water_plant'].includes(type);
   const isFactory   = type === 'vehiclefactory';
   const isWarehouse = Object.keys(WAREHOUSE_CATEGORIES).includes(type) || type === 'research_warehouse';
@@ -402,6 +423,16 @@ function refreshTruckPanel(truckId) {
 }
 
 // ===== LEVEL UP =====
+function getTotalWarehouseStock() {
+  const total = {};
+  for (const stock of Object.values(state.warehouseStock ?? {})) {
+    for (const [res, qty] of Object.entries(stock)) {
+      total[res] = (total[res] ?? 0) + qty;
+    }
+  }
+  return total;
+}
+
 function levelUpCost(type, currentLevel) {
   const base = LEVELUP_BASE_COST[type] ?? 50;
   return Math.round(base * Math.pow(1.2, currentLevel));
@@ -414,7 +445,32 @@ function buildingLevelUp() {
   if (!key || !type) return;
   const level = state.buildingLevels[key] ?? 0;
   const cost  = levelUpCost(type, level);
-  if (state.money < cost) return notify('Pas assez d\'argent !', 'err');
+  const resCost = (LEVELUP_RESOURCE_COST[type] ?? [])[level + 1] ?? null;
+
+  if (state.money < cost) return notify("Pas assez d'argent !", 'err');
+
+  // Vérifier les ressources dans les entrepôts
+  if (resCost) {
+    const totalStock = getTotalWarehouseStock();
+    for (const [res, qty] of Object.entries(resCost)) {
+      if ((totalStock[res] ?? 0) < qty) {
+        const label = RESOURCE_LABELS?.[res] ?? res;
+        return notify(`Pas assez de ${label} ! (${qty} requis)`, 'err');
+      }
+    }
+    // Prélever les ressources dans les entrepôts
+    for (const [res, qty] of Object.entries(resCost)) {
+      let remaining = qty;
+      for (const wKey of Object.keys(state.warehouseStock)) {
+        if (remaining <= 0) break;
+        const stock = state.warehouseStock[wKey][res] ?? 0;
+        const take = Math.min(stock, remaining);
+        state.warehouseStock[wKey][res] = stock - take;
+        remaining -= take;
+      }
+    }
+  }
+
   state.money -= cost;
   state.buildingLevels[key] = level + 1;
   updateStats();
