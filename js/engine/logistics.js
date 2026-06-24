@@ -87,6 +87,121 @@ function updateTruckBuildQueue() {
 // MISE À JOUR POSITION CAMIONS
 // ============================================================
 // ============================================================
+// ============================================================
+// CAMION CONSTRUCTEUR
+// ============================================================
+
+// Bâtiments de base construisibles sans camion constructeur
+const FREE_BUILD_TYPES = new Set(['townhall','house','mine','well','warehouse','road']);
+
+function completeBuildingConstruction(buildingKey, buildingType) {
+  const [col, row] = buildingKey.split(',').map(Number);
+  const orientation = state.buildingQueue[buildingKey]?.orientation;
+  finalizeBuild(buildingKey, buildingType, col, row, orientation);
+  freeBuilderTruck(buildingKey);
+  notify(`✅ ${BUILDING_DEF[buildingType]?.icon ?? ''} ${BUILDING_DEF[buildingType]?.name ?? buildingType} construit !`, 'ok');
+}
+
+function getAvailableBuilder() {
+  return Object.values(state.trucks).find(t =>
+    t.truckType === 'builder' && t.driver > 0 && t.status === 'idle' && t.route.length === 0
+  ) ?? null;
+}
+
+function assignBuilderToConstruction(buildingKey, buildingType, duration) {
+  const builder = getAvailableBuilder();
+  if (!builder) return false;
+
+  const [tx, ty] = buildingKey.split(',').map(Number);
+  builder.status = 'building';
+  builder._buildTarget = buildingKey;
+  builder._buildType   = buildingType;
+  builder._buildDuration = duration;
+  builder._buildPhase  = 'going';  // going -> building -> returning
+  builder._buildStart  = null;
+  builder.path = findPath(builder.x, builder.y, tx, ty);
+  builder._pathDest = buildingKey;
+  return true;
+}
+window.assignBuilderToConstruction = assignBuilderToConstruction;
+
+function freeBuilderTruck(buildingKey) {
+  const builder = Object.values(state.trucks).find(t =>
+    t.truckType === 'builder' && t._buildTarget === buildingKey
+  );
+  if (!builder) return;
+  builder.status = 'idle';
+  builder._buildTarget   = null;
+  builder._buildType     = null;
+  builder._buildPhase    = null;
+  builder._buildStart    = null;
+  builder._buildDuration = null;
+  builder.path = [];
+  builder._pathDest = null;
+}
+window.freeBuilderTruck = freeBuilderTruck;
+
+function updateBuilderTrucks(dt) {
+  for (const t of Object.values(state.trucks)) {
+    if (t.truckType !== 'builder' || t.status !== 'building') continue;
+    const [tx, ty] = (t._buildTarget ?? '0,0').split(',').map(Number);
+    const factoryKey = t.factoryKey;
+    const [fx, fy]   = factoryKey.split(',').map(Number);
+
+    if (t._buildPhase === 'going') {
+      // Aller vers le chantier
+      const waypoint = t.path?.length > 0 ? t.path[0] : { x: tx, y: ty };
+      const dx = waypoint.x - t.x, dy = waypoint.y - t.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 0.05) {
+        t.x = waypoint.x; t.y = waypoint.y;
+        if (t.path?.length > 0) t.path.shift();
+        if ((t.path?.length === 0) && Math.abs(t.x-tx) < 0.5 && Math.abs(t.y-ty) < 0.5) {
+          t._buildPhase = 'building';
+          t._buildStart = Date.now();
+        }
+      } else {
+        const speed = isRoad(Math.round(t.x), Math.round(t.y)) ? TRUCK_SPEED_ROUTE : TRUCK_SPEED_NOROUTE;
+        const move = Math.min(speed * dt, dist);
+        t.x += (dx/dist)*move; t.y += (dy/dist)*move;
+      }
+
+    } else if (t._buildPhase === 'building') {
+      // Attendre la durée de construction
+      const elapsed = Date.now() - (t._buildStart ?? Date.now());
+      if (elapsed >= (t._buildDuration ?? 0)) {
+        // Construction terminée — finaliser le bâtiment
+        completeBuildingConstruction(t._buildTarget, t._buildType);
+        // Retourner à l'usine
+        t._buildPhase = 'returning';
+        t.path = findPath(t.x, t.y, fx, fy);
+        t._pathDest = factoryKey;
+      }
+
+    } else if (t._buildPhase === 'returning') {
+      // Retourner à l'usine
+      const waypoint = t.path?.length > 0 ? t.path[0] : { x: fx, y: fy };
+      const dx = waypoint.x - t.x, dy = waypoint.y - t.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 0.05) {
+        t.x = waypoint.x; t.y = waypoint.y;
+        if (t.path?.length > 0) t.path.shift();
+        if (t.path?.length === 0) {
+          t.x = fx; t.y = fy;
+          t.status = 'idle';
+          t._buildTarget = null; t._buildPhase = null;
+          t._buildStart = null; t._buildDuration = null;
+        }
+      } else {
+        const speed = isRoad(Math.round(t.x), Math.round(t.y)) ? TRUCK_SPEED_ROUTE : TRUCK_SPEED_NOROUTE;
+        const move = Math.min(speed * dt, dist);
+        t.x += (dx/dist)*move; t.y += (dy/dist)*move;
+      }
+    }
+  }
+}
+
+// ============================================================
 // PATHFINDING — BFS simple (routes prioritaires, évite montagnes)
 // ============================================================
 function isRoad(col, row) {
