@@ -434,9 +434,15 @@ function refreshTruckPanel(truckId) {
       const active = i === t.routeIndex % t.route.length ? ' style="border-color:var(--gold)"' : '';
       const label  = bdef ? bdef.icon+' '+bdef.name : stop.key;
       const action = stop.action === 'load' ? '⬆ Charger' : '⬇ Vider';
-      return `<div class="th-row"${active} style="justify-content:space-between">
-        <span style="flex:1">${i+1}. ${label} — ${action}</span>
-        <button onclick="removeStop('${truckId}',${i})" style="width:22px;height:22px;flex-shrink:0;margin-left:8px;background:#c00;border:none;color:#fff;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:bold;border-radius:2px">✕</button>
+      const waitFull = stop.waitFull ?? false;
+      const toggleLabel = waitFull ? '⏳ Attendre plein' : '▶ Continuer vide';
+      const toggleColor = waitFull ? 'var(--gold)' : 'var(--muted)';
+      return `<div class="th-row"${active} style="flex-direction:column;align-items:stretch;padding:4px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="flex:1;font-size:0.7rem">${i+1}. ${label} — ${action}</span>
+          <button onclick="removeStop('${truckId}',${i})" style="width:22px;height:22px;flex-shrink:0;margin-left:8px;background:#c00;border:none;color:#fff;font-size:0.8rem;cursor:pointer;border-radius:2px">✕</button>
+        </div>
+        <button onclick="toggleStopWait('${truckId}',${i})" style="margin-top:3px;background:transparent;border:1px solid ${toggleColor};color:${toggleColor};font-size:0.6rem;padding:2px 6px;border-radius:3px;cursor:pointer;text-align:left">${toggleLabel}</button>
       </div>`;
     }).join('') || '<div class="th-muted">Aucun itinéraire défini</div>';
   }
