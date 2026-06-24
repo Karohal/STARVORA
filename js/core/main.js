@@ -94,6 +94,16 @@ function drawFrame() {
 function updateBuildingQueue() {
   const now = Date.now();
   for (const [key, q] of Object.entries(state.buildingQueue)) {
+    // Vérifier si un builder est assigné et pas encore arrivé
+    const builder = Object.values(state.trucks).find(t =>
+      t.truckType === 'builder' && t._buildTarget === key
+    );
+    if (builder && builder._buildPhase !== 'building') {
+      // Builder en route — geler le timer
+      q.startTime = now;
+      q.progress  = 0;
+      continue;
+    }
     q.progress = Math.min(1, (now - q.startTime) / q.duration);
     if (q.progress >= 1) finalizeBuild(key, q.type, q.col, q.row, q.orientation);
   }
