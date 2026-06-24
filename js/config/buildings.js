@@ -333,6 +333,47 @@ const LEVELUP_BASE_COST = {
   vehiclefactory: 150,
 };
 
+// Coûts en ressources par bâtiment et niveau (index = niveau cible, ex: [0] = passer de 0 à 1)
+// Bâtiments gratuits lvl 0 : townhall, house, mine, well, warehouse (pas de coût ressource au lvl 0)
+const LEVELUP_RESOURCE_COST = {
+  warehouse: [
+    null,                                        // lvl 0 gratuit
+    { stone_r: 5 },                              // lvl 1
+    { stone_r: 10, wood_r: 5 },                  // lvl 2
+    { stone_r: 20, wood_r: 10, iron_r: 5 },      // lvl 3
+  ],
+  vehiclefactory: [
+    null,                                        // lvl 0 : coût crédit seul
+    { stone_r: 10, iron_r: 5 },                  // lvl 1
+    { stone_r: 20, iron_r: 15, coal_r: 5 },      // lvl 2
+    { stone_r: 30, iron_r: 25, coal_r: 15 },     // lvl 3
+  ],
+  sorting: [
+    null,
+    { stone_r: 8, water_r: 5 },                  // lvl 1
+    { stone_r: 15, water_r: 10, iron_r: 5 },     // lvl 2
+    { stone_r: 25, water_r: 20, iron_r: 10 },    // lvl 3
+  ],
+  hospital: [
+    null,
+    { stone_r: 10, water_r: 5 },                 // lvl 1
+    { stone_r: 20, water_r: 10, iron_r: 5 },     // lvl 2
+    { stone_r: 35, water_r: 20, iron_r: 15 },    // lvl 3
+  ],
+  research_center: [
+    null,
+    { stone_r: 15, iron_r: 8 },                  // lvl 1
+    { stone_r: 25, iron_r: 15, coal_r: 10 },     // lvl 2
+    { stone_r: 40, iron_r: 30, coal_r: 20 },     // lvl 3
+  ],
+  research_warehouse: [
+    null,
+    { stone_r: 8, iron_r: 3 },                   // lvl 1
+    { stone_r: 15, iron_r: 8, coal_r: 5 },       // lvl 2
+    { stone_r: 25, iron_r: 15, coal_r: 10 },     // lvl 3
+  ],
+};
+
 // Workers de base par bâtiment
 const BASE_WORKERS = {
   townhall: 2, house: 0, road: 0, hospital: 6, research_center: 8, research_warehouse: 2, stargate: 2,
