@@ -292,6 +292,15 @@ function updateTrucks(timestamp) {
       // Destination finale atteinte
       if (t.path.length === 0 && Math.abs(t.x - tx) < 0.05 && Math.abs(t.y - ty) < 0.05) {
         t.x = tx; t.y = ty;
+        // Stop de déplacement simple (builder) : arrivée = vider la route
+        if (stop.action === 'move') {
+          t.route = [];
+          t.routeIndex = 0;
+          t.status = 'idle';
+          t.atStop = false;
+          t.path = [];
+          break;
+        }
         t.status = stop.action === 'load' ? 'loading' : 'unloading';
         if (!t.atStop) {
           t.atStop = true; t.atStopTs = Date.now();
@@ -481,7 +490,8 @@ function removeStop(truckId, index) {
   t.route.splice(index, 1);
   if (t.routeIndex >= t.route.length) t.routeIndex = 0;
   // Si plus d'itinéraire : camion reste sur place, visible, en attente
-  if (t.route.length === 0) {
+  // Ne pas toucher au status d'un builder en cours de construction
+  if (t.route.length === 0 && t.status !== 'building') {
     t.status = 'idle';
     t.atStop = false;
     t.atStopTs = 0;
