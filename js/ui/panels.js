@@ -137,7 +137,6 @@ window.openBuildingPanel = openBuildingPanel;
 function refreshBuildingPanelTrucks(key) {
   if (!key) key = state.selectedTileKey;
   if (!key) return;
-  // Ne rien faire si le panel n'est pas ouvert
   const panel = document.getElementById('building-panel');
   if (!panel || !panel.classList.contains('open')) return;
   const waitingEl = document.getElementById('bp-waiting-trucks');
@@ -151,14 +150,18 @@ function refreshBuildingPanelTrucks(key) {
     const nearBy = Math.abs(t.x - bCol) < 0.5 && Math.abs(t.y - bRow) < 0.5;
     return atThisStop || nearBy;
   });
-  waitingEl.innerHTML = waiting.map(t => {
-    const badge  = TRUCK_BADGES[t.truckType ?? 'standard'] ?? '\u{1F69B}';
+  const newHtml = waiting.map(t => {
+    const badge  = TRUCK_BADGES[t.truckType ?? 'standard'] ?? '🚛';
     const stop   = t.route[t.routeIndex % t.route.length];
     const action = stop?.action === 'load' ? 'chargement' : 'déchargement';
     const status = t.atStop ? `en attente de ${action}` : 'en approche';
     return `<button onclick="closeBuildingPanel();openTruckPanel('${t.id}')" class="th-row" style="width:100%;background:transparent;border:none;color:var(--gold);font-size:0.7rem;cursor:pointer;text-align:left">${badge} ${status} →</button>`;
   }).join('');
-  waitingEl.style.display = waiting.length > 0 ? 'block' : 'none';
+  // Ne réécrire que si le contenu a vraiment changé
+  if (waitingEl.innerHTML !== newHtml) {
+    waitingEl.innerHTML = newHtml;
+    waitingEl.style.display = waiting.length > 0 ? 'block' : 'none';
+  }
 }
 window.refreshBuildingPanelTrucks = refreshBuildingPanelTrucks;
 
