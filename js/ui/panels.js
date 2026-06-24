@@ -30,12 +30,16 @@ function refreshBuildPanel() {
     group.types.forEach(type => {
       const el = document.querySelector(`.build-item[data-type="${type}"]`);
       if (!el) return;
-      el.style.display = ''; // reset un éventuel display:none résiduel
       const unlocked = BUILDING_DEF[type]?.unlockCondition?.(state) ?? true;
       el.classList.toggle('locked', !unlocked);
+      // Afficher un cadenas si verrouillé
+      const costEl = el.querySelector('.b-cost');
+      if (costEl && !unlocked) costEl.textContent = '🔒';
+      else if (costEl && unlocked) {
+        const def = BUILDING_DEF[type];
+        costEl.textContent = def?.cost === 0 ? 'Gratuit' : (def?.cost ?? 0) + ' 💰';
+      }
     });
-    const groupEl = document.getElementById('build-group-' + group.id);
-    if (groupEl) groupEl.style.display = ''; // reset aussi le groupe
   });
 
   // Indicateur HdV
