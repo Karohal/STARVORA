@@ -86,7 +86,7 @@ function drawFrame() {
   drawGhostPreview(ctx);
   drawTrucks(ctx);
 
-  requestAnimationFrame(ts => { updateTrucks(ts); updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); drawFrame(); });
+  requestAnimationFrame(ts => { updateTrucks(ts); updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); refreshBuildingPanelTrucks(); drawFrame(); });
 }
 
 // File de construction bâtiments
