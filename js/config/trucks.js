@@ -45,12 +45,12 @@ const TRUCK_TYPES = {
     badge: '🌀',
   },
   explorer: {
-    icon: '🚙', name: 'Véhicule d\'Exploration',
+    icon: '🚗', name: 'Jeep d\'Exploration',
     cost: 500, capacity: 0,
     category: 'explorer',
     color: '#406020', truckColor: '#304010',
     buildTime: 60,
-    badge: '🗺️',
+    badge: '🌍',
   },
   builder: {
     icon: '🚧', name: 'Camion Constructeur',
@@ -69,7 +69,7 @@ const TRUCK_BADGES = {
   waste:     '🚛🗑️',
   hazmat:    '🚛☢️',
   gas_truck: '🚛🌀',
-  explorer:  '🚙🗺️',
+  explorer:  '🚗🌍',
   builder:   '🚧🏗️',
 };
 
