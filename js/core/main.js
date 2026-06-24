@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Événements
   setupInputEvents();
+  setInterval(() => refreshBuildingPanelTrucks(), 500);
 
   // Boucle de rendu
   drawFrame_start();
@@ -68,7 +69,7 @@ function drawFrame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (!state.map || state.map.length === 0) {
-    requestAnimationFrame(ts => { updateTrucks(ts); updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); refreshBuildingPanelTrucks(); drawFrame(); });
+    requestAnimationFrame(ts => { updateTrucks(ts); updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); drawFrame(); });
     return;
   }
 
@@ -86,7 +87,7 @@ function drawFrame() {
   drawGhostPreview(ctx);
   drawTrucks(ctx);
 
-  requestAnimationFrame(ts => { updateTrucks(ts); updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); refreshBuildingPanelTrucks(); drawFrame(); });
+  requestAnimationFrame(ts => { updateTrucks(ts); updateBuildingQueue(); updateTruckBuildQueue(); updateExploration(); drawFrame(); });
 }
 
 // File de construction bâtiments
