@@ -70,6 +70,19 @@ function setTool(t) {
 }
 window._ui = { setTool, selectBuilding, toggleResLayer, adjustZoom };
 
+function switchBuildTab(group) {
+  // Masquer tous les groupes
+  ['infrastructure','extraction','storage','factory'].forEach(g => {
+    const el = document.getElementById('build-group-' + g);
+    if (el) el.style.display = g === group ? 'flex' : 'none';
+  });
+  // Mettre à jour les onglets
+  document.querySelectorAll('.build-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.group === group);
+  });
+}
+window.switchBuildTab = switchBuildTab;
+
 function selectBuilding(type, el) {
   state.selectedBuilding = type;
   document.querySelectorAll('.build-item').forEach(b => b.classList.remove('selected'));
