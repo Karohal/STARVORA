@@ -39,6 +39,33 @@ function buildTruck(factoryKey, truckType) {
   if (state.money < def.cost) return notify(`Pas assez d'argent ! (${def.cost} 💰)`, 'err');
   if (state.availableWorkers <= 0) return notify('Pas de conducteur disponible !', 'err');
   if (state.truckBuildQueue[factoryKey]) return notify('Construction déjà en cours dans cette usine !', 'err');
+
+  // Coûts en ressources spécifiques par type de camion
+  const TRUCK_RESOURCE_COST = { builder: { iron_r: 5 } };
+  const resCost = TRUCK_RESOURCE_COST[truckType] ?? null;
+  if (resCost) {
+    const total = {};
+    for (const s of Object.values(state.warehouseStock ?? {}))
+      for (const [r,q] of Object.entries(s)) total[r] = (total[r]??0)+q;
+    for (const [res, qty] of Object.entries(resCost)) {
+      if ((total[res]??0) < qty) {
+        const label = RESOURCE_LABELS?.[res] ?? res;
+        return notify(`Pas assez de ${label} ! (${qty} requis)`, 'err');
+      }
+    }
+    // Prélever
+    for (const [res, qty] of Object.entries(resCost)) {
+      let rem = qty;
+      for (const wKey of Object.keys(state.warehouseStock ?? {})) {
+        if (rem <= 0) break;
+        const s = state.warehouseStock[wKey][res] ?? 0;
+        const take = Math.min(s, rem);
+        state.warehouseStock[wKey][res] = s - take;
+        rem -= take;
+      }
+    }
+  }
+
   state.money -= def.cost;
   state.availableWorkers--;
   state.truckBuildQueue[factoryKey] = {
