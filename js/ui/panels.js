@@ -129,41 +129,23 @@ function openBuildingPanel(key, type) {
   if (type === 'hospital') refreshHospitalPanel(key);
   if (type === 'townhall') refreshHdvStockPanel();
 
-  document.getElementById('building-panel')?.classList.add('open');
-  refreshBuildingPanelTrucks(key);
-}
-window.openBuildingPanel = openBuildingPanel;
-
-function refreshBuildingPanelTrucks(key) {
-  if (!key) key = state.selectedTileKey;
-  if (!key) return;
-  const panel = document.getElementById('building-panel');
-  if (!panel || !panel.classList.contains('open')) return;
+  // Camions en attente
   const waitingEl = document.getElementById('bp-waiting-trucks');
-  if (!waitingEl) return;
-  const [bCol, bRow] = key.split(',').map(Number);
-  const waiting = Object.values(state.trucks).filter(t => {
-    if (t.driver === 0) return false;
-    const onThisStop = t.route.some(s => s.key === key);
-    if (!onThisStop) return false;
-    const atThisStop = t.atStop && t.route[t.routeIndex % t.route.length]?.key === key;
-    const nearBy = Math.abs(t.x - bCol) < 0.5 && Math.abs(t.y - bRow) < 0.5;
-    return atThisStop || nearBy;
-  });
-  const newHtml = waiting.map(t => {
-    const badge  = TRUCK_BADGES[t.truckType ?? 'standard'] ?? '🚛';
-    const stop   = t.route[t.routeIndex % t.route.length];
-    const action = stop?.action === 'load' ? 'chargement' : 'déchargement';
-    const status = t.atStop ? `en attente de ${action}` : 'en approche';
-    return `<button onclick="closeBuildingPanel();openTruckPanel('${t.id}')" class="th-row" style="width:100%;background:transparent;border:none;color:var(--gold);font-size:0.7rem;cursor:pointer;text-align:left">${badge} ${status} →</button>`;
-  }).join('');
-  // Ne réécrire que si le contenu a vraiment changé
-  if (waitingEl.innerHTML !== newHtml) {
-    waitingEl.innerHTML = newHtml;
+  if (waitingEl) {
+    const waiting = Object.values(state.trucks).filter(t =>
+      t.atStop && t.route[t.routeIndex % t.route.length]?.key === key
+    );
+    waitingEl.innerHTML = waiting.map(t => {
+      const badge  = TRUCK_BADGES[t.truckType ?? 'standard'] ?? '🚛';
+      const action = t.status === 'loading' ? 'chargement' : 'déchargement';
+      return `<button onclick="closeBuildingPanel();openTruckPanel('${t.id}')" class="th-row" style="width:100%;background:transparent;border:none;color:var(--gold);font-size:0.7rem;cursor:pointer;text-align:left">${badge} en attente de ${action} →</button>`;
+    }).join('');
     waitingEl.style.display = waiting.length > 0 ? 'block' : 'none';
   }
+
+  document.getElementById('building-panel')?.classList.add('open');
 }
-window.refreshBuildingPanelTrucks = refreshBuildingPanelTrucks;
+window.openBuildingPanel = openBuildingPanel;
 
 function closeBuildingPanel() {
   document.getElementById('building-panel')?.classList.remove('open');
