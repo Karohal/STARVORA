@@ -81,3 +81,15 @@ const WAREHOUSE_CATEGORIES = {
   warehouse_hazmat: 'hazardous',
   warehouse_gas:    'gas',
 };
+
+// Coûts en ressources pour passer au niveau supérieur (lvl 1 -> 2, 2 -> 3...)
+// index = niveau cible (1 = passer de 0 à 1, etc.)
+const TRUCK_LEVEL_RESOURCE_COST = {
+  standard:  [null, { stone_r: 5 },               { stone_r: 10, iron_r: 5 },              { stone_r: 20, iron_r: 10, coal_r: 5  }],
+  tanker:    [null, { stone_r: 5, water_r: 3 },   { stone_r: 10, water_r: 8, iron_r: 5 }, { stone_r: 20, water_r: 15, iron_r: 10 }],
+  waste:     [null, { stone_r: 5 },               { stone_r: 8,  iron_r: 5 },              { stone_r: 15, iron_r: 10, coal_r: 5  }],
+  hazmat:    [null, { stone_r: 10, iron_r: 5 },   { stone_r: 20, iron_r: 10, coal_r: 5 }, { stone_r: 30, iron_r: 20, coal_r: 10 }],
+  gas_truck: [null, { stone_r: 8,  iron_r: 5 },   { stone_r: 15, iron_r: 10, coal_r: 5 }, { stone_r: 25, iron_r: 15, coal_r: 10 }],
+  explorer:  [null, { stone_r: 10, iron_r: 8 },   { stone_r: 20, iron_r: 15, coal_r: 8 }, { stone_r: 35, iron_r: 25, coal_r: 15 }],
+  builder:   [null, { stone_r: 8,  iron_r: 5 },   { stone_r: 15, iron_r: 10, coal_r: 5 }, { stone_r: 25, iron_r: 20, coal_r: 10 }],
+};
