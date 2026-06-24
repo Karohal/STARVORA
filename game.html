@@ -92,6 +92,17 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 #build-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 #build-panel.open { display: flex; }
 
+.build-tab {
+  flex: 1; padding: 6px 4px; background: transparent;
+  border: none; border-bottom: 2px solid transparent;
+  color: var(--muted); font-size: 1.1rem; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap;
+}
+.build-tab.active {
+  color: var(--gold); border-bottom-color: var(--gold);
+  background: rgba(240,192,64,0.08);
+}
+
 .build-group-title {
   font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--gold); padding: 6px 4px 4px; border-bottom: 1px solid var(--border);
@@ -309,49 +320,41 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- PANEL CONSTRUCTION -->
 <div id="build-panel">
-  <!-- Infrastructure -->
-  <div class="build-group" id="build-group-infrastructure">
-    <div class="build-group-title">🏛️ Infrastructure</div>
-    <div class="build-group-items">
-      <div class="build-item" data-type="townhall"  onclick="selectBuilding('townhall',this)"><div class="b-icon">🏛️</div><div>Hôtel de Ville</div><div class="b-cost">Gratuit</div></div>
-      <div class="build-item" data-type="house"     onclick="selectBuilding('house',this)"><div class="b-icon">🏠</div><div>Résidence</div><div class="b-cost">50 💰</div></div>
-      <div class="build-item" data-type="road"      onclick="selectBuilding('road',this)"><div class="b-icon">🛣️</div><div>Route</div><div class="b-cost">10 💰</div></div>
-      <div class="build-item" data-type="hospital" onclick="selectBuilding('hospital',this)"><div class="b-icon">🏥</div><div>Hôpital</div><div class="b-cost">400 💰</div></div>
-      <div class="build-item" data-type="stargate"  onclick="selectBuilding('stargate',this)"><div class="b-icon">🌀</div><div>Portail</div><div class="b-cost">500 💰</div></div>
-    </div>
+  <!-- Onglets catégories -->
+  <div id="build-tabs" style="display:flex;border-bottom:2px solid var(--border);margin-bottom:6px;overflow-x:auto;flex-shrink:0">
+    <button class="build-tab active" data-group="infrastructure" onclick="switchBuildTab('infrastructure')">🏛️</button>
+    <button class="build-tab" data-group="extraction"     onclick="switchBuildTab('extraction')">⛏️</button>
+    <button class="build-tab" data-group="storage"        onclick="switchBuildTab('storage')">📦</button>
+    <button class="build-tab" data-group="factory"        onclick="switchBuildTab('factory')">🏭</button>
   </div>
-  <!-- Extraction -->
-  <div class="build-group" id="build-group-extraction">
-    <div class="build-group-title">⛏️ Extraction</div>
-    <div class="build-group-items">
-      <div class="build-item" data-type="mine"   onclick="selectBuilding('mine',this)"><div class="b-icon">⛏️</div><div>Mine</div><div class="b-cost">150 💰</div></div>
-      <div class="build-item" data-type="quarry" onclick="selectBuilding('quarry',this)"><div class="b-icon">🪨</div><div>Carrière</div><div class="b-cost">120 💰</div></div>
-      <div class="build-item" data-type="well"   onclick="selectBuilding('well',this)"><div class="b-icon">💧</div><div>Puits</div><div class="b-cost">80 💰</div></div>
-    </div>
+  <!-- Contenu par catégorie -->
+  <div class="build-group-items" id="build-group-infrastructure">
+    <div class="build-item" data-type="townhall"  onclick="selectBuilding('townhall',this)"><div class="b-icon">🏛️</div><div>Hôtel de Ville</div><div class="b-cost">Gratuit</div></div>
+    <div class="build-item" data-type="house"     onclick="selectBuilding('house',this)"><div class="b-icon">🏠</div><div>Résidence</div><div class="b-cost">50 💰</div></div>
+    <div class="build-item" data-type="road"      onclick="selectBuilding('road',this)"><div class="b-icon">🛣️</div><div>Route</div><div class="b-cost">10 💰</div></div>
+    <div class="build-item" data-type="hospital"  onclick="selectBuilding('hospital',this)"><div class="b-icon">🏥</div><div>Hôpital</div><div class="b-cost">400 💰</div></div>
+    <div class="build-item" data-type="stargate"  onclick="selectBuilding('stargate',this)"><div class="b-icon">🌀</div><div>Portail</div><div class="b-cost">500 💰</div></div>
   </div>
-  <!-- Entrepôts -->
-  <div class="build-group" id="build-group-storage">
-    <div class="build-group-title">📦 Entrepôts</div>
-    <div class="build-group-items">
-      <div class="build-item" data-type="warehouse"        onclick="selectBuilding('warehouse',this)"><div class="b-icon">🏪</div><div>Entrepôt</div><div class="b-cost">180 💰</div></div>
-      <div class="build-item" data-type="warehouse_liquid" onclick="selectBuilding('warehouse_liquid',this)"><div class="b-icon">🛢️</div><div>Citerne</div><div class="b-cost">200 💰</div></div>
-      <div class="build-item" data-type="warehouse_waste"  onclick="selectBuilding('warehouse_waste',this)"><div class="b-icon">☣️</div><div>Dépôt Déchets</div><div class="b-cost">220 💰</div></div>
-      <div class="build-item" data-type="warehouse_hazmat" onclick="selectBuilding('warehouse_hazmat',this)"><div class="b-icon">☢️</div><div>Entrepôt Dangereux</div><div class="b-cost">300 💰</div></div>
-      <div class="build-item" data-type="warehouse_gas"    onclick="selectBuilding('warehouse_gas',this)"><div class="b-icon">🌀</div><div>Réservoir Gaz</div><div class="b-cost">350 💰</div></div>
-    </div>
+  <div class="build-group-items" id="build-group-extraction" style="display:none">
+    <div class="build-item" data-type="mine"   onclick="selectBuilding('mine',this)"><div class="b-icon">⛏️</div><div>Mine</div><div class="b-cost">150 💰</div></div>
+    <div class="build-item" data-type="quarry" onclick="selectBuilding('quarry',this)"><div class="b-icon">🪨</div><div>Carrière</div><div class="b-cost">120 💰</div></div>
+    <div class="build-item" data-type="well"   onclick="selectBuilding('well',this)"><div class="b-icon">💧</div><div>Puits</div><div class="b-cost">80 💰</div></div>
   </div>
-  <!-- Usines -->
-  <div class="build-group" id="build-group-factory">
-    <div class="build-group-title">🏭 Usines</div>
-    <div class="build-group-items">
-      <div class="build-item" data-type="sorting"       onclick="selectBuilding('sorting',this)"><div class="b-icon">🔻</div><div>Traitement</div><div class="b-cost">200 💰</div></div>
-      <div class="build-item" data-type="crusher"       onclick="selectBuilding('crusher',this)"><div class="b-icon">🪨</div><div>Concasseur</div><div class="b-cost">250 💰</div></div>
-      <div class="build-item" data-type="refinery"      onclick="selectBuilding('refinery',this)"><div class="b-icon">🏭</div><div>Raffinerie</div><div class="b-cost">350 💰</div></div>
-      <div class="build-item" data-type="water_plant"   onclick="selectBuilding('water_plant',this)"><div class="b-icon">💧</div><div>Usine Eau</div><div class="b-cost">300 💰</div></div>
-      <div class="build-item" data-type="research_center" onclick="selectBuilding('research_center',this)"><div class="b-icon">🔬</div><div>Centre Recherche</div><div class="b-cost">500 💰</div></div>
-      <div class="build-item" data-type="research_warehouse" onclick="selectBuilding('research_warehouse',this)"><div class="b-icon">📦</div><div>Entrepôt Recherche</div><div class="b-cost">350 💰</div></div>
-      <div class="build-item" data-type="vehiclefactory" onclick="selectBuilding('vehiclefactory',this)"><div class="b-icon">🏗️</div><div>Usine Véhicules</div><div class="b-cost">300 💰</div></div>
-    </div>
+  <div class="build-group-items" id="build-group-storage" style="display:none">
+    <div class="build-item" data-type="warehouse"        onclick="selectBuilding('warehouse',this)"><div class="b-icon">🏪</div><div>Entrepôt</div><div class="b-cost">180 💰</div></div>
+    <div class="build-item" data-type="warehouse_liquid" onclick="selectBuilding('warehouse_liquid',this)"><div class="b-icon">🛢️</div><div>Citerne</div><div class="b-cost">200 💰</div></div>
+    <div class="build-item" data-type="warehouse_waste"  onclick="selectBuilding('warehouse_waste',this)"><div class="b-icon">☣️</div><div>Dépôt Déchets</div><div class="b-cost">220 💰</div></div>
+    <div class="build-item" data-type="warehouse_hazmat" onclick="selectBuilding('warehouse_hazmat',this)"><div class="b-icon">☢️</div><div>Entrepôt Dangereux</div><div class="b-cost">300 💰</div></div>
+    <div class="build-item" data-type="warehouse_gas"    onclick="selectBuilding('warehouse_gas',this)"><div class="b-icon">🌀</div><div>Réservoir Gaz</div><div class="b-cost">350 💰</div></div>
+  </div>
+  <div class="build-group-items" id="build-group-factory" style="display:none">
+    <div class="build-item" data-type="sorting"             onclick="selectBuilding('sorting',this)"><div class="b-icon">🔻</div><div>Traitement</div><div class="b-cost">200 💰</div></div>
+    <div class="build-item" data-type="crusher"             onclick="selectBuilding('crusher',this)"><div class="b-icon">🪨</div><div>Concasseur</div><div class="b-cost">250 💰</div></div>
+    <div class="build-item" data-type="refinery"            onclick="selectBuilding('refinery',this)"><div class="b-icon">🏭</div><div>Raffinerie</div><div class="b-cost">350 💰</div></div>
+    <div class="build-item" data-type="water_plant"         onclick="selectBuilding('water_plant',this)"><div class="b-icon">💧</div><div>Usine Eau</div><div class="b-cost">300 💰</div></div>
+    <div class="build-item" data-type="research_center"     onclick="selectBuilding('research_center',this)"><div class="b-icon">🔬</div><div>Centre Recherche</div><div class="b-cost">500 💰</div></div>
+    <div class="build-item" data-type="research_warehouse"  onclick="selectBuilding('research_warehouse',this)"><div class="b-icon">📦</div><div>Entrepôt Recherche</div><div class="b-cost">350 💰</div></div>
+    <div class="build-item" data-type="vehiclefactory"      onclick="selectBuilding('vehiclefactory',this)"><div class="b-icon">🏗️</div><div>Usine Véhicules</div><div class="b-cost">300 💰</div></div>
   </div>
 </div>
 
@@ -464,27 +467,27 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=123"></script>
-<script src="js/config/buildings.js?v=123"></script>
-<script src="js/config/research.js?v=123"></script>
-<script src="js/config/trucks.js?v=123"></script>
-<script src="js/config/map.js?v=123"></script>
+<script src="js/config/resources.js?v=124"></script>
+<script src="js/config/buildings.js?v=124"></script>
+<script src="js/config/research.js?v=124"></script>
+<script src="js/config/trucks.js?v=124"></script>
+<script src="js/config/map.js?v=124"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=123"></script>
-<script src="js/core/save.js?v=123"></script>
+<script src="js/core/state.js?v=124"></script>
+<script src="js/core/save.js?v=124"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=123"></script>
-<script src="js/engine/production.js?v=123"></script>
-<script src="js/engine/logistics.js?v=123"></script>
-<script src="js/engine/exploration.js?v=123"></script>
+<script src="js/engine/economy.js?v=124"></script>
+<script src="js/engine/production.js?v=124"></script>
+<script src="js/engine/logistics.js?v=124"></script>
+<script src="js/engine/exploration.js?v=124"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=123"></script>
+<script src="js/render/renderer.js?v=124"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=123"></script>
-<script src="js/ui/research.js?v=123"></script>
-<script src="js/ui/input.js?v=123"></script>
+<script src="js/ui/panels.js?v=124"></script>
+<script src="js/ui/research.js?v=124"></script>
+<script src="js/ui/input.js?v=124"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=123"></script>
+<script src="js/core/main.js?v=124"></script>
 
 </body>
 </html>
