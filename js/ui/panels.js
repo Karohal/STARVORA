@@ -401,10 +401,30 @@ function refreshTruckPanel(truckId) {
   const statuses = { idle:'En attente', moving:'En route 🚛', loading:'Chargement ⬆', unloading:'Déchargement ⬇' };
   const loaded   = Object.values(t.cargo).reduce((a,b)=>a+b,0);
   const cargo    = Object.entries(t.cargo).map(([r,q])=>`${RESOURCE_LABELS[r]??r}: ${q}`).join(', ') || '—';
+  const level    = t.level ?? 0;
+  const cap      = (TRUCK_TYPES[t.truckType]?.capacity ?? 5) + level * 2;
 
   document.getElementById('tp-status').textContent  = statuses[t.status] ?? t.status;
-  document.getElementById('tp-cargo').textContent   = `${loaded}/${t.capacity} — ${cargo}`;
+  document.getElementById('tp-cargo').textContent   = `${loaded}/${cap} — ${cargo}`;
   document.getElementById('tp-driver').textContent  = t.driver > 0 ? '✅ Assigné' : '❌ Sans conducteur';
+
+  // Niveau + bouton améliorer
+  let upgradeEl = document.getElementById('tp-upgrade');
+  if (!upgradeEl) {
+    upgradeEl = document.createElement('div');
+    upgradeEl.id = 'tp-upgrade';
+    upgradeEl.style.cssText = 'margin:8px 0;padding:8px;background:rgba(255,255,255,0.05);border-radius:4px;';
+    document.getElementById('tp-status')?.parentNode?.insertBefore(upgradeEl, document.getElementById('tp-status'));
+  }
+  const maxLevel = 3;
+  const creditCost = [100,300,600][level] ?? null;
+  const resCost = (TRUCK_LEVEL_RESOURCE_COST[t.truckType] ?? [])[level+1] ?? null;
+  const resText = resCost ? Object.entries(resCost).map(([r,q])=>`${RESOURCE_LABELS?.[r]??r} x${q}`).join(', ') : '';
+  upgradeEl.innerHTML = level >= maxLevel
+    ? `<div class="th-row"><span>⭐ Niveau ${level} (MAX)</span><span class="th-val">Cap: ${cap} · Vit: +${level*10}%</span></div>`
+    : `<div class="th-row"><span>⭐ Niveau ${level}</span><span class="th-val">Cap: ${cap} · Vit: +${level*10}%</span></div>
+       <div class="th-muted" style="font-size:0.62rem;margin:2px 0">${resText}</div>
+       <button onclick="upgradeTruck('${truckId}')" class="assign-btn" style="width:100%;border-color:var(--cyan);color:var(--cyan);margin-top:4px">Améliorer — ${creditCost}💰</button>`;
 
   const stopsEl = document.getElementById('tp-stops');
   if (stopsEl) {
