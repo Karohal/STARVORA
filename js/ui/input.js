@@ -185,9 +185,28 @@ function handleTap(sx, sy) {
   if (window._addingStop && window._addingStopTruckId) {
     const key = `${col},${row}`;
     if (state.buildings[key] || state.buildingQueue[key]) {
+      const truckId = window._addingStopTruckId;
       window._addingStop = false;
-      showStopPicker(window._addingStopTruckId, key);
       window._addingStopTruckId = null;
+
+      if (window._builderMoveMode) {
+        // Mode déplacement builder : ajouter un stop temporaire sans load/unload
+        window._builderMoveMode = false;
+        const t = state.trucks[truckId];
+        if (t) {
+          // Vider les stops existants et ajouter un stop de déplacement
+          t.route = [{ key, action: 'move' }];
+          t.routeIndex = 0;
+          t.status = 'moving';
+          t.atStop = false;
+          t.path = findPath(t.x, t.y, col, row);
+          t._pathDest = key;
+          notify('📍 Camion constructeur en route !', 'ok');
+          openTruckPanel(truckId);
+        }
+      } else {
+        showStopPicker(truckId, key);
+      }
       return;
     }
   }
@@ -262,6 +281,26 @@ function cancelStopUI() {
   if (truckId) openTruckPanel(truckId);
 }
 window.cancelStop = cancelStopUI;
+
+function addStopOrMove() {
+  const truckId = window._activeTruckId;
+  const t = state.trucks[truckId];
+  if (!t) return;
+  if (t.truckType === 'builder') {
+    window._addingStopTruckId = truckId;
+    window._addingStop = true;
+    window._builderMoveMode = true;
+    closeTruckPanel();
+    notify('📍 Tapez sur un bâtiment pour y déplacer le camion constructeur', 'ok');
+  } else {
+    window._addingStopTruckId = truckId;
+    window._addingStop = true;
+    window._builderMoveMode = false;
+    closeTruckPanel();
+    notify("Tapez sur un bâtiment pour l'ajouter à l'itinéraire", 'ok');
+  }
+}
+window.addStopOrMove = addStopOrMove;
 
 // Placement de bâtiment
 function placeBuilding(col, row) {
