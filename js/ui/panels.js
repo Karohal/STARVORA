@@ -137,6 +137,9 @@ window.openBuildingPanel = openBuildingPanel;
 function refreshBuildingPanelTrucks(key) {
   if (!key) key = state.selectedTileKey;
   if (!key) return;
+  // Ne rien faire si le panel n'est pas ouvert
+  const panel = document.getElementById('building-panel');
+  if (!panel || !panel.classList.contains('open')) return;
   const waitingEl = document.getElementById('bp-waiting-trucks');
   if (!waitingEl) return;
   const [bCol, bRow] = key.split(',').map(Number);
