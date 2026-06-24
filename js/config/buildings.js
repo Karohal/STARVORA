@@ -383,3 +383,42 @@ const BASE_WORKERS = {
   warehouse_hazmat: 2, warehouse_gas: 2,
   vehiclefactory: 6,
 };
+
+// ============================================================
+// CONDITIONS DE DÉVERROUILLAGE
+// Logique de progression : certains bâtiments se débloquent
+// en construisant les précédents, d'autres via recherche.
+// ============================================================
+
+function hasBuilt(state, type) {
+  return Object.values(state.buildings).includes(type);
+}
+function hasResearch(state, id) {
+  return !!(state.unlockedResearch?.[id]);
+}
+
+// Patch des unlockConditions sur BUILDING_DEF
+Object.assign(BUILDING_DEF.townhall, { unlockCondition: () => true });
+Object.assign(BUILDING_DEF.road,     { unlockCondition: () => true });
+Object.assign(BUILDING_DEF.mine,     { unlockCondition: () => true });
+Object.assign(BUILDING_DEF.well,     { unlockCondition: () => true });
+
+// Déverrouillés par chaîne de construction
+Object.assign(BUILDING_DEF.house,          { unlockCondition: s => s.hasTownhall });
+Object.assign(BUILDING_DEF.warehouse,      { unlockCondition: s => hasBuilt(s, 'house') });
+Object.assign(BUILDING_DEF.vehiclefactory, { unlockCondition: s => hasBuilt(s, 'warehouse') });
+Object.assign(BUILDING_DEF.research_center,{ unlockCondition: s => hasBuilt(s, 'vehiclefactory') });
+Object.assign(BUILDING_DEF.research_warehouse,{ unlockCondition: s => hasBuilt(s, 'research_center') });
+
+// Nécessitent une recherche dans le CRI
+Object.assign(BUILDING_DEF.hospital,          { unlockCondition: s => hasResearch(s, 'hospital_unlock') });
+Object.assign(BUILDING_DEF.stargate,          { unlockCondition: s => hasResearch(s, 'stargate_unlock') });
+Object.assign(BUILDING_DEF.quarry,            { unlockCondition: s => hasResearch(s, 'quarry_unlock') });
+Object.assign(BUILDING_DEF.warehouse_liquid,  { unlockCondition: s => hasResearch(s, 'warehouse_liquid_unlock') });
+Object.assign(BUILDING_DEF.warehouse_waste,   { unlockCondition: s => hasResearch(s, 'warehouse_waste_unlock') });
+Object.assign(BUILDING_DEF.warehouse_hazmat,  { unlockCondition: s => hasResearch(s, 'warehouse_hazmat_unlock') });
+Object.assign(BUILDING_DEF.warehouse_gas,     { unlockCondition: s => hasResearch(s, 'warehouse_gas_unlock') });
+Object.assign(BUILDING_DEF.sorting,           { unlockCondition: s => hasResearch(s, 'sorting_unlock') });
+Object.assign(BUILDING_DEF.crusher,           { unlockCondition: s => hasResearch(s, 'crusher_unlock') });
+Object.assign(BUILDING_DEF.refinery,          { unlockCondition: s => hasResearch(s, 'refinery_unlock') });
+Object.assign(BUILDING_DEF.water_plant,       { unlockCondition: s => hasResearch(s, 'water_plant_unlock') });
