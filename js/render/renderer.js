@@ -418,16 +418,7 @@ function drawBuilding(ctx, col, row, type) {
 
   // Sprite PNG si disponible
   if (BUILDING_SPRITES[type]) {
-    const sprite = BUILDING_SPRITES[type];
-    // Afficher le sprite à 1.5x la largeur d'une tuile (calibré pour s'intégrer à la grille)
-    const targetW = tw * 1.5;
-    const scale   = targetW / sprite.width;
-    const sw = sprite.width  * scale;
-    const sh = sprite.height * scale;
-    ctx.drawImage(sprite, cx - sw/2, cy - sh + th * 0.6, sw, sh);
-    drawBuildingLabel(ctx, cx, cy, bh, th/4, col, row, def, cam);
-    drawTruckActivityIndicator(ctx, `${col},${row}`, cx, cy, bh, cam);
-    return;
+    // Sprites désactivés temporairement - on utilise les cubes
   }
 
   // Route
