@@ -358,7 +358,7 @@ function handleTruckStop(t, stop) {
       for (const [r, q] of Object.entries(ws)) {
         if (q > 0 && (RESOURCE_CATEGORY[r] ?? 'solid') === truckCat2 && (!t.resourceFilter || t.resourceFilter.includes(r))) { resKey = r; availQty = q; break; }
       }
-      if (!resKey) { t.status = 'loading'; return; }
+      if (!resKey) { if (!(stop.waitFull ?? false)) advanceTruck(t); else t.status = 'loading'; return; }
 
       const qty2 = Math.min(space2, availQty);
       t.cargo[resKey] = (t.cargo[resKey] ?? 0) + qty2;
@@ -367,7 +367,8 @@ function handleTruckStop(t, stop) {
       updateProductionUI();
 
       const newLoaded2 = Object.values(t.cargo).reduce((a,b)=>a+b,0);
-      if (newLoaded2 >= truckCapacity(t)) advanceTruck(t);
+      if (newLoaded2 >= truckCapacity(t)) { advanceTruck(t); return; }
+      if (!(stop.waitFull ?? false)) advanceTruck(t);
       return;
     }
 
@@ -379,7 +380,7 @@ function handleTruckStop(t, stop) {
     if (space <= 0) { advanceTruck(t); return; }
 
     const found = getLoadableResource(stock, t.truckType ?? 'standard', t.resourceFilter);
-    if (!found) { t.status = 'loading'; return; }
+    if (!found) { if (!(stop.waitFull ?? false)) advanceTruck(t); else t.status = 'loading'; return; }
 
     const qty = Math.min(space, found.availQty);
     t.cargo[found.resKey] = (t.cargo[found.resKey] ?? 0) + qty;
@@ -394,7 +395,8 @@ function handleTruckStop(t, stop) {
     updateProductionUI();
 
     const newLoaded = Object.values(t.cargo).reduce((a,b)=>a+b,0);
-    if (newLoaded >= truckCapacity(t)) advanceTruck(t);
+    if (newLoaded >= truckCapacity(t)) { advanceTruck(t); return; }
+    if (!(stop.waitFull ?? false)) advanceTruck(t);
 
   } else if (stop.action === 'unload') {
     const loaded = Object.values(t.cargo).reduce((a,b)=>a+b,0);
@@ -476,6 +478,14 @@ function handleTruckStop(t, stop) {
     }
   }
 }
+
+function toggleStopWait(truckId, index) {
+  const t = state.trucks[truckId];
+  if (!t || !t.route[index]) return;
+  t.route[index].waitFull = !(t.route[index].waitFull ?? false);
+  refreshTruckPanel(truckId);
+}
+window.toggleStopWait = toggleStopWait;
 
 function advanceTruck(t) {
   t.status = 'moving';
