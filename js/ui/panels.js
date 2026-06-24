@@ -75,7 +75,8 @@ function switchBuildTab(group) {
   window._activeBuildTab = group;
   ['infrastructure','extraction','storage','factory'].forEach(g => {
     const el = document.getElementById('build-group-' + g);
-    if (el) el.style.display = g === group ? 'flex' : 'none';
+    if (!el) return;
+    el.classList.toggle('hidden', g !== group);
   });
   document.querySelectorAll('.build-tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.group === group);
