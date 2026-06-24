@@ -418,7 +418,7 @@ function confirmDestroy() {
   if (state.buildingQueue[key]) {
     freeBuilderTruck(key);
     delete state.buildingQueue[key];
-    state.money += def?.cost ?? 0; // rembourser le coût de construction
+    // Argent et ressources perdus (pas de remboursement)
   }
 
   // Rembourser 50% matériaux dans stock HdV
