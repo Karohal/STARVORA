@@ -300,6 +300,7 @@ window.startEconomyTick = startEconomyTick;
 const MARKET_BASE_PRICES = {
   stone:    2,  iron:     4,  coal:     3,  water:    2,
   stone_r: 8,  iron_r:  15,  coal_r:  10,  water_r:  6,
+  waste:    1,  incin:    3,
 };
 
 // Prix courants (fluctuent)
