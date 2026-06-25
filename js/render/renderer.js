@@ -320,7 +320,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam, roadColor, dashColor)
   ctx.lineWidth = 0.5;
   ctx.stroke();
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.strokeStyle = DASH;
   ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
   ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
   ctx.beginPath();
