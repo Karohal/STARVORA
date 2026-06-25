@@ -432,3 +432,35 @@ Object.assign(BUILDING_DEF.sorting,           { unlockCondition: s => hasResearc
 Object.assign(BUILDING_DEF.crusher,           { unlockCondition: s => hasResearch(s, 'crusher_unlock') });
 Object.assign(BUILDING_DEF.refinery,          { unlockCondition: s => hasResearch(s, 'refinery_unlock') });
 Object.assign(BUILDING_DEF.water_plant,       { unlockCondition: s => hasResearch(s, 'water_plant_unlock') });
+
+// ============================================================
+// NIVEAUX DE ROUTES
+// ============================================================
+const ROAD_LEVELS = [
+  { level: 0,  name: 'Terre',                cost: 0,   speedMult: 1.0,  color: '#8B6914', dashColor: 'rgba(255,255,255,0)' },
+  { level: 1,  name: 'Terre damée',          cost: 20,  speedMult: 1.15, color: '#7A5E12', dashColor: 'rgba(255,255,255,0.3)' },
+  { level: 5,  name: 'Gravier',              cost: 50,  speedMult: 1.35, color: '#9E8C6A', dashColor: 'rgba(255,255,255,0.4)' },
+  { level: 10, name: 'Macadam',              cost: 100, speedMult: 1.6,  color: '#6B6050', dashColor: 'rgba(255,255,255,0.5)' },
+  { level: 15, name: 'Bitume',               cost: 200, speedMult: 2.0,  color: '#504840', dashColor: 'rgba(255,255,255,0.65)' },
+  { level: 20, name: 'Béton',                cost: 400, speedMult: 2.5,  color: '#909090', dashColor: 'rgba(255,255,255,0.7)' },
+  { level: 25, name: 'Asphalte haute qual.', cost: 800, speedMult: 3.0,  color: '#383838', dashColor: 'rgba(255,255,255,0.85)' },
+];
+
+function getRoadDef(level) {
+  let def = ROAD_LEVELS[0];
+  for (const r of ROAD_LEVELS) {
+    if (level >= r.level) def = r;
+  }
+  return def;
+}
+
+function getRoadUpgradeCost(level) {
+  // Trouver le prochain palier
+  const next = ROAD_LEVELS.find(r => r.level === level + 1) ?? null;
+  if (next) return next.cost;
+  // Entre deux paliers : coût interpolé
+  const current = getRoadDef(level);
+  const nextPalier = ROAD_LEVELS.find(r => r.level > level) ?? null;
+  if (!nextPalier) return null; // niveau max
+  return Math.round(current.cost * 1.1 + 5);
+}
