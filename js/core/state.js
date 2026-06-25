@@ -53,10 +53,7 @@ const state = {
   selectedTileKey: null,
   buildingOrientation: {},
   hdvStock: {
-    stone: 30,
-    iron:  20,
-    coal:  20,
-    water: 10,
+    water: 100,
   },
 
   // Caméra
