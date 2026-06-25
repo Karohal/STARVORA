@@ -163,7 +163,7 @@ function updateBuilderTrucks(dt) {
           t._buildStart = Date.now();
         }
       } else {
-        const speed = truckSpeed(t, isRoad(Math.round(t.x), Math.round(t.y)));
+        const _rl = getRoadLevel(Math.round(t.x), Math.round(t.y)); const speed = truckSpeed(t, _rl >= 0, _rl);
         const move = Math.min(speed * dt, dist);
         t.x += (dx/dist)*move; t.y += (dy/dist)*move;
       }
@@ -195,7 +195,7 @@ function updateBuilderTrucks(dt) {
           t._buildStart = null; t._buildDuration = null;
         }
       } else {
-        const speed = truckSpeed(t, isRoad(Math.round(t.x), Math.round(t.y)));
+        const _rl = getRoadLevel(Math.round(t.x), Math.round(t.y)); const speed = truckSpeed(t, _rl >= 0, _rl);
         const move = Math.min(speed * dt, dist);
         t.x += (dx/dist)*move; t.y += (dy/dist)*move;
       }
@@ -311,8 +311,9 @@ function updateTrucks(timestamp) {
         }
       }
     } else {
-      const onRoad = isRoad(Math.round(t.x), Math.round(t.y));
-      const speed  = truckSpeed(t, onRoad);
+      const rc = Math.round(t.x), rr = Math.round(t.y);
+      const rl = getRoadLevel(rc, rr);
+      const speed  = truckSpeed(t, rl >= 0, rl);
       const move   = Math.min(speed * dt, dist);
       t.x += (dx / dist) * move;
       t.y += (dy / dist) * move;
@@ -325,13 +326,21 @@ function updateTrucks(timestamp) {
 const TRUCK_SPEED_ROUTE   = 0.3;
 const TRUCK_SPEED_NOROUTE = 0.05;
 
+function getRoadLevel(col, row) {
+  const key = `${col},${row}`;
+  if (state.buildings[key] !== 'road') return -1; // pas une route
+  return state.buildingLevels[key] ?? 0;
+}
+
 function truckCapacity(t) {
   const base = TRUCK_TYPES[t.truckType ?? 'standard']?.capacity ?? 5;
   return base + (t.level ?? 0) * 2;
 }
-function truckSpeed(t, onRoad) {
-  const base = onRoad ? TRUCK_SPEED_ROUTE : TRUCK_SPEED_NOROUTE;
-  return base * (1 + (t.level ?? 0) * 0.1);
+function truckSpeed(t, onRoad, roadLevel) {
+  const truckMult = 1 + (t.level ?? 0) * 0.1;
+  if (!onRoad) return TRUCK_SPEED_NOROUTE * truckMult;
+  const roadMult = getRoadDef(roadLevel ?? 0)?.speedMult ?? 1.0;
+  return TRUCK_SPEED_ROUTE * truckMult * roadMult;
 }
 
 // ============================================================
