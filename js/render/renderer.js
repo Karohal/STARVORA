@@ -64,7 +64,9 @@ function drawSelectedTileHighlight(ctx) {
 }
 
 // Dessine une voie routière traversant toute la tuile selon un axe (NS ou OE)
-function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
+function drawRoadSegment(ctx, s, tw, th, orientation, cam, roadColor) {
+  const RC  = roadColor ?? RC;
+  const RC2 = roadColor ?? RC;
   const N = { x: s.x,        y: s.y        };
   const Sp= { x: s.x,        y: s.y + th   };
   const E = { x: s.x + tw/2, y: s.y + th/2 };
@@ -106,7 +108,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
       ctx.lineTo(center.x - w.x*halfWidth, center.y - w.y*halfWidth);
       ctx.lineTo(from.x - w.x*halfWidth, from.y - w.y*halfWidth);
       ctx.closePath();
-      ctx.fillStyle = '#605040';
+      ctx.fillStyle = RC;
       ctx.fill();
     });
 
@@ -118,7 +120,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
     ctx.lineTo(center.x - wNO.x*halfWidth, center.y - wNO.y*halfWidth);
     ctx.lineTo(center.x - wNE.x*halfWidth, center.y - wNE.y*halfWidth);
     ctx.closePath();
-    ctx.fillStyle = '#605040';
+    ctx.fillStyle = RC;
     ctx.fill();
 
     // Traits blancs médians
@@ -168,7 +170,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
       ctx.lineTo(center.x - w.x*halfWidth, center.y - w.y*halfWidth);
       ctx.lineTo(from.x - w.x*halfWidth, from.y - w.y*halfWidth);
       ctx.closePath();
-      ctx.fillStyle = '#605040';
+      ctx.fillStyle = RC;
       ctx.fill();
     });
 
@@ -180,7 +182,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
     ctx.lineTo(center.x - wNO.x*halfWidth, center.y - wNO.y*halfWidth);
     ctx.lineTo(center.x - wNE.x*halfWidth, center.y - wNE.y*halfWidth);
     ctx.closePath();
-    ctx.fillStyle = '#605040';
+    ctx.fillStyle = RC;
     ctx.fill();
 
     // Traits blancs médians
@@ -253,7 +255,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
     for (let i = 1; i < arcIn.length; i++) ctx.lineTo(arcIn[i].x, arcIn[i].y);
     for (let i = 0; i < arcOut.length; i++) ctx.lineTo(arcOut[i].x, arcOut[i].y);
     ctx.closePath();
-    ctx.fillStyle = '#605040';
+    ctx.fillStyle = RC;
     ctx.fill();
     ctx.strokeStyle = 'rgba(0,0,0,0.2)';
     ctx.lineWidth = 0.5;
@@ -311,7 +313,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam) {
   ctx.lineTo(p3.x, p3.y);
   ctx.lineTo(p4.x, p4.y);
   ctx.closePath();
-  ctx.fillStyle = '#605040';
+  ctx.fillStyle = RC;
   ctx.fill();
   ctx.strokeStyle = 'rgba(0,0,0,0.2)';
   ctx.lineWidth = 0.5;
@@ -424,7 +426,9 @@ function drawBuilding(ctx, col, row, type) {
   // Route
   if (type === 'road') {
     const orientation = state.buildingOrientation?.[`${col},${row}`] ?? 'N';
-    drawRoadSegment(ctx, s, tw, th, orientation, cam);
+    const roadLevel = state.buildingLevels[`${col},${row}`] ?? 0;
+    const roadDef   = getRoadDef(roadLevel);
+    drawRoadSegment(ctx, s, tw, th, orientation, cam, roadDef.color);
     return;
   }
 
