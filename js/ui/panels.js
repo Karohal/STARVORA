@@ -158,6 +158,7 @@ function openBuildingPanel(key, type) {
   document.getElementById('bp-factory-section').style.display   = isFactory   ? 'block' : 'none';
   document.getElementById('bp-warehouse-section').style.display = isWarehouse ? 'block' : 'none';
   document.getElementById('bp-workers-section').style.display   = hasWorkers  ? 'block' : 'none';
+  document.getElementById('bp-prod-status').style.display       = (hasWorkers && type !== 'road') ? 'block' : 'none';
   const researchEl = document.getElementById('bp-research-section');
   if (researchEl) researchEl.style.display = (type === 'research_center') ? 'block' : 'none';
 
@@ -188,6 +189,7 @@ function openBuildingPanel(key, type) {
     }
     roadInfoEl.innerHTML = `<div class="th-row"><span>🛣️ ${def.name}</span><span class="th-val" style="color:var(--gold)">Niv. ${rl}</span></div>`
       + (nextDef ? `<div class="th-muted" style="font-size:0.6rem">Prochain : ${nextDef.name} (x${nextDef.speedMult} vitesse)</div>`
+        + (nextDef.resources ? `<div class="th-muted" style="font-size:0.58rem">${Object.entries(nextDef.resources).map(([r,q])=>(RESOURCE_LABELS?.[r]??r)+' x'+q).join(', ')}</div>` : '')
                  : `<div style="color:var(--success);font-size:0.6rem">Qualite maximale !</div>`);
   } else {
     document.getElementById('bp-road-info')?.remove();
@@ -589,6 +591,27 @@ function buildingLevelUp() {
     if (!nextDef) return notify('Niveau maximum atteint !', 'err');
     const cost = getRoadUpgradeCost(level);
     if (state.money < cost) return notify("Pas assez d'argent !", 'err');
+    // Vérifier ressources du prochain palier
+    const resCost = nextDef.resources ?? null;
+    if (resCost) {
+      const total = getTotalWarehouseStock();
+      for (const [res, qty] of Object.entries(resCost)) {
+        if ((total[res]??0) < qty) {
+          const label = RESOURCE_LABELS?.[res] ?? res;
+          return notify(`Pas assez de ${label} ! (${qty} requis)`, 'err');
+        }
+      }
+      for (const [res, qty] of Object.entries(resCost)) {
+        let rem = qty;
+        for (const wKey of Object.keys(state.warehouseStock ?? {})) {
+          if (rem <= 0) break;
+          const s = state.warehouseStock[wKey][res] ?? 0;
+          const take = Math.min(s, rem);
+          state.warehouseStock[wKey][res] = s - take;
+          rem -= take;
+        }
+      }
+    }
     state.money -= cost;
     state.buildingLevels[key] = level + 1;
     updateStats();
