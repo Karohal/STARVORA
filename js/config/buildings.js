@@ -65,6 +65,16 @@ const BUILDING_DEF = {
       + "<p style='margin-top:8px'>Construisez des routes entre vos extracteurs, usines et entrepôts pour optimiser votre logistique.</p>",
     unlockCondition: (s) => s.hasTownhall,
   },
+  market: {
+    icon: '🏪', name: 'Marché',
+    cost: 400, color: '#c08020',
+    workers: 2, w: 1, h: 1,
+    group: 'infrastructure',
+    description: 'Vend vos ressources contre des crédits.',
+    info: "<p>Le <strong style='color:var(--gold)'>Marché</strong> vend automatiquement les ressources stockées contre des crédits. Les prix fluctuent toutes les 2 minutes.</p>",
+    unlockCondition: s => hasResearch(s, 'market_unlock'),
+  },
+
   stargate: {
     icon: '🌀', name: 'Portail de Transfert',
     cost: 500, color: '#4040c0',
@@ -326,7 +336,7 @@ const BUILD_TIME = {
 const LEVELUP_BASE_COST = {
   townhall: 50, house: 30, hospital: 80, research_center: 120, research_warehouse: 90,
   mine: 80, quarry: 60, well: 40,
-  road: 5, stargate: 200,
+  road: 5, stargate: 200, market: 180,
   sorting: 100, crusher: 100, refinery: 150, water_plant: 120,
   warehouse: 90, warehouse_liquid: 100,
   warehouse_waste: 110, warehouse_hazmat: 150, warehouse_gas: 160,
