@@ -227,7 +227,7 @@ function findPath(fx, fy, tx, ty) {
     [c-1,r],[c+1,r],[c,r-1],[c,r+1]
   ].filter(([nc,nr]) => isPassable(nc, nr));
 
-  // BFS avec coût : route = 1, hors route = 3 (on préfère les routes)
+  // BFS avec coût : route = 1, hors route = 20
   const dist = {}, prev = {};
   const queue = [[fc, fr, 0]];
   dist[key(fc,fr)] = 0;
@@ -247,15 +247,37 @@ function findPath(fx, fy, tx, ty) {
     }
   }
 
-  // Reconstituer le chemin
-  const path = [];
+  // Reconstituer le chemin brut
+  const rawPath = [];
   let cur = key(tc, tr);
   while (cur && cur !== key(fc, fr)) {
     const [c, r] = cur.split(',').map(Number);
-    path.unshift({ x: c, y: r });
+    rawPath.unshift({ x: c, y: r });
     cur = prev[cur];
   }
-  return path;
+
+  // Simplifier : fusionner les segments hors-route consécutifs en un seul point
+  // On garde seulement : les cases sur route + les points de transition route↔hors-route + la destination
+  if (rawPath.length === 0) return [];
+  const simplified = [];
+  for (let i = 0; i < rawPath.length; i++) {
+    const pt = rawPath[i];
+    const onRoad = isRoad(pt.x, pt.y);
+    if (onRoad) {
+      // Cases sur route : toujours garder
+      simplified.push(pt);
+    } else {
+      // Hors route : garder seulement si c'est le premier hors-route d'une séquence
+      // ou si c'est la destination finale
+      const prevOnRoad = i === 0 ? true : isRoad(rawPath[i-1].x, rawPath[i-1].y);
+      const nextOnRoad = i === rawPath.length-1 ? true : isRoad(rawPath[i+1].x, rawPath[i+1].y);
+      if (prevOnRoad || nextOnRoad || i === rawPath.length-1) {
+        simplified.push(pt);
+      }
+      // Sinon on saute (le camion ira en ligne droite)
+    }
+  }
+  return simplified;
 }
 
 function updateTrucks(timestamp) {
