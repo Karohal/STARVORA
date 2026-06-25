@@ -65,8 +65,8 @@ function drawSelectedTileHighlight(ctx) {
 
 // Dessine une voie routière traversant toute la tuile selon un axe (NS ou OE)
 function drawRoadSegment(ctx, s, tw, th, orientation, cam, roadColor) {
-  const RC  = roadColor ?? RC;
-  const RC2 = roadColor ?? RC;
+  const RC  = roadColor ?? '#8B6914';
+  const RC2 = roadColor ?? '#8B6914';
   const N = { x: s.x,        y: s.y        };
   const Sp= { x: s.x,        y: s.y + th   };
   const E = { x: s.x + tw/2, y: s.y + th/2 };
