@@ -42,6 +42,7 @@ const RESEARCH_ITEMS = {
     { id: 'metallurgy_unlock',  label: 'Usine métallurgique', cost: 1500, resources: { iron_r: 60, coal_r: 40 } },
   ],
   'civil.infrastructure': [
+    { id: 'market_unlock',           label: 'Marché',               cost: 500,  resources: { stone: 15 } },
     { id: 'hospital_unlock',         label: 'Hôpital',              cost: 600,  resources: { stone: 10, water_r: 5 } },
     { id: 'warehouse_liquid_unlock', label: 'Citerne',              cost: 400,  resources: { stone: 8 } },
     { id: 'warehouse_waste_unlock',  label: 'Dépôt déchets',        cost: 400,  resources: { stone: 8 } },
