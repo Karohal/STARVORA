@@ -285,7 +285,7 @@ const BUILD_GROUPS = [
   {
     id: 'infrastructure',
     label: '🏛️ Infrastructure',
-    types: ['townhall', 'house', 'road', 'hospital', 'stargate'],
+    types: ['townhall', 'house', 'road', 'hospital', 'market', 'stargate'],
   },
   {
     id: 'extraction',
