@@ -65,6 +65,16 @@ const BUILDING_DEF = {
       + "<p style='margin-top:8px'>Construisez des routes entre vos extracteurs, usines et entrepôts pour optimiser votre logistique.</p>",
     unlockCondition: (s) => s.hasTownhall,
   },
+  water_tower: {
+    icon: '🏰', name: "Château d'eau",
+    cost: 600, color: '#2060a0',
+    workers: 2, w: 1, h: 1,
+    group: 'infrastructure',
+    description: "Distribue l'eau potable dans un rayon de cases.",
+    info: "<p>Le <strong style='color:var(--gold)'>Château d'eau</strong> distribue l'eau potable aux bâtiments voisins. Sans eau, la production baisse et les habitants dépérissent.</p>",
+    unlockCondition: s => hasResearch(s, 'water_tower_unlock'),
+  },
+
   market: {
     icon: '🏪', name: 'Marché',
     cost: 400, color: '#c08020',
@@ -285,7 +295,7 @@ const BUILD_GROUPS = [
   {
     id: 'infrastructure',
     label: '🏛️ Infrastructure',
-    types: ['townhall', 'house', 'road', 'hospital', 'market', 'stargate'],
+    types: ['townhall', 'house', 'road', 'hospital', 'market', 'water_tower', 'stargate'],
   },
   {
     id: 'extraction',
@@ -336,7 +346,7 @@ const BUILD_TIME = {
 const LEVELUP_BASE_COST = {
   townhall: 50, house: 30, hospital: 80, research_center: 120, research_warehouse: 90,
   mine: 80, quarry: 60, well: 40,
-  road: 5, stargate: 200, market: 180,
+  road: 5, stargate: 200, market: 180, water_tower: 200,
   sorting: 100, crusher: 100, refinery: 150, water_plant: 120,
   warehouse: 90, warehouse_liquid: 100,
   warehouse_waste: 110, warehouse_hazmat: 150, warehouse_gas: 160,
@@ -391,7 +401,7 @@ const BASE_WORKERS = {
   sorting: 5, crusher: 4, refinery: 6, water_plant: 4,
   warehouse: 2, warehouse_liquid: 2, warehouse_waste: 2,
   warehouse_hazmat: 2, warehouse_gas: 2,
-  vehiclefactory: 6, market: 4,
+  vehiclefactory: 6, market: 4, water_tower: 2,
 };
 
 // ============================================================
