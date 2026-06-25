@@ -377,7 +377,7 @@ window.MARKET_BASE_PRICES = MARKET_BASE_PRICES;
 // ============================================================
 
 const WATER_TOWER_RADIUS  = [2, 3, 4, 5]; // rayon par niveau
-const WATER_CONSUMPTION   = 0.5;  // unités/tick par bâtiment couvert (toutes les 30s)
+const WATER_CONSUMPTION   = 0.01; // unités/tick par habitant (toutes les 30s)
 const WATER_GRACE_DAYS    = 7;    // jours avant effet
 const WATER_DEATH_DAYS    = 90;   // jours avant mort/hospitalisation
 
@@ -428,15 +428,8 @@ function consumeWater() {
     const [col, row] = key.split(',').map(Number);
     const level = state.buildingLevels[key] ?? 0;
     const radius = waterTowerRadius(level);
-    // Compter les bâtiments couverts qui ont des travailleurs
-    let consumers = 0;
-    for (let r = row - radius; r <= row + radius; r++) {
-      for (let c = col - radius; c <= col + radius; c++) {
-        const bkey = `${c},${r}`;
-        if (state.buildings[bkey] && (state.assignedWorkers[bkey] ?? 0) > 0) consumers++;
-      }
-    }
-    const consume = consumers * WATER_CONSUMPTION;
+    // Consommation basée sur le nombre total d'habitants
+    const consume = (state.population ?? 0) * WATER_CONSUMPTION;
     const current = stock['water_r'] ?? 0;
     stock['water_r'] = Math.max(0, current - consume);
   }
