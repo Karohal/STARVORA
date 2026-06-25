@@ -85,7 +85,7 @@ function loadGame() {
     state.truckCounter     = save.truckCounter     ?? 0;
     state.truckBuildQueue  = save.truckBuildQueue  ?? {};
     state.hasTownhall      = save.hasTownhall      ?? false;
-    state.hdvStock         = save.hdvStock         ?? { water: 100 };
+    state.hdvStock         = save.hdvStock         ?? { water_r: 100 };
     state.exploredMaps     = save.exploredMaps     ?? { '1,1': true };
     state.factoryRemainder = save.factoryRemainder ?? {};
     state.buildingOrientation = save.buildingOrientation ?? {};
