@@ -438,8 +438,8 @@ Object.assign(BUILDING_DEF.water_plant,       { unlockCondition: s => hasResearc
 // ============================================================
 const ROAD_LEVELS = [
   { level: 0,  name: 'Terre',                cost: 0,   resources: null,                          speedMult: 1.0,  color: '#8B6914', dashColor: 'rgba(255,255,255,0)' },
-  { level: 1,  name: 'Terre damée',          cost: 20,  resources: null,                          speedMult: 1.15, color: '#7A5E12', dashColor: 'rgba(255,255,255,0.3)' },
-  { level: 5,  name: 'Gravier',              cost: 50,  resources: { stone: 2 },                  speedMult: 1.35, color: '#9E8C6A', dashColor: 'rgba(255,255,255,0.4)' },
+  { level: 1,  name: 'Terre damée',          cost: 20,  resources: null,                          speedMult: 1.15, color: '#7A5E12', dashColor: 'rgba(255,255,255,0)' },
+  { level: 5,  name: 'Gravier',              cost: 50,  resources: { stone: 2 },                  speedMult: 1.35, color: '#9E8C6A', dashColor: 'rgba(255,255,255,0)' },
   { level: 10, name: 'Macadam',              cost: 100, resources: { stone: 5, coal: 2 },          speedMult: 1.6,  color: '#6B6050', dashColor: 'rgba(255,255,255,0.5)' },
   { level: 15, name: 'Bitume',               cost: 200, resources: { stone_r: 5, coal_r: 3 },     speedMult: 2.0,  color: '#504840', dashColor: 'rgba(255,255,255,0.65)' },
   { level: 20, name: 'Béton',                cost: 400, resources: { stone_r: 10, iron_r: 5 },    speedMult: 2.5,  color: '#909090', dashColor: 'rgba(255,255,255,0.7)' },
