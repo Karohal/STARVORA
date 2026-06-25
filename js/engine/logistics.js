@@ -323,7 +323,7 @@ function updateTrucks(timestamp) {
   }
 }
 
-const TRUCK_SPEED_ROUTE   = 0.15;
+const TRUCK_SPEED_ROUTE   = 0.075;
 const TRUCK_SPEED_NOROUTE = 0.025;
 
 function getRoadLevel(col, row) {
