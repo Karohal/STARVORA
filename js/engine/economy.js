@@ -388,26 +388,32 @@ function waterTowerRadius(level) {
 // Recalcule quels bâtiments sont couverts par l'eau
 function updateWaterCoverage() {
   if (!state.waterCoverage) state.waterCoverage = {};
-  // Réinitialiser
   const covered = {};
 
+  // L'Hôtel de Ville distribue toujours l'eau sur 5×5 (rayon 2)
+  for (const [key, type] of Object.entries(state.buildings)) {
+    if (type !== 'townhall') continue;
+    const [col, row] = key.split(',').map(Number);
+    for (let r = row - 2; r <= row + 2; r++)
+      for (let c = col - 2; c <= col + 2; c++)
+        if (state.buildings[`${c},${r}`]) covered[`${c},${r}`] = true;
+  }
+
+  // Châteaux d'eau avec stock et travailleurs
   for (const [key, type] of Object.entries(state.buildings)) {
     if (type !== 'water_tower') continue;
     const stock = state.warehouseStock[key];
-    if (!stock || Object.values(stock).reduce((a,b)=>a+b,0) === 0) continue; // vide = pas de distribution
+    if (!stock || Object.values(stock).reduce((a,b)=>a+b,0) === 0) continue;
     const assigned = state.assignedWorkers[key] ?? 0;
     if (assigned === 0) continue;
 
     const [col, row] = key.split(',').map(Number);
-    const level = state.buildingLevels[key] ?? 0;
+    const level  = state.buildingLevels[key] ?? 0;
     const radius = waterTowerRadius(level);
 
-    for (let r = row - radius; r <= row + radius; r++) {
-      for (let c = col - radius; c <= col + radius; c++) {
-        const bkey = `${c},${r}`;
-        if (state.buildings[bkey]) covered[bkey] = true;
-      }
-    }
+    for (let r = row - radius; r <= row + radius; r++)
+      for (let c = col - radius; c <= col + radius; c++)
+        if (state.buildings[`${c},${r}`]) covered[`${c},${r}`] = true;
   }
 
   state.waterCoverage = covered;
@@ -444,9 +450,9 @@ function applyWaterDeprivation() {
   const now   = Date.now();
 
   for (const [key, type] of Object.entries(state.buildings)) {
-    // Seuls les bâtiments avec travailleurs sont affectés
+    // Seuls les bâtiments avec travailleurs sont affectés (pas les extracteurs ni l'HdV)
     if ((state.assignedWorkers[key] ?? 0) === 0) continue;
-    if (['road','water_tower'].includes(type)) continue;
+    if (['road','water_tower','well','mine','quarry','townhall'].includes(type)) continue;
 
     const covered = !!state.waterCoverage[key];
     if (covered) {
