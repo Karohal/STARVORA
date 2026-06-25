@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Événements
   setupInputEvents();
   setInterval(() => refreshBuildingPanelTrucks(), 500);
+  initMarketPrices();
+  setInterval(() => fluctuateMarketPrices(), 120000); // fluctuation toutes les 2min
+  setInterval(() => updateMarkets(), 5000); // vérification toutes les 5s
 
   // Boucle de rendu
   drawFrame_start();
