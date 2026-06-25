@@ -594,13 +594,24 @@ function drawTruckActivityIndicator(ctx, key, cx, cy, bh, cam) {
 
 function drawBuildingLabel(ctx, cx, cy, bh, topOffset, col, row, def, cam) {
   if (cam.zoom <= 0.4) return;
-  const lvl = state.buildingLevels[`${col},${row}`] ?? 0;
+  const key  = `${col},${row}`;
+  const lvl  = state.buildingLevels[key] ?? 0;
   const labelY = cy - bh - topOffset - 8 * cam.zoom;
 
   ctx.font = `${Math.floor(13 * cam.zoom)}px serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(def.icon, cx, labelY);
+
+  // Icône manque d'eau
+  if (state.waterDeprivation?.[key] && def?.type !== 'water_tower') {
+    const dep   = state.waterDeprivation[key];
+    const days  = Math.floor((Date.now() - dep.startTime) / (state.dayDuration ?? 60000));
+    if (days >= WATER_GRACE_DAYS) {
+      ctx.font = `${Math.floor(11 * cam.zoom)}px serif`;
+      ctx.fillText('🚱', cx + 10 * cam.zoom, labelY);
+    }
+  }
 
   if (cam.zoom > 0.55) {
     ctx.font = `bold ${Math.floor(9 * cam.zoom)}px monospace`;
@@ -615,6 +626,35 @@ function drawBuildingLabel(ctx, cx, cy, bh, topOffset, col, row, def, cam) {
 // ============================================================
 // DESSIN BÂTIMENTS EN CONSTRUCTION
 // ============================================================
+function drawWaterZones(ctx) {
+  if (!state._showWaterZone) return;
+  const { cam } = state;
+  for (const [key, type] of Object.entries(state.buildings ?? {})) {
+    if (type !== 'water_tower') continue;
+    const [col, row] = key.split(',').map(Number);
+    const level  = state.buildingLevels[key] ?? 0;
+    const radius = waterTowerRadius(level);
+    const hasWater = Object.values(state.warehouseStock?.[key] ?? {}).reduce((a,b)=>a+b,0) > 0;
+    ctx.globalAlpha = 0.15;
+    ctx.fillStyle   = hasWater ? '#2080ff' : '#ff4040';
+    for (let r = row - radius; r <= row + radius; r++) {
+      for (let c = col - radius; c <= col + radius; c++) {
+        const ts = tileToScreen(c, r);
+        const tw2 = TW * cam.zoom, th2 = TH * cam.zoom;
+        ctx.beginPath();
+        ctx.moveTo(ts.x, ts.y);
+        ctx.lineTo(ts.x + tw2/2, ts.y + th2/2);
+        ctx.lineTo(ts.x, ts.y + th2);
+        ctx.lineTo(ts.x - tw2/2, ts.y + th2/2);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+window.drawWaterZones = drawWaterZones;
+
 function drawBuildingQueue(ctx) {
   const { cam } = state;
   const now = Date.now();
@@ -763,6 +803,29 @@ function drawGhostPreview(ctx) {
     ctx.fill();
     ctx.strokeStyle = g.valid ? 'rgba(80,220,80,0.8)' : 'rgba(220,60,60,0.8)';
     ctx.lineWidth = 2; ctx.stroke();
+
+    // Zone de distribution fantôme pour château d'eau
+    if (g.type === 'water_tower') {
+      const radius = waterTowerRadius(0);
+      const { cam } = state;
+      ctx.globalAlpha = 0.12;
+      ctx.fillStyle = '#2080ff';
+      for (let r = g.row - radius; r <= g.row + radius; r++) {
+        for (let c = g.col - radius; c <= g.col + radius; c++) {
+          if (c === g.col && r === g.row) continue;
+          const ts = tileToScreen(c, r);
+          const tw2 = TW * cam.zoom, th2 = TH * cam.zoom;
+          ctx.beginPath();
+          ctx.moveTo(ts.x, ts.y);
+          ctx.lineTo(ts.x + tw2/2, ts.y + th2/2);
+          ctx.lineTo(ts.x, ts.y + th2);
+          ctx.lineTo(ts.x - tw2/2, ts.y + th2/2);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
 
     // Bâtiment fantôme semi-transparent
     ctx.globalAlpha = 0.5;
