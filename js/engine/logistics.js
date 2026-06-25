@@ -354,9 +354,12 @@ function handleTruckStop(t, stop) {
       if (space2 <= 0) { advanceTruck(t); return; }
 
       const truckCat2 = TRUCK_TYPES[t.truckType ?? 'standard']?.category ?? 'solid';
+      const whCat2    = WAREHOUSE_CATEGORIES[bldTypeLoad] ?? 'solid';
       let resKey = null, availQty = 0;
       for (const [r, q] of Object.entries(ws)) {
-        if (q > 0 && (RESOURCE_CATEGORY[r] ?? 'solid') === truckCat2 && (!t.resourceFilter || t.resourceFilter.includes(r))) { resKey = r; availQty = q; break; }
+        const resCat = RESOURCE_CATEGORY[r] ?? 'solid';
+        const catOk  = whCat2 === 'all' ? true : resCat === truckCat2;
+        if (q > 0 && catOk && (!t.resourceFilter || t.resourceFilter.includes(r))) { resKey = r; availQty = q; break; }
       }
       if (!resKey) { if (!(stop.waitFull ?? false)) advanceTruck(t); else t.status = 'loading'; return; }
 
@@ -445,7 +448,7 @@ function handleTruckStop(t, stop) {
     const assigned = state.assignedWorkers[stop.key] ?? 0;
     if (ws !== undefined && assigned === 0) {
       t.status = 'unloading'; // pas de travailleur, camion attend
-    } else if (ws !== undefined && (isResearchWh || allowCat === truckCat)) {
+    } else if (ws !== undefined && (isResearchWh || allowCat === 'all' || allowCat === truckCat)) {
       const wLevel = state.buildingLevels[stop.key] ?? 0;
       const wCap   = warehouseCapacity(wLevel);
       let wTotal   = Object.values(ws).reduce((a,b)=>a+b,0);
