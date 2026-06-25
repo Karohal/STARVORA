@@ -391,7 +391,7 @@ const BASE_WORKERS = {
   sorting: 5, crusher: 4, refinery: 6, water_plant: 4,
   warehouse: 2, warehouse_liquid: 2, warehouse_waste: 2,
   warehouse_hazmat: 2, warehouse_gas: 2,
-  vehiclefactory: 6,
+  vehiclefactory: 6, market: 4,
 };
 
 // ============================================================
