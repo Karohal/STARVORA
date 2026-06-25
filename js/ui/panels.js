@@ -170,6 +170,29 @@ function openBuildingPanel(key, type) {
   if (type === 'hospital') refreshHospitalPanel(key);
   if (type === 'townhall') refreshHdvStockPanel();
 
+  // Affichage spécial pour les routes
+  if (type === 'road') {
+    const rl      = state.buildingLevels[key] ?? 0;
+    const def     = getRoadDef(rl);
+    const nextDef = ROAD_LEVELS.find(r => r.level > rl) ?? null;
+    const costEl  = document.getElementById('bp-levelup-cost');
+    const btn     = document.getElementById('bp-levelup-btn');
+    if (costEl) costEl.textContent = nextDef ? `${getRoadUpgradeCost(rl)} 💰` : 'MAX';
+    if (btn) { btn.dataset.key = key; btn.dataset.type = type; }
+    let roadInfoEl = document.getElementById('bp-road-info');
+    if (!roadInfoEl) {
+      roadInfoEl = document.createElement('div');
+      roadInfoEl.id = 'bp-road-info';
+      roadInfoEl.style.cssText = 'font-size:0.65rem;margin:6px 0;padding:6px;background:rgba(255,255,255,0.05);border-radius:4px;';
+      document.getElementById('bp-levelup-cost')?.parentNode?.insertBefore(roadInfoEl, document.getElementById('bp-levelup-cost'));
+    }
+    roadInfoEl.innerHTML = `<div class="th-row"><span>🛣️ ${def.name}</span><span class="th-val" style="color:var(--gold)">Niv. ${rl}</span></div>`
+      + (nextDef ? `<div class="th-muted" style="font-size:0.6rem">Prochain : ${nextDef.name} (x${nextDef.speedMult} vitesse)</div>`
+                 : `<div style="color:var(--success);font-size:0.6rem">Qualite maximale !</div>`);
+  } else {
+    document.getElementById('bp-road-info')?.remove();
+  }
+
   document.getElementById('building-panel')?.classList.add('open');
   refreshBuildingPanelTrucks(key);
 }
@@ -560,6 +583,20 @@ function buildingLevelUp() {
   const type = btn?.dataset.type;
   if (!key || !type) return;
   const level = state.buildingLevels[key] ?? 0;
+  // Routes : coût selon palier de matériau
+  if (type === 'road') {
+    const nextDef = ROAD_LEVELS.find(r => r.level > level);
+    if (!nextDef) return notify('Niveau maximum atteint !', 'err');
+    const cost = getRoadUpgradeCost(level);
+    if (state.money < cost) return notify("Pas assez d'argent !", 'err');
+    state.money -= cost;
+    state.buildingLevels[key] = level + 1;
+    updateStats();
+    openBuildingPanel(key, type);
+    const def = getRoadDef(level + 1);
+    notify(`🛣️ Route améliorée : ${def.name} !`, 'ok');
+    return;
+  }
   const cost  = levelUpCost(type, level);
   const resCost = (LEVELUP_RESOURCE_COST[type] ?? [])[level + 1] ?? null;
 
