@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initMarketPrices();
   setInterval(() => fluctuateMarketPrices(), 120000); // fluctuation toutes les 2min
   setInterval(() => updateMarkets(), 5000); // vérification toutes les 5s
+  setInterval(() => updateWaterSystem(), 30000); // eau toutes les 30s
 
   // Boucle de rendu
   drawFrame_start();
@@ -87,6 +88,7 @@ function drawFrame() {
 
   drawSelectedTileHighlight(ctx);
   drawBuildingQueue(ctx);
+  drawWaterZones(ctx);
   drawGhostPreview(ctx);
   drawTrucks(ctx);
 
@@ -127,7 +129,7 @@ function finalizeBuild(key, type, col, row, orientation) {
   if (Object.keys(WAREHOUSE_CATEGORIES).includes(type)) {
     state.warehouseStock[key] = {};
   }
-  if (type === 'research_warehouse') {
+  if (type === 'research_warehouse' || type === 'water_tower') {
     state.warehouseStock[key] = {};
   }
   if (type === 'townhall') {
