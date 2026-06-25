@@ -761,7 +761,7 @@
     try {
       await sv.signInWithEmailAndPassword(sv.auth, email, pass);
       setMsg('login-msg', '✓ Connexion réussie ! Chargement…', 'success');
-      setTimeout(() => { window.location.href = 'game.html?v=150'; }, 1200);
+      setTimeout(() => { window.location.href = 'game.html?v=151'; }, 1200);
     } catch (e) {
       setMsg('login-msg', firebaseError(e.code), 'error');
       setLoading('login-btn', false);
@@ -793,7 +793,7 @@
         instancePhase: 'planet'
       });
       setMsg('register-msg', `✓ Bienvenue, Commandant ${pseudo} !`, 'success');
-      setTimeout(() => { window.location.href = 'game.html?v=150'; }, 1400);
+      setTimeout(() => { window.location.href = 'game.html?v=151'; }, 1400);
     } catch (e) {
       setMsg('register-msg', firebaseError(e.code), 'error');
       setLoading('register-btn', false);
