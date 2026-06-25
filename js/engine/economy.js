@@ -371,3 +371,125 @@ window.marketCapacity     = marketCapacity;
 window.marketSellRate     = marketSellRate;
 window.marketCycleMs      = marketCycleMs;
 window.MARKET_BASE_PRICES = MARKET_BASE_PRICES;
+
+// ============================================================
+// SYSTÈME EAU — Distribution & effets manque d'eau
+// ============================================================
+
+const WATER_TOWER_RADIUS  = [2, 3, 4, 5]; // rayon par niveau
+const WATER_CONSUMPTION   = 0.5;  // unités/tick par bâtiment couvert (toutes les 30s)
+const WATER_GRACE_DAYS    = 7;    // jours avant effet
+const WATER_DEATH_DAYS    = 90;   // jours avant mort/hospitalisation
+
+function waterTowerRadius(level) {
+  return WATER_TOWER_RADIUS[Math.min(level, WATER_TOWER_RADIUS.length-1)] ?? 2;
+}
+
+// Recalcule quels bâtiments sont couverts par l'eau
+function updateWaterCoverage() {
+  if (!state.waterCoverage) state.waterCoverage = {};
+  // Réinitialiser
+  const covered = {};
+
+  for (const [key, type] of Object.entries(state.buildings)) {
+    if (type !== 'water_tower') continue;
+    const stock = state.warehouseStock[key];
+    if (!stock || Object.values(stock).reduce((a,b)=>a+b,0) === 0) continue; // vide = pas de distribution
+    const assigned = state.assignedWorkers[key] ?? 0;
+    if (assigned === 0) continue;
+
+    const [col, row] = key.split(',').map(Number);
+    const level = state.buildingLevels[key] ?? 0;
+    const radius = waterTowerRadius(level);
+
+    for (let r = row - radius; r <= row + radius; r++) {
+      for (let c = col - radius; c <= col + radius; c++) {
+        const bkey = `${c},${r}`;
+        if (state.buildings[bkey]) covered[bkey] = true;
+      }
+    }
+  }
+
+  state.waterCoverage = covered;
+}
+
+// Consommation d'eau par les châteaux d'eau
+function consumeWater() {
+  for (const [key, type] of Object.entries(state.buildings)) {
+    if (type !== 'water_tower') continue;
+    const stock = state.warehouseStock[key];
+    if (!stock) continue;
+    const [col, row] = key.split(',').map(Number);
+    const level = state.buildingLevels[key] ?? 0;
+    const radius = waterTowerRadius(level);
+    // Compter les bâtiments couverts qui ont des travailleurs
+    let consumers = 0;
+    for (let r = row - radius; r <= row + radius; r++) {
+      for (let c = col - radius; c <= col + radius; c++) {
+        const bkey = `${c},${r}`;
+        if (state.buildings[bkey] && (state.assignedWorkers[bkey] ?? 0) > 0) consumers++;
+      }
+    }
+    const consume = consumers * WATER_CONSUMPTION;
+    const current = stock['water_r'] ?? 0;
+    stock['water_r'] = Math.max(0, current - consume);
+  }
+}
+
+// Appliquer les effets de manque d'eau
+function applyWaterDeprivation() {
+  if (!state.waterDeprivation) state.waterDeprivation = {};
+  if (!state.waterCoverage)    state.waterCoverage    = {};
+  const dayMs = (state.dayDuration ?? 60000);
+  const now   = Date.now();
+
+  for (const [key, type] of Object.entries(state.buildings)) {
+    // Seuls les bâtiments avec travailleurs sont affectés
+    if ((state.assignedWorkers[key] ?? 0) === 0) continue;
+    if (['road','water_tower'].includes(type)) continue;
+
+    const covered = !!state.waterCoverage[key];
+    if (covered) {
+      // Couvert → reset timer
+      delete state.waterDeprivation[key];
+      continue;
+    }
+
+    // Pas couvert → incrémenter timer
+    if (!state.waterDeprivation[key]) {
+      state.waterDeprivation[key] = { startDay: state.day ?? 0, startTime: now };
+    }
+
+    const dep  = state.waterDeprivation[key];
+    const days = Math.floor((now - dep.startTime) / dayMs);
+
+    // Après 7 jours : icône sur le bâtiment (géré dans renderer)
+    // Après 90 jours : effets mortels
+    if (days > WATER_DEATH_DAYS) {
+      if (!dep.lastDeathTime || now - dep.lastDeathTime > dayMs * 7) {
+        dep.lastDeathTime = now;
+        // Aléatoire : mort ou hospitalisation
+        if (Math.random() < 0.5 && state.population > 1) {
+          state.population = Math.max(0, (state.population ?? 1) - 1);
+          state.availableWorkers = Math.max(0, (state.availableWorkers ?? 0) - 1);
+          notify(`💀 Un habitant est décédé par manque d'eau !`, 'err');
+        } else {
+          notify(`🏥 Un habitant est hospitalisé par manque d'eau !`, 'err');
+        }
+        updateStats();
+      }
+    }
+  }
+}
+
+function updateWaterSystem() {
+  updateWaterCoverage();
+  consumeWater();
+  applyWaterDeprivation();
+}
+
+window.updateWaterSystem    = updateWaterSystem;
+window.updateWaterCoverage  = updateWaterCoverage;
+window.waterTowerRadius     = waterTowerRadius;
+window.WATER_GRACE_DAYS     = WATER_GRACE_DAYS;
+window.WATER_DEATH_DAYS     = WATER_DEATH_DAYS;
