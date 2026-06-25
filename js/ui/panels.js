@@ -146,8 +146,9 @@ function openBuildingPanel(key, type) {
 
   const isProducer  = ['mine','quarry','well','sorting','crusher','refinery','water_plant'].includes(type);
   const isFactory   = type === 'vehiclefactory';
-  const isWarehouse = Object.keys(WAREHOUSE_CATEGORIES).includes(type) || type === 'research_warehouse' || type === 'market';
-  const isMarket    = type === 'market';
+  const isWarehouse = Object.keys(WAREHOUSE_CATEGORIES).includes(type) || type === 'research_warehouse' || type === 'market' || type === 'water_tower';
+  const isMarket     = type === 'market';
+  const isWaterTower = type === 'water_tower';
   const hasWorkers  = (BASE_WORKERS[type] ?? 0) > 0;
 
   document.getElementById('bp-prod-section').style.display      = isProducer  ? 'block' : 'none';
@@ -513,6 +514,45 @@ function refreshTruckPanel(truckId) {
     stopsEl2.style.display = (t.truckType === 'builder' || t.truckType === 'explorer') ? 'none' : '';
   }
 }
+
+function refreshWaterTowerPanel(key) {
+  const level   = state.buildingLevels[key] ?? 0;
+  const stock   = state.warehouseStock[key] ?? {};
+  const water   = stock['water_r'] ?? 0;
+  const cap     = 50 + level * 50;
+  const radius  = waterTowerRadius(level);
+  const active  = !!state._showWaterZone;
+
+  const wEl = document.getElementById('bp-warehouse-stock');
+  if (!wEl) return;
+
+  // Compter bâtiments couverts
+  const [col, row] = key.split(',').map(Number);
+  let covered = 0;
+  for (let r = row - radius; r <= row + radius; r++)
+    for (let c = col - radius; c <= col + radius; c++)
+      if (state.buildings[`${c},${r}`]) covered++;
+
+  wEl.innerHTML = `
+    <div class="th-row" style="margin-bottom:6px">
+      <span style="color:#4aa0ff">💧 Eau potable</span>
+      <span class="th-val">${Math.round(water)}/${cap}</span>
+    </div>
+    <div class="th-muted" style="font-size:0.62rem;margin-bottom:4px">Rayon : ${radius} cases · ${covered} bâtiments couverts</div>
+    <div class="th-row" style="margin-top:8px">
+      <span style="font-size:0.65rem">Zone de distribution</span>
+      <label style="cursor:pointer;font-size:0.65rem">
+        <input type="checkbox" ${active?'checked':''} onchange="toggleWaterZone()" style="cursor:pointer;vertical-align:middle"> Afficher
+      </label>
+    </div>
+  `;
+}
+window.refreshWaterTowerPanel = refreshWaterTowerPanel;
+
+function toggleWaterZone() {
+  state._showWaterZone = !state._showWaterZone;
+}
+window.toggleWaterZone = toggleWaterZone;
 
 function refreshMarketPanel(key) {
   const level     = state.buildingLevels[key] ?? 0;
