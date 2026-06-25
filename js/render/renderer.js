@@ -64,9 +64,10 @@ function drawSelectedTileHighlight(ctx) {
 }
 
 // Dessine une voie routière traversant toute la tuile selon un axe (NS ou OE)
-function drawRoadSegment(ctx, s, tw, th, orientation, cam, roadColor) {
-  const RC  = roadColor ?? '#8B6914';
-  const RC2 = roadColor ?? '#8B6914';
+function drawRoadSegment(ctx, s, tw, th, orientation, cam, roadColor, dashColor) {
+  const RC   = roadColor ?? '#8B6914';
+  const RC2  = roadColor ?? '#8B6914';
+  const DASH = dashColor ?? 'rgba(255,255,255,0.7)';
   const N = { x: s.x,        y: s.y        };
   const Sp= { x: s.x,        y: s.y + th   };
   const E = { x: s.x + tw/2, y: s.y + th/2 };
@@ -124,7 +125,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam, roadColor) {
     ctx.fill();
 
     // Traits blancs médians
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.strokeStyle = DASH;
     ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
     ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
     [midNO, midNE, midOSp, midSpE].forEach(from => {
@@ -186,7 +187,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam, roadColor) {
     ctx.fill();
 
     // Traits blancs médians
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.strokeStyle = DASH;
     ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
     ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
     allArms.filter(a => a.name !== orientation).forEach(({ from }) => {
@@ -264,7 +265,7 @@ function drawRoadSegment(ctx, s, tw, th, orientation, cam, roadColor) {
     // Trait blanc médian (arc à rayon moyen)
     const rMidArc = (rExtIso + rIntIso) / 2;
     const arcMid = arcPts(rMidArc, angA, angB, 24);
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.strokeStyle = DASH;
     ctx.lineWidth   = Math.max(1, 1.2 * cam.zoom);
     ctx.setLineDash([4 * cam.zoom, 3 * cam.zoom]);
     ctx.beginPath();
@@ -428,7 +429,7 @@ function drawBuilding(ctx, col, row, type) {
     const orientation = state.buildingOrientation?.[`${col},${row}`] ?? 'N';
     const roadLevel = state.buildingLevels[`${col},${row}`] ?? 0;
     const roadDef   = getRoadDef(roadLevel);
-    drawRoadSegment(ctx, s, tw, th, orientation, cam, roadDef.color);
+    drawRoadSegment(ctx, s, tw, th, orientation, cam, roadDef.color, roadDef.dashColor);
     return;
   }
 
