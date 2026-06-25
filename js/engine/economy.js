@@ -292,3 +292,81 @@ window.houseCapacity         = houseCapacity;
 window.getBirthRate          = getBirthRate;
 
 window.startEconomyTick = startEconomyTick;
+
+// ============================================================
+// MARCHÉ — Vente de ressources contre crédits
+// ============================================================
+
+const MARKET_BASE_PRICES = {
+  stone:    2,  iron:     4,  coal:     3,  water:    2,
+  stone_r: 8,  iron_r:  15,  coal_r:  10,  water_r:  6,
+};
+
+// Prix courants (fluctuent)
+if (!state.marketPrices) state.marketPrices = {};
+
+function initMarketPrices() {
+  if (!state.marketPrices) state.marketPrices = {};
+  for (const [res, base] of Object.entries(MARKET_BASE_PRICES)) {
+    if (!state.marketPrices[res]) state.marketPrices[res] = base;
+  }
+}
+
+function fluctuateMarketPrices() {
+  for (const [res, base] of Object.entries(MARKET_BASE_PRICES)) {
+    const mult = 0.7 + Math.random() * 0.8; // 0.7x à 1.5x
+    state.marketPrices[res] = Math.round(base * mult * 10) / 10;
+  }
+}
+
+function marketCapacity(level) {
+  return [50, 100, 200, 400][level ?? 0] ?? 50;
+}
+
+function marketSellRate(level) {
+  return [5, 10, 20, 40][level ?? 0] ?? 5;
+}
+
+function marketCycleMs(level) {
+  return [60000, 45000, 30000, 20000][level ?? 0] ?? 60000;
+}
+
+function updateMarkets() {
+  const now = Date.now();
+  for (const [key, type] of Object.entries(state.buildings)) {
+    if (type !== 'market') continue;
+    if ((state.assignedWorkers[key] ?? 0) === 0) continue;
+    const level = state.buildingLevels[key] ?? 0;
+    const cycle = marketCycleMs(level);
+    if (!state._marketLastSell) state._marketLastSell = {};
+    if (!state._marketLastSell[key]) state._marketLastSell[key] = now;
+    if (now - state._marketLastSell[key] < cycle) continue;
+    state._marketLastSell[key] = now;
+
+    const stock = state.warehouseStock[key];
+    if (!stock) continue;
+    let units = marketSellRate(level);
+    let earned = 0;
+    for (const [res, qty] of Object.entries(stock)) {
+      if (units <= 0) break;
+      if (!qty || qty <= 0) continue;
+      const price = state.marketPrices?.[res] ?? MARKET_BASE_PRICES[res] ?? 1;
+      const sell = Math.min(qty, units);
+      stock[res] = qty - sell;
+      earned += Math.round(sell * price);
+      units -= sell;
+    }
+    if (earned > 0) {
+      state.money += earned;
+      updateStats();
+      notify(`🏪 Marché : +${earned} 💰`, 'ok');
+    }
+  }
+}
+window.updateMarkets      = updateMarkets;
+window.initMarketPrices   = initMarketPrices;
+window.fluctuateMarketPrices = fluctuateMarketPrices;
+window.marketCapacity     = marketCapacity;
+window.marketSellRate     = marketSellRate;
+window.marketCycleMs      = marketCycleMs;
+window.MARKET_BASE_PRICES = MARKET_BASE_PRICES;
