@@ -80,7 +80,7 @@ const WAREHOUSE_CATEGORIES = {
   warehouse_waste:  'waste',
   warehouse_hazmat: 'hazardous',
   warehouse_gas:    'gas',
-  market:           'solid',   // le marché accepte les ressources solides
+  market:           'all',    // le marché accepte toutes les ressources vendables
 };
 
 // Coûts en ressources pour passer au niveau supérieur (lvl 1 -> 2, 2 -> 3...)
