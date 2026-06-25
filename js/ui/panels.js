@@ -146,7 +146,8 @@ function openBuildingPanel(key, type) {
 
   const isProducer  = ['mine','quarry','well','sorting','crusher','refinery','water_plant'].includes(type);
   const isFactory   = type === 'vehiclefactory';
-  const isWarehouse = Object.keys(WAREHOUSE_CATEGORIES).includes(type) || type === 'research_warehouse';
+  const isWarehouse = Object.keys(WAREHOUSE_CATEGORIES).includes(type) || type === 'research_warehouse' || type === 'market';
+  const isMarket    = type === 'market';
   const hasWorkers  = (BASE_WORKERS[type] ?? 0) > 0;
 
   document.getElementById('bp-prod-section').style.display      = isProducer  ? 'block' : 'none';
@@ -163,6 +164,7 @@ function openBuildingPanel(key, type) {
   if (isProducer)  refreshProductionPanel(key, type);
   if (isFactory)   refreshFactoryPanel(key);
   if (isWarehouse) refreshWarehousePanel(key, type);
+  if (isMarket)    refreshMarketPanel(key);
   if (hasWorkers)  refreshWorkersPanel(key, type);
   if (type === 'house')    refreshHousePanel(key);
   if (type === 'hospital') refreshHospitalPanel(key);
@@ -486,6 +488,55 @@ function refreshTruckPanel(truckId) {
     stopsEl2.style.display = (t.truckType === 'builder' || t.truckType === 'explorer') ? 'none' : '';
   }
 }
+
+function refreshMarketPanel(key) {
+  const level     = state.buildingLevels[key] ?? 0;
+  const stock     = state.warehouseStock[key] ?? {};
+  const cap       = marketCapacity(level);
+  const sellRate  = marketSellRate(level);
+  const cycleS    = marketCycleMs(level) / 1000;
+  const prices    = state.marketPrices ?? {};
+  const loaded    = Object.values(stock).reduce((a,b)=>a+b,0);
+
+  // Afficher infos dans la section warehouse
+  const wEl = document.getElementById('bp-warehouse-stock');
+  if (!wEl) return;
+
+  let html = `<div class="th-row" style="margin-bottom:6px">
+    <span style="color:var(--gold)">🏪 Stock à vendre</span>
+    <span class="th-val">${loaded}/${cap}</span>
+  </div>
+  <div class="th-muted" style="font-size:0.62rem;margin-bottom:8px">Vend ${sellRate} unités toutes les ${cycleS}s</div>`;
+
+  // Prix courants
+  html += `<div style="font-size:0.62rem;color:var(--muted);margin-bottom:4px">Prix du marché :</div>`;
+  for (const [res, qty] of Object.entries(stock)) {
+    if (!qty) continue;
+    const price = prices[res] ?? MARKET_BASE_PRICES[res] ?? 1;
+    const base  = MARKET_BASE_PRICES[res] ?? 1;
+    const trend = price > base ? '📈' : price < base ? '📉' : '➡️';
+    const color = price > base ? 'var(--success)' : price < base ? '#c04040' : 'var(--muted)';
+    html += `<div class="th-row">
+      <span>${RESOURCE_ICONS?.[res] ?? ''} ${RESOURCE_LABELS?.[res] ?? res} (${qty})</span>
+      <span style="color:${color}">${trend} ${price}💰/u</span>
+    </div>`;
+  }
+
+  // Prix de toutes les ressources même sans stock
+  html += `<div style="font-size:0.62rem;color:var(--muted);margin-top:8px;margin-bottom:4px">Cours actuels :</div>`;
+  for (const [res, base] of Object.entries(MARKET_BASE_PRICES)) {
+    const price = prices[res] ?? base;
+    const trend = price > base ? '📈' : price < base ? '📉' : '➡️';
+    const color = price > base ? 'var(--success)' : price < base ? '#c04040' : 'var(--muted)';
+    html += `<div class="th-row" style="font-size:0.62rem">
+      <span style="color:var(--muted)">${RESOURCE_LABELS?.[res] ?? res}</span>
+      <span style="color:${color}">${trend} ${price}💰</span>
+    </div>`;
+  }
+
+  wEl.innerHTML = html;
+}
+window.refreshMarketPanel = refreshMarketPanel;
 
 // ===== LEVEL UP =====
 function getTotalWarehouseStock() {
