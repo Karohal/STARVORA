@@ -53,7 +53,7 @@ const state = {
   selectedTileKey: null,
   buildingOrientation: {},
   hdvStock: {
-    water: 100,
+    water_r: 100,
   },
 
   // Caméra
