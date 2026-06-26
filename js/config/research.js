@@ -43,7 +43,7 @@ const RESEARCH_ITEMS = {
   ],
   'civil.infrastructure': [
     { id: 'market_unlock',           label: 'Marché',               cost: 500,  resources: { stone: 15 } },
-    { id: 'water_tower_unlock',      label: "Château d'eau",        cost: 600,  resources: { stone: 20, iron_r: 5 } },
+    { id: 'water_tower_unlock',      label: "Château d'eau",        cost: 600,  resources: { stone: 10, iron_r: 5 } },
     { id: 'hospital_unlock',         label: 'Hôpital',              cost: 600,  resources: { stone: 10, water_r: 5 } },
     { id: 'warehouse_liquid_unlock', label: 'Citerne',              cost: 400,  resources: { stone: 8 } },
     { id: 'warehouse_waste_unlock',  label: 'Dépôt déchets',        cost: 400,  resources: { stone: 8 } },
