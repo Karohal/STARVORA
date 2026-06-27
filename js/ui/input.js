@@ -537,6 +537,7 @@ function addToHdvStock(materials) {
   if (!hdvKey) return;
   if (!state.hdvStock) state.hdvStock = {};
   for (const [res, qty] of Object.entries(materials)) {
+    if (res !== 'water_r') continue; // HdV accepte uniquement l'eau potable
     state.hdvStock[res] = (state.hdvStock[res] ?? 0) + qty;
   }
 }
