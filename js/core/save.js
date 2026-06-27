@@ -65,6 +65,14 @@ function loadGame() {
     if (!raw) return false;
     const save = JSON.parse(raw);
 
+    // Valider que la save est complète
+    if (!save.map || !Array.isArray(save.map) || save.map.length === 0) {
+      console.log('Save corrompue ou incomplète — nouvelle partie');
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(VERSION_KEY);
+      return false;
+    }
+
     state.money            = save.money            ?? 10000;
     state.population       = save.population       ?? 10;
     state.homeless         = save.homeless         ?? 10;
