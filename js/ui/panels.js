@@ -573,7 +573,7 @@ function refreshMarketPanel(key) {
   <div class="th-muted" style="font-size:0.62rem;margin-bottom:8px">Vend ${sellRate} unités toutes les ${cycleS}s</div>`;
 
   // Bouton graphique
-  html += `<button onclick="openMarketChartPanel()" class="assign-btn" style="width:100%;border-color:var(--cyan);color:var(--cyan);margin-bottom:8px">📊 Cours & Tendances</button>`;
+  html += `<button onclick="openMarketChartPanel('${key}')" class="assign-btn" style="width:100%;border-color:var(--cyan);color:var(--cyan);margin-bottom:8px">📊 Cours & Tendances</button>`;
 
   // Stock en vente avec prix
   html += `<div style="font-size:0.62rem;color:var(--muted);margin-bottom:4px">En vente :</div>`;
@@ -596,20 +596,24 @@ function refreshMarketPanel(key) {
 }
 window.refreshMarketPanel = refreshMarketPanel;
 
-// ===== PANEL GRAPHIQUE MARCHÉ =====
-let _marketSelectedRes = null;
+// ===== PANEL TRADING MARCHÉ =====
+let _marketSelectedRes  = null;
+let _marketKey          = null;
+let _marketAutoSell     = true; // vente automatique ON par défaut
 
-function openMarketChartPanel() {
+function openMarketChartPanel(key) {
+  if (key) _marketKey = key;
   const panel = document.getElementById('market-chart-panel');
   if (!panel) return;
-  panel.style.display = 'block';
+  panel.style.display = 'flex';
   _marketSelectedRes = _marketSelectedRes ?? Object.keys(MARKET_BASE_PRICES)[0];
   renderMarketChart();
 }
 window.openMarketChartPanel = openMarketChartPanel;
 
 function closeMarketChartPanel() {
-  document.getElementById('market-chart-panel').style.display = 'none';
+  const panel = document.getElementById('market-chart-panel');
+  if (panel) panel.style.display = 'none';
 }
 window.closeMarketChartPanel = closeMarketChartPanel;
 
@@ -619,102 +623,225 @@ function selectMarketRes(res) {
 }
 window.selectMarketRes = selectMarketRes;
 
+function mktSellMax() {
+  const res   = _marketSelectedRes;
+  const key   = _marketKey;
+  if (!res || !key) return;
+  const stock = state.warehouseStock[key] ?? {};
+  const qty   = stock[res] ?? 0;
+  const input = document.getElementById('mkt-sell-qty');
+  if (input) input.value = qty;
+  updateSellPreview();
+}
+window.mktSellMax = mktSellMax;
+
+function mktSellNow() {
+  const res   = _marketSelectedRes;
+  const key   = _marketKey;
+  if (!res || !key) return;
+  const qty   = parseInt(document.getElementById('mkt-sell-qty')?.value ?? 0);
+  if (!qty || qty <= 0) return notify('Quantité invalide !', 'err');
+  const stock = state.warehouseStock[key] ?? {};
+  const have  = stock[res] ?? 0;
+  if (have <= 0) return notify('Pas de stock à vendre !', 'err');
+  const sell  = Math.min(qty, have);
+  const price = state.marketPrices?.[res] ?? MARKET_BASE_PRICES[res] ?? 1;
+  const earned = Math.round(sell * price);
+  stock[res] = have - sell;
+  state.money += earned;
+  updateStats();
+  notify(`✅ Vendu ${sell} ${RESOURCE_LABELS?.[res]??res} → +${earned} 💰`, 'ok');
+  renderMarketChart();
+}
+window.mktSellNow = mktSellNow;
+
+function mktToggleAuto() {
+  _marketAutoSell = !_marketAutoSell;
+  const btn = document.getElementById('mkt-auto-btn');
+  if (btn) {
+    btn.textContent = `AUTO: ${_marketAutoSell ? 'ON' : 'OFF'}`;
+    btn.style.borderColor = _marketAutoSell ? '#f0b90b' : '#848e9c';
+    btn.style.color       = _marketAutoSell ? '#f0b90b' : '#848e9c';
+  }
+  notify(`Vente automatique ${_marketAutoSell ? 'activée' : 'désactivée'}`, 'ok');
+}
+window.mktToggleAuto   = mktToggleAuto;
+window.getMktAutoSell  = () => _marketAutoSell;
+
+function updateSellPreview() {
+  const res   = _marketSelectedRes;
+  const qty   = parseInt(document.getElementById('mkt-sell-qty')?.value ?? 0);
+  const price = state.marketPrices?.[res] ?? MARKET_BASE_PRICES[res] ?? 1;
+  const preview = document.getElementById('mkt-sell-preview');
+  if (preview && qty > 0) {
+    const total = Math.round(qty * price);
+    preview.textContent = `≈ ${total} 💰 au cours actuel (${price}💰/u)`;
+  }
+}
+window.updateSellPreview = updateSellPreview;
+
 function renderMarketChart() {
   const prices  = state.marketPrices ?? {};
   const history = state.marketHistory ?? {};
+  const res     = _marketSelectedRes ?? Object.keys(MARKET_BASE_PRICES)[0];
+  const base    = MARKET_BASE_PRICES[res] ?? 1;
+  const current = prices[res] ?? base;
+  const hist    = history[res] ?? [];
+  const key     = _marketKey;
+  const stock   = key ? (state.warehouseStock[key] ?? {}) : {};
+
+  // Badge ressource sélectionnée
+  const badge = document.getElementById('mkt-selected-badge');
+  if (badge) badge.textContent = (RESOURCE_ICONS?.[res]??'') + ' ' + (RESOURCE_LABELS?.[res]??res);
+
+  // Prix big
+  const priceBig = document.getElementById('mkt-price-big');
+  const pct = Math.round((current - base) / base * 100);
+  const up  = current >= base;
+  if (priceBig) { priceBig.textContent = current + ' 💰'; priceBig.style.color = up ? '#02c076' : '#f6465d'; }
+  const changeEl = document.getElementById('mkt-price-change');
+  if (changeEl) {
+    const sign = pct >= 0 ? '+' : '';
+    changeEl.textContent = `${sign}${pct}%`;
+    changeEl.style.background = up ? 'rgba(2,192,118,0.15)' : 'rgba(246,70,93,0.15)';
+    changeEl.style.color      = up ? '#02c076' : '#f6465d';
+  }
+
+  // Stats
+  const statBase  = document.getElementById('mkt-stat-base');
+  const statRange = document.getElementById('mkt-stat-range');
+  const statStock = document.getElementById('mkt-stat-stock');
+  if (statBase)  statBase.textContent  = base + ' 💰';
+  if (statRange && hist.length > 0) {
+    const mn = Math.min(...hist).toFixed(1), mx = Math.max(...hist).toFixed(1);
+    statRange.textContent = mn + ' / ' + mx;
+  }
+  if (statStock) {
+    const qty = stock[res] ?? 0;
+    statStock.textContent = qty + ' u';
+    statStock.style.color = qty > 0 ? '#f0b90b' : '#848e9c';
+  }
 
   // Onglets ressources
   const tabsEl = document.getElementById('market-res-tabs');
   if (tabsEl) {
-    tabsEl.innerHTML = Object.keys(MARKET_BASE_PRICES).map(res => {
-      const active = res === _marketSelectedRes;
-      const price  = prices[res] ?? MARKET_BASE_PRICES[res];
-      const base   = MARKET_BASE_PRICES[res];
-      const color  = price > base ? 'var(--success)' : price < base ? '#c04040' : 'var(--muted)';
-      return `<button onclick="selectMarketRes('${res}')"
-        style="padding:3px 7px;font-size:0.6rem;border:1px solid ${active ? color : 'var(--border)'};
-        background:${active ? 'rgba(255,255,255,0.08)' : 'transparent'};
-        color:${active ? color : 'var(--muted)'};border-radius:3px;cursor:pointer">
-        ${RESOURCE_ICONS?.[res] ?? ''} ${RESOURCE_LABELS?.[res] ?? res}
+    tabsEl.innerHTML = Object.keys(MARKET_BASE_PRICES).map(r => {
+      const p    = prices[r] ?? MARKET_BASE_PRICES[r];
+      const b    = MARKET_BASE_PRICES[r];
+      const up2  = p >= b;
+      const sel  = r === res;
+      const col  = up2 ? '#02c076' : '#f6465d';
+      return `<button onclick="selectMarketRes('${r}')"
+        style="flex-shrink:0;padding:5px 10px;border-radius:4px;cursor:pointer;white-space:nowrap;
+        background:${sel ? '#2b3139' : 'transparent'};
+        border:1px solid ${sel ? col : '#2b3139'};
+        color:${sel ? col : '#848e9c'};font-size:0.65rem;font-weight:${sel?'700':'400'}">
+        ${RESOURCE_ICONS?.[r]??''} ${RESOURCE_LABELS?.[r]??r}
+        <span style="color:${col};margin-left:4px">${p}💰</span>
       </button>`;
     }).join('');
   }
 
   // Graphique canvas
   const canvas = document.getElementById('market-chart-canvas');
-  if (!canvas) return;
-  const ctx2 = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  ctx2.clearRect(0, 0, W, H);
+  if (canvas) {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width  = Math.round(rect.width  * devicePixelRatio) || 600;
+    canvas.height = Math.round(rect.height * devicePixelRatio) || 300;
+    const ctx2 = canvas.getContext('2d');
+    ctx2.scale(devicePixelRatio, devicePixelRatio);
+    const W = rect.width || 280, H = rect.height || 150;
+    ctx2.clearRect(0, 0, W, H);
 
-  const res     = _marketSelectedRes;
-  const base    = MARKET_BASE_PRICES[res] ?? 1;
-  const hist    = history[res] ?? [];
-  const current = prices[res] ?? base;
+    // Grille
+    ctx2.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx2.lineWidth = 1;
+    for (let i = 1; i < 4; i++) {
+      ctx2.beginPath(); ctx2.moveTo(0, H*i/4); ctx2.lineTo(W, H*i/4); ctx2.stroke();
+    }
 
-  // Ligne de base
-  ctx2.strokeStyle = 'rgba(255,255,255,0.15)';
-  ctx2.lineWidth   = 1;
-  ctx2.setLineDash([4,4]);
-  const baseY = H - (base / (base * 1.6)) * (H - 20) - 10;
-  ctx2.beginPath(); ctx2.moveTo(0, baseY); ctx2.lineTo(W, baseY); ctx2.stroke();
-  ctx2.setLineDash([]);
+    if (hist.length >= 2) {
+      const maxP  = Math.max(...hist, base) * 1.05;
+      const minP  = Math.min(...hist, base) * 0.95;
+      const range = maxP - minP || 1;
+      const toY   = p => H - ((p - minP) / range) * H;
+      const step  = W / (hist.length - 1);
+      const color = up ? '#02c076' : '#f6465d';
 
-  if (hist.length < 2) {
-    ctx2.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx2.font = '11px sans-serif';
-    ctx2.textAlign = 'center';
-    ctx2.fillText('En attente de données...', W/2, H/2);
-  } else {
-    const maxP = Math.max(...hist) * 1.1;
-    const minP = Math.min(...hist) * 0.9;
-    const range = maxP - minP || 1;
-    const toY = p => H - 10 - ((p - minP) / range) * (H - 20);
-    const step = W / (hist.length - 1);
+      // Ligne de base
+      ctx2.strokeStyle = 'rgba(240,185,11,0.4)';
+      ctx2.lineWidth = 1;
+      ctx2.setLineDash([4,4]);
+      const baseY = toY(base);
+      ctx2.beginPath(); ctx2.moveTo(0, baseY); ctx2.lineTo(W, baseY); ctx2.stroke();
+      ctx2.setLineDash([]);
 
-    // Zone remplie
-    ctx2.beginPath();
-    ctx2.moveTo(0, toY(hist[0]));
-    hist.forEach((p, i) => ctx2.lineTo(i * step, toY(p)));
-    ctx2.lineTo((hist.length-1)*step, H);
-    ctx2.lineTo(0, H);
-    ctx2.closePath();
-    const grad = ctx2.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, 'rgba(64,160,255,0.35)');
-    grad.addColorStop(1, 'rgba(64,160,255,0.02)');
-    ctx2.fillStyle = grad;
-    ctx2.fill();
+      // Zone remplie
+      ctx2.beginPath();
+      ctx2.moveTo(0, toY(hist[0]));
+      hist.forEach((p, i) => ctx2.lineTo(i * step, toY(p)));
+      ctx2.lineTo((hist.length-1)*step, H);
+      ctx2.lineTo(0, H);
+      ctx2.closePath();
+      const grad = ctx2.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, color.replace(')', ',0.3)').replace('rgb', 'rgba'));
+      grad.addColorStop(1, color.replace(')', ',0.02)').replace('rgb', 'rgba'));
+      ctx2.fillStyle = grad;
+      ctx2.fill();
 
-    // Ligne
-    ctx2.beginPath();
-    ctx2.strokeStyle = '#40a0ff';
-    ctx2.lineWidth = 2;
-    hist.forEach((p, i) => i === 0 ? ctx2.moveTo(0, toY(p)) : ctx2.lineTo(i * step, toY(p)));
-    ctx2.stroke();
+      // Ligne courbe
+      ctx2.beginPath();
+      ctx2.strokeStyle = color;
+      ctx2.lineWidth = 2;
+      hist.forEach((p, i) => i===0 ? ctx2.moveTo(0, toY(p)) : ctx2.lineTo(i*step, toY(p)));
+      ctx2.stroke();
 
-    // Point actuel
-    const lastX = (hist.length-1)*step, lastY = toY(hist[hist.length-1]);
-    ctx2.beginPath();
-    ctx2.arc(lastX, lastY, 4, 0, Math.PI*2);
-    ctx2.fillStyle = '#40a0ff';
-    ctx2.fill();
+      // Point actuel
+      const lx = (hist.length-1)*step, ly = toY(hist[hist.length-1]);
+      ctx2.beginPath(); ctx2.arc(lx, ly, 5, 0, Math.PI*2);
+      ctx2.fillStyle = color; ctx2.fill();
+      ctx2.strokeStyle = '#0b0e11'; ctx2.lineWidth = 2; ctx2.stroke();
+
+      // Label prix actuel
+      ctx2.fillStyle = color;
+      ctx2.font = 'bold 11px monospace';
+      ctx2.textAlign = 'right';
+      ctx2.fillText(current + '💰', W - 4, ly - 8);
+    } else {
+      ctx2.fillStyle = '#848e9c';
+      ctx2.font = '12px sans-serif';
+      ctx2.textAlign = 'center';
+      ctx2.fillText('En attente de données (fluctuations toutes les 2min)...', W/2, H/2);
+    }
   }
 
-  // Infos ressource
-  const infoEl = document.getElementById('market-res-info');
-  if (infoEl) {
-    const trend = current > base ? '📈' : current < base ? '📉' : '➡️';
-    const color = current > base ? 'var(--success)' : current < base ? '#c04040' : 'var(--muted)';
-    const pct   = Math.round((current - base) / base * 100);
-    const sign  = pct >= 0 ? '+' : '';
-    infoEl.innerHTML = `
-      <div class="th-row">
-        <span style="color:var(--gold)">${RESOURCE_ICONS?.[res]??''} ${RESOURCE_LABELS?.[res]??res}</span>
-        <span style="color:${color}">${trend} ${current}💰/u (${sign}${pct}%)</span>
-      </div>
-      <div class="th-muted" style="font-size:0.6rem">Prix de base : ${base}💰 · ${hist.length} points de données</div>
-    `;
+  // Tous les cours
+  const allEl = document.getElementById('mkt-all-prices');
+  if (allEl) {
+    allEl.innerHTML = Object.entries(MARKET_BASE_PRICES).map(([r, b]) => {
+      const p   = prices[r] ?? b;
+      const up2 = p >= b;
+      const col = up2 ? '#02c076' : '#f6465d';
+      const pct2 = Math.round((p-b)/b*100);
+      const sign = pct2 >= 0 ? '+' : '';
+      return `<div onclick="selectMarketRes('${r}')" style="padding:6px 8px;border-radius:4px;cursor:pointer;
+        background:${r===res?'#2b3139':'transparent'};border:1px solid ${r===res?col:'transparent'}">
+        <div style="font-size:0.62rem;color:#848e9c">${RESOURCE_ICONS?.[r]??''} ${RESOURCE_LABELS?.[r]??r}</div>
+        <div style="font-size:0.78rem;font-weight:700;color:${col}">${p}💰 <span style="font-size:0.6rem">${sign}${pct2}%</span></div>
+      </div>`;
+    }).join('');
   }
+
+  // Bouton auto
+  const autoBtn = document.getElementById('mkt-auto-btn');
+  if (autoBtn) {
+    autoBtn.textContent   = `AUTO: ${_marketAutoSell ? 'ON' : 'OFF'}`;
+    autoBtn.style.borderColor = _marketAutoSell ? '#f0b90b' : '#848e9c';
+    autoBtn.style.color       = _marketAutoSell ? '#f0b90b' : '#848e9c';
+  }
+
+  // Preview vente
+  updateSellPreview();
 }
 window.renderMarketChart = renderMarketChart;
 
