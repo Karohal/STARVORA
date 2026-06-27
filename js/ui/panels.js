@@ -603,15 +603,16 @@ let _marketAutoSell     = true; // vente automatique ON par défaut
 
 function openMarketChartPanel(key) {
   if (key) _marketKey = key;
-  // Fermer tous les autres panels d'abord
   document.getElementById('building-panel')?.classList.remove('open');
   document.getElementById('truck-panel')?.classList.remove('open');
   const panel = document.getElementById('market-chart-panel');
   if (!panel) return;
-  panel.style.display    = 'flex';
+  panel.style.display       = 'flex';
   panel.style.flexDirection = 'column';
+  // Brancher le bouton fermer via JS (évite les problèmes onclick inline Safari)
+  const closeBtn = document.getElementById('mkt-close-btn');
+  if (closeBtn) closeBtn.onclick = closeMarketChartPanel;
   _marketSelectedRes = _marketSelectedRes ?? Object.keys(MARKET_BASE_PRICES)[0];
-  // Attendre le prochain frame pour que le canvas soit dimensionné
   requestAnimationFrame(() => renderMarketChart());
 }
 window.openMarketChartPanel = openMarketChartPanel;
