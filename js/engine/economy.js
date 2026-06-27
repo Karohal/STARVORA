@@ -339,6 +339,8 @@ function marketCycleMs(level) {
 }
 
 function updateMarkets() {
+  // Respecter le toggle vente automatique
+  if (typeof getMktAutoSell === 'function' && !getMktAutoSell()) return;
   const now = Date.now();
   for (const [key, type] of Object.entries(state.buildings)) {
     if (type !== 'market') continue;
