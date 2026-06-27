@@ -575,14 +575,21 @@ function refreshMarketPanel(key) {
   const wEl = document.getElementById('bp-warehouse-stock');
   if (!wEl) return;
 
+  const autoSell = state.marketAutoSell !== false; // true par défaut
+  const autoColor = autoSell ? 'var(--success)' : 'var(--muted)';
+  const autoLabel = autoSell ? '✅ Vente auto : ON' : '⏸ Vente auto : OFF';
+
   let html = `<div class="th-row" style="margin-bottom:6px">
     <span style="color:var(--gold)">🏪 Stock à vendre</span>
     <span class="th-val">${loaded}/${cap}</span>
   </div>
-  <div class="th-muted" style="font-size:0.62rem;margin-bottom:8px">Vend ${sellRate} unités toutes les ${cycleS}s</div>`;
-
-  // Bouton graphique
-
+  <div class="th-muted" style="font-size:0.62rem;margin-bottom:6px">Vend ${sellRate} unités toutes les ${cycleS}s</div>
+  <div class="th-row" style="margin-bottom:8px">
+    <span style="font-size:0.65rem;color:${autoColor}">${autoLabel}</span>
+    <label style="cursor:pointer;font-size:0.62rem;color:var(--muted)">
+      <input type="checkbox" ${autoSell?'checked':''} onchange="toggleMarketAutoSell()" style="cursor:pointer;vertical-align:middle"> Auto
+    </label>
+  </div>`;
 
   // Stock en vente avec prix
   html += `<div style="font-size:0.62rem;color:var(--muted);margin-bottom:4px">En vente :</div>`;
@@ -723,3 +730,15 @@ function toggleSection(header) {
   if (content) content.style.display = content.style.display === 'none' ? 'block' : 'none';
 }
 window.toggleSection = toggleSection;
+
+function toggleMarketAutoSell() {
+  state.marketAutoSell = !(state.marketAutoSell !== false);
+  // Rafraîchir le panel marché si ouvert
+  const key = state.selectedTileKey;
+  if (key && state.buildings[key] === 'market') refreshMarketPanel(key);
+  notify(state.marketAutoSell ? '✅ Vente automatique activée' : '⏸ Vente automatique désactivée', 'ok');
+}
+window.toggleMarketAutoSell = toggleMarketAutoSell;
+
+function getMktAutoSell() { return state.marketAutoSell !== false; }
+window.getMktAutoSell = getMktAutoSell;
