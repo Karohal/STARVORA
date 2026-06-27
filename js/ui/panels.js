@@ -741,3 +741,46 @@ window.toggleMarketAutoSell = toggleMarketAutoSell;
 
 function getMktAutoSell() { return state.marketAutoSell === true; }
 window.getMktAutoSell = getMktAutoSell;
+
+function refreshHousePanel(key) {
+  const el = document.getElementById('bp-house-section');
+  if (!el) return;
+  const level     = state.buildingLevels[key] ?? 0;
+  const cap       = houseCapacity(level);
+  const occ       = state.houseOccupants[key];
+  const residents = occ?.residents ?? [];
+  const adults    = residents.filter(r => r.type === 'adult').length;
+  const children  = residents.filter(r => r.type === 'child').length;
+  const total     = residents.length;
+  const assigned  = residents.filter(r => r.type === 'adult' && r.workplace).length;
+  const birthBase = Math.round(getBirthRate() * 100);
+  const birthBonus= (level * 0.1).toFixed(1);
+  el.style.display = 'block';
+  el.innerHTML =
+    `<div class="th-row"><span>👥 Habitants</span><span class="th-val">${total}/${cap}</span></div>` +
+    `<div class="th-row"><span>👨 Adultes</span><span class="th-val">${adults}</span></div>` +
+    `<div class="th-row"><span>👶 Enfants</span><span class="th-val">${children}</span></div>` +
+    `<div class="th-row"><span>👷 Travailleurs</span><span class="th-val">${assigned}/${adults}</span></div>` +
+    `<div class="th-row"><span>😴 Sans travail</span><span class="th-val">${Math.max(0, adults - assigned)}</span></div>` +
+    `<div style="border-top:1px solid var(--border);margin:4px 0"></div>` +
+    `<div class="th-row"><span>🍼 Natalité globale</span><span class="th-val">${birthBase}%</span></div>` +
+    `<div class="th-row"><span>➕ Bonus lvl ${level}</span><span class="th-val">+${birthBonus}%</span></div>`;
+}
+window.refreshHousePanel = refreshHousePanel;
+
+function refreshHospitalPanel(key) {
+  const el = document.getElementById('bp-house-section');
+  if (!el) return;
+  const level   = state.buildingLevels[key] ?? 0;
+  const workers = state.assignedWorkers[key] ?? 0;
+  const bonus   = workers > 0 ? (0.02 + level * 0.005) : 0;
+  const total   = Math.round(getBirthRate() * 100);
+  el.style.display = 'block';
+  el.innerHTML =
+    `<div class="th-row"><span>🍼 Natalité globale</span><span class="th-val">${total}%</span></div>` +
+    `<div class="th-row"><span>➕ Bonus hôpital</span><span class="th-val" style="color:var(--success)">+${Math.round(bonus*100)}%</span></div>` +
+    `<div class="th-row" style="font-size:0.65rem;color:var(--muted)">` +
+      (workers === 0 ? '⚠️ Inactif — assignez des travailleurs' : `✅ Actif — ${workers} travailleur(s)`) +
+    `</div>`;
+}
+window.refreshHospitalPanel = refreshHospitalPanel;
