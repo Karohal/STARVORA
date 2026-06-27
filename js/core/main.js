@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
       for (const [k, t] of Object.entries(state.buildings)) {
         if (t === 'market') marketStock[k] = state.warehouseStock?.[k] ?? {};
       }
-      localStorage.setItem('starvora_save', JSON.stringify({ money: state.money ?? 0, warehouseStock: marketStock }));
+      localStorage.setItem('starvora_trading', JSON.stringify({ money: state.money ?? 0, warehouseStock: marketStock }));
       localStorage.setItem('starvora_market_prices', JSON.stringify(state.marketPrices ?? {}));
       localStorage.setItem('starvora_market_history', JSON.stringify(state.marketHistory ?? {}));
       const tradeRaw = localStorage.getItem('starvora_trade_result');
