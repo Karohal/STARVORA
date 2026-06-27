@@ -445,7 +445,7 @@ function applyWaterDeprivation() {
   for (const [key, type] of Object.entries(state.buildings)) {
     // Seuls les bâtiments avec travailleurs sont affectés (pas les extracteurs ni l'HdV)
     if ((state.assignedWorkers[key] ?? 0) === 0) continue;
-    if (['road','water_tower','well','mine','quarry','townhall'].includes(type)) continue;
+    if (['road','water_tower','well','mine','quarry','townhall','water_plant'].includes(type)) continue;
 
     const covered = !!state.waterCoverage[key];
     if (covered) {
