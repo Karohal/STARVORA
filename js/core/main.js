@@ -36,6 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Événements
   setupInputEvents();
   setInterval(() => refreshBuildingPanelTrucks(), 500);
+  // Bouton marché - branché une seule fois
+  document.getElementById('bp-market-chart-btn')?.addEventListener('click', function() {
+    openMarketChartPanel(this.dataset.marketKey);
+  });
   initMarketPrices();
   setInterval(() => fluctuateMarketPrices(), 120000); // fluctuation toutes les 2min
   setInterval(() => updateMarkets(), 5000); // vérification toutes les 5s
