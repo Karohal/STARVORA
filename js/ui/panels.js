@@ -813,3 +813,46 @@ function maybeShowBuildingInfo(type) {
 window.openBuildingInfo      = openBuildingInfo;
 window.closeBuildingInfo     = closeBuildingInfo;
 window.maybeShowBuildingInfo = maybeShowBuildingInfo;
+
+// ===== PANEL INFO RESSOURCE =====
+const RESOURCE_EXPLOIT_INFO = {
+  stone:    { icon:'🪨', name:'Pierre Brute',     extractor:'Carrière 🏔️',   chain:'Carrière → Entrepôt → Usine de tri → Pierre traitée' },
+  iron:     { icon:'⚒️', name:'Minerais de Fer',  extractor:'Mine ⛏️',        chain:'Mine → Entrepôt → Usine de tri → Fer traité' },
+  coal:     { icon:'🪨', name:'Minerais de Charbon', extractor:'Mine ⛏️',     chain:'Mine → Entrepôt → Usine de tri → Charbon traité' },
+  water:    { icon:'💧', name:'Eau Brute',         extractor:'Puits 🪣',       chain:'Puits → Citerne → Usine de traitement → Eau potable → Château d\'eau' },
+  oil:      { icon:'🛢️', name:'Pétrole',           extractor:'Pompe à huile',  chain:'En cours de développement' },
+  gas:      { icon:'💨', name:'Gaz',               extractor:'Extracteur gaz', chain:'En cours de développement' },
+};
+
+function openResourceInfoPanel(res, col, row) {
+  const panel = document.getElementById('resource-info-panel');
+  const content = document.getElementById('resource-info-content');
+  if (!panel || !content) return;
+
+  const info = RESOURCE_EXPLOIT_INFO[res];
+  const icon  = info?.icon  ?? RESOURCE_ICONS?.[res]  ?? '🔹';
+  const name  = info?.name  ?? RESOURCE_LABELS?.[res] ?? res;
+  const extractor = info?.extractor ?? 'Inconnu';
+  const chain = info?.chain ?? '—';
+
+  content.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:1.5rem">${icon}</span>
+      <span style="font-size:0.9rem;font-weight:700;color:var(--gold)">${name}</span>
+    </div>
+    <div class="th-row" style="margin-bottom:6px">
+      <span style="font-size:0.65rem;color:var(--muted)">🏗️ Bâtiment extracteur</span>
+      <span style="font-size:0.65rem;color:var(--cyan)">${extractor}</span>
+    </div>
+    <div style="font-size:0.6rem;color:var(--muted);margin-bottom:4px">⛓️ Chaîne d'exploitation :</div>
+    <div style="font-size:0.62rem;color:var(--text);line-height:1.5;padding:6px;background:rgba(255,255,255,0.04);border-radius:4px">${chain}</div>
+    <button onclick="closeResourceInfoPanel()" style="margin-top:8px;width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px;border-radius:4px;cursor:pointer;font-size:0.65rem">Fermer</button>
+  `;
+  panel.classList.add('open');
+}
+window.openResourceInfoPanel = openResourceInfoPanel;
+
+function closeResourceInfoPanel() {
+  document.getElementById('resource-info-panel')?.classList.remove('open');
+}
+window.closeResourceInfoPanel = closeResourceInfoPanel;
