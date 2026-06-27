@@ -610,8 +610,15 @@ function openMarketChartPanel(key) {
   panel.style.display       = 'flex';
   panel.style.flexDirection = 'column';
   // Brancher le bouton fermer via JS (évite les problèmes onclick inline Safari)
+  // Brancher tous les boutons via JS
   const closeBtn = document.getElementById('mkt-close-btn');
-  if (closeBtn) closeBtn.onclick = closeMarketChartPanel;
+  if (closeBtn) { closeBtn.onclick = null; closeBtn.addEventListener('click', closeMarketChartPanel); }
+  const sellBtn  = document.getElementById('mkt-sell-btn');
+  if (sellBtn)  { sellBtn.onclick  = null; sellBtn.addEventListener('click',  mktSellNow); }
+  const maxBtn   = document.getElementById('mkt-max-btn');
+  if (maxBtn)   { maxBtn.onclick   = null; maxBtn.addEventListener('click',   mktSellMax); }
+  const autoBtn  = document.getElementById('mkt-auto-btn');
+  if (autoBtn)  { autoBtn.onclick  = null; autoBtn.addEventListener('click',  mktToggleAuto); }
   _marketSelectedRes = _marketSelectedRes ?? Object.keys(MARKET_BASE_PRICES)[0];
   requestAnimationFrame(() => renderMarketChart());
 }
@@ -821,21 +828,32 @@ function renderMarketChart() {
     }
   }
 
-  // Tous les cours
+  // Tous les cours — liste colonne unique triée alphabétiquement
   const allEl = document.getElementById('mkt-all-prices');
   if (allEl) {
-    allEl.innerHTML = Object.entries(MARKET_BASE_PRICES).map(([r, b]) => {
-      const p   = prices[r] ?? b;
-      const up2 = p >= b;
-      const col = up2 ? '#02c076' : '#f6465d';
+    const sorted = Object.entries(MARKET_BASE_PRICES).sort((a,b) =>
+      (RESOURCE_LABELS?.[a[0]]??a[0]).localeCompare(RESOURCE_LABELS?.[b[0]]??b[0])
+    );
+    allEl.innerHTML = sorted.map(([r, b]) => {
+      const p    = prices[r] ?? b;
+      const up2  = p >= b;
+      const col  = up2 ? '#02c076' : '#f6465d';
       const pct2 = Math.round((p-b)/b*100);
       const sign = pct2 >= 0 ? '+' : '';
-      return `<div onclick="selectMarketRes('${r}')" style="padding:6px 8px;border-radius:4px;cursor:pointer;
-        background:${r===res?'#2b3139':'transparent'};border:1px solid ${r===res?col:'transparent'}">
-        <div style="font-size:0.62rem;color:#848e9c">${RESOURCE_ICONS?.[r]??''} ${RESOURCE_LABELS?.[r]??r}</div>
-        <div style="font-size:0.78rem;font-weight:700;color:${col}">${p}💰 <span style="font-size:0.6rem">${sign}${pct2}%</span></div>
+      const sel  = r === res;
+      return `<div data-res="${r}" style="display:flex;align-items:center;justify-content:space-between;
+        padding:10px 10px;border-radius:6px;margin-bottom:4px;cursor:pointer;
+        background:${sel?'#2b3139':'transparent'};
+        border:1px solid ${sel?col:'rgba(255,255,255,0.04)'}">
+        <span style="font-size:0.75rem;color:#f0f0f0">${RESOURCE_ICONS?.[r]??''} ${RESOURCE_LABELS?.[r]??r}</span>
+        <span style="font-size:0.8rem;font-weight:700;color:${col}">${p}💰&nbsp;<span style="font-size:0.62rem">${sign}${pct2}%</span></span>
       </div>`;
     }).join('');
+    // Brancher les clics via event delegation
+    allEl.onclick = e => {
+      const row = e.target.closest('[data-res]');
+      if (row) selectMarketRes(row.dataset.res);
+    };
   }
 
   // Bouton auto
