@@ -55,6 +55,7 @@ const state = {
   hdvStock: {
     water_r: 100,
   },
+  marketAutoSell: false,
 
   // Caméra
   cam: { x: 0, y: 0, zoom: 1 },
