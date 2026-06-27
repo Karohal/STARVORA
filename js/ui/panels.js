@@ -603,21 +603,19 @@ let _marketAutoSell     = true; // vente automatique ON par défaut
 
 function openMarketChartPanel(key) {
   if (key) _marketKey = key;
+  // Fermer autres panels mais pas market-chart-panel lui-même
   document.getElementById('building-panel')?.classList.remove('open');
   document.getElementById('truck-panel')?.classList.remove('open');
   const panel = document.getElementById('market-chart-panel');
   if (!panel) return;
-  panel.classList.add('open');
-  // Brancher le bouton fermer via JS (évite les problèmes onclick inline Safari)
-  // Brancher tous les boutons via JS
-  const closeBtn = document.getElementById('mkt-close-btn');
-  if (closeBtn) { closeBtn.onclick = null; closeBtn.addEventListener('click', closeMarketChartPanel); }
-  const sellBtn  = document.getElementById('mkt-sell-btn');
-  if (sellBtn)  { sellBtn.onclick  = null; sellBtn.addEventListener('click',  mktSellNow); }
-  const maxBtn   = document.getElementById('mkt-max-btn');
-  if (maxBtn)   { maxBtn.onclick   = null; maxBtn.addEventListener('click',   mktSellMax); }
-  const autoBtn  = document.getElementById('mkt-auto-btn');
-  if (autoBtn)  { autoBtn.onclick  = null; autoBtn.addEventListener('click',  mktToggleAuto); }
+  if (!panel.classList.contains('open')) {
+    panel.classList.add('open');
+    // Brancher les boutons une seule fois à l'ouverture
+    document.getElementById('mkt-close-btn')?.addEventListener('click', closeMarketChartPanel);
+    document.getElementById('mkt-sell-btn')?.addEventListener('click',  mktSellNow);
+    document.getElementById('mkt-max-btn')?.addEventListener('click',   mktSellMax);
+    document.getElementById('mkt-auto-btn')?.addEventListener('click',  mktToggleAuto);
+  }
   _marketSelectedRes = _marketSelectedRes ?? Object.keys(MARKET_BASE_PRICES)[0];
   requestAnimationFrame(() => renderMarketChart());
 }
