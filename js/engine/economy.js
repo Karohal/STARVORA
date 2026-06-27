@@ -314,9 +314,15 @@ function initMarketPrices() {
 }
 
 function fluctuateMarketPrices() {
+  if (!state.marketHistory) state.marketHistory = {};
   for (const [res, base] of Object.entries(MARKET_BASE_PRICES)) {
-    const mult = 0.7 + Math.random() * 0.8; // 0.7x à 1.5x
-    state.marketPrices[res] = Math.round(base * mult * 10) / 10;
+    const mult = 0.7 + Math.random() * 0.8;
+    const newPrice = Math.round(base * mult * 10) / 10;
+    state.marketPrices[res] = newPrice;
+    // Garder les 20 derniers prix pour le graphique
+    if (!state.marketHistory[res]) state.marketHistory[res] = [];
+    state.marketHistory[res].push(newPrice);
+    if (state.marketHistory[res].length > 20) state.marketHistory[res].shift();
   }
 }
 
