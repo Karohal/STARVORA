@@ -36,43 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Événements
   setupInputEvents();
   setInterval(() => refreshBuildingPanelTrucks(), 500);
-  // Bouton marché - branché une seule fois
   document.getElementById('bp-market-chart-btn')?.addEventListener('click', function() {
     openMarketChartPanel(this.dataset.marketKey);
   });
   initMarketPrices();
-  setInterval(() => fluctuateMarketPrices(), 120000); // fluctuation toutes les 2min
-  setInterval(() => updateMarkets(), 5000); // vérification toutes les 5s
+  setInterval(() => fluctuateMarketPrices(), 120000);
+  setInterval(() => updateMarkets(), 5000);
   setInterval(() => updateWaterSystem(), 30000);
 
-// Boucle de rendu
+  // Boucle de rendu
   drawFrame_start();
-
-  // Sync trading.html toutes les 5s
-  setInterval(() => {
-    try {
-      if (!state.buildings) return;
-      const marketStock = {};
-      for (const [k, t] of Object.entries(state.buildings)) {
-        if (t === 'market') marketStock[k] = state.warehouseStock?.[k] ?? {};
-      }
-      localStorage.setItem('starvora_trading', JSON.stringify({ money: state.money ?? 0, warehouseStock: marketStock }));
-      localStorage.setItem('starvora_market_prices', JSON.stringify(state.marketPrices ?? {}));
-      localStorage.setItem('starvora_market_history', JSON.stringify(state.marketHistory ?? {}));
-      const tradeRaw = localStorage.getItem('starvora_trade_result');
-      if (tradeRaw) {
-        const trade = JSON.parse(tradeRaw);
-        if (trade.ts && Date.now() - trade.ts < 10000) {
-          state.money = trade.money;
-          for (const [k, stock] of Object.entries(trade.warehouseStock ?? {})) {
-            if (state.warehouseStock?.[k]) state.warehouseStock[k] = stock;
-          }
-          localStorage.removeItem('starvora_trade_result');
-          updateStats();
-        }
-      }
-    } catch(e) { console.warn('sync trading:', e); }
-  }, 5000);
 });
 
 function initNewGame() {
@@ -118,7 +91,6 @@ function drawFrame() {
 
   drawSelectedTileHighlight(ctx);
   drawBuildingQueue(ctx);
-  drawWaterZones(ctx);
   drawGhostPreview(ctx);
   drawTrucks(ctx);
 
@@ -159,7 +131,7 @@ function finalizeBuild(key, type, col, row, orientation) {
   if (Object.keys(WAREHOUSE_CATEGORIES).includes(type)) {
     state.warehouseStock[key] = {};
   }
-  if (type === 'research_warehouse' || type === 'water_tower') {
+  if (type === 'research_warehouse') {
     state.warehouseStock[key] = {};
   }
   if (type === 'townhall') {
