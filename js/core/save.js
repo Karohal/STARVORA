@@ -3,7 +3,7 @@
 // Sauvegarde / chargement localStorage
 // ============================================================
 
-const GAME_VERSION = '0.3.0';
+const GAME_VERSION = '0.4.0';
 const SAVE_KEY     = 'starvora_save';
 const VERSION_KEY  = 'starvora_version';
 
