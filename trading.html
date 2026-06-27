@@ -174,7 +174,7 @@ function loadState() {
 
 function saveState() {
   try {
-    localStorage.setItem('starvora_trade_state', JSON.stringify(state));
+    localStorage.setItem('starvora_trading_state', JSON.stringify(state));
     localStorage.setItem('starvora_market_prices', JSON.stringify(prices));
     localStorage.setItem('starvora_market_history', JSON.stringify(history));
   } catch(e) {}
@@ -394,7 +394,7 @@ function render() {
 // Sync état du jeu depuis localStorage
 function syncFromGame() {
   try {
-    const raw = localStorage.getItem('starvora_save');
+    const raw = localStorage.getItem('starvora_trading');
     if (raw) {
       const save = JSON.parse(raw);
       state.money          = save.money;
