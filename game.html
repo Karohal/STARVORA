@@ -488,7 +488,7 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
         <div style="font-size:0.68rem;color:#848e9c;margin-bottom:8px;font-weight:600">VENTE MANUELLE</div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <span style="font-size:0.7rem;color:#f0f0f0">Quantité :</span>
-          <input id="mkt-sell-qty" type="number" min="1" value="1"
+          <input id="mkt-sell-qty" type="number" min="1" value="1" oninput="updateSellPreview()"
             style="flex:1;background:#0b0e11;border:1px solid #2b3139;color:#f0f0f0;padding:6px 8px;border-radius:4px;font-size:0.8rem">
           <button onclick="mktSellMax()" style="background:#2b3139;border:none;color:#848e9c;padding:6px 8px;border-radius:4px;font-size:0.65rem;cursor:pointer">MAX</button>
         </div>
@@ -554,27 +554,27 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=157"></script>
-<script src="js/config/buildings.js?v=157"></script>
-<script src="js/config/research.js?v=157"></script>
-<script src="js/config/trucks.js?v=157"></script>
-<script src="js/config/map.js?v=157"></script>
+<script src="js/config/resources.js?v=158"></script>
+<script src="js/config/buildings.js?v=158"></script>
+<script src="js/config/research.js?v=158"></script>
+<script src="js/config/trucks.js?v=158"></script>
+<script src="js/config/map.js?v=158"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=157"></script>
-<script src="js/core/save.js?v=157"></script>
+<script src="js/core/state.js?v=158"></script>
+<script src="js/core/save.js?v=158"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=157"></script>
-<script src="js/engine/production.js?v=157"></script>
-<script src="js/engine/logistics.js?v=157"></script>
-<script src="js/engine/exploration.js?v=157"></script>
+<script src="js/engine/economy.js?v=158"></script>
+<script src="js/engine/production.js?v=158"></script>
+<script src="js/engine/logistics.js?v=158"></script>
+<script src="js/engine/exploration.js?v=158"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=157"></script>
+<script src="js/render/renderer.js?v=158"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=157"></script>
-<script src="js/ui/research.js?v=157"></script>
-<script src="js/ui/input.js?v=157"></script>
+<script src="js/ui/panels.js?v=158"></script>
+<script src="js/ui/research.js?v=158"></script>
+<script src="js/ui/input.js?v=158"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=157"></script>
+<script src="js/core/main.js?v=158"></script>
 
 </body>
 </html>
