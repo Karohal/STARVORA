@@ -233,7 +233,6 @@ function handleTap(sx, sy) {
         if (nr) { res = nr; foundAt = [col+dc, row+dr]; break; }
       }
     }
-    notify(`🗺️ Tuile [${col},${row}] res=${res ?? 'aucune'}`, 'ok');
     if (res) {
       openResourceInfoPanel(res, foundAt[0], foundAt[1]);
     } else {
