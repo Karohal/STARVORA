@@ -158,7 +158,7 @@ function openBuildingPanel(key, type) {
   const houseEl = document.getElementById('bp-house-section');
   if (houseEl) houseEl.style.display = 'none';
   const hdvEl = document.getElementById('bp-hdv-stock');
-  if (hdvEl) hdvEl.style.display = 'none';
+  if (hdvEl) hdvEl.style.display = type === 'townhall' ? 'block' : 'none';
   document.getElementById('bp-factory-section').style.display   = isFactory   ? 'block' : 'none';
   document.getElementById('bp-warehouse-section').style.display = isWarehouse ? 'block' : 'none';
   document.getElementById('bp-workers-section').style.display   = hasWorkers  ? 'block' : 'none';
