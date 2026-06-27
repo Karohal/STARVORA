@@ -573,7 +573,7 @@ function refreshMarketPanel(key) {
   <div class="th-muted" style="font-size:0.62rem;margin-bottom:8px">Vend ${sellRate} unités toutes les ${cycleS}s</div>`;
 
   // Bouton graphique
-  html += `<button onclick="openMarketChartPanel('${key}')" class="assign-btn" style="width:100%;border-color:var(--cyan);color:var(--cyan);margin-bottom:8px">📊 Cours & Tendances</button>`;
+  html += `<button data-market-key="${key}" class="assign-btn" style="width:100%;border-color:var(--cyan);color:var(--cyan);margin-bottom:8px">📊 Cours & Tendances</button>`;
 
   // Stock en vente avec prix
   html += `<div style="font-size:0.62rem;color:var(--muted);margin-bottom:4px">En vente :</div>`;
@@ -593,6 +593,9 @@ function refreshMarketPanel(key) {
   if (!hasStock) html += `<div class="th-muted" style="font-size:0.62rem">Aucune ressource en stock</div>`;
 
   wEl.innerHTML = html;
+  // Brancher le bouton via event delegation (évite les problèmes onclick inline)
+  const mktBtn = wEl.querySelector('[data-market-key]');
+  if (mktBtn) mktBtn.addEventListener('click', () => openMarketChartPanel(mktBtn.dataset.marketKey));
 }
 window.refreshMarketPanel = refreshMarketPanel;
 
@@ -601,16 +604,17 @@ let _marketSelectedRes  = null;
 let _marketKey          = null;
 let _marketAutoSell     = true; // vente automatique ON par défaut
 
+let _mktListenersAttached = false;
 function openMarketChartPanel(key) {
   if (key) _marketKey = key;
-  // Fermer autres panels mais pas market-chart-panel lui-même
   document.getElementById('building-panel')?.classList.remove('open');
   document.getElementById('truck-panel')?.classList.remove('open');
   const panel = document.getElementById('market-chart-panel');
   if (!panel) return;
-  if (!panel.classList.contains('open')) {
-    panel.classList.add('open');
-    // Brancher les boutons une seule fois à l'ouverture
+  panel.classList.add('open');
+  // Brancher les boutons une seule fois pour toute la session
+  if (!_mktListenersAttached) {
+    _mktListenersAttached = true;
     document.getElementById('mkt-close-btn')?.addEventListener('click', closeMarketChartPanel);
     document.getElementById('mkt-sell-btn')?.addEventListener('click',  mktSellNow);
     document.getElementById('mkt-max-btn')?.addEventListener('click',   mktSellMax);
