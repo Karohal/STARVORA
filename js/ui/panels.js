@@ -607,8 +607,7 @@ function openMarketChartPanel(key) {
   document.getElementById('truck-panel')?.classList.remove('open');
   const panel = document.getElementById('market-chart-panel');
   if (!panel) return;
-  panel.style.display       = 'flex';
-  panel.style.flexDirection = 'column';
+  panel.classList.add('open');
   // Brancher le bouton fermer via JS (évite les problèmes onclick inline Safari)
   // Brancher tous les boutons via JS
   const closeBtn = document.getElementById('mkt-close-btn');
@@ -626,7 +625,7 @@ window.openMarketChartPanel = openMarketChartPanel;
 
 function closeMarketChartPanel() {
   const panel = document.getElementById('market-chart-panel');
-  if (panel) { panel.style.display = 'none'; panel.style.flexDirection = ''; }
+  if (panel) panel.classList.remove('open');
 }
 window.closeMarketChartPanel = closeMarketChartPanel;
 
