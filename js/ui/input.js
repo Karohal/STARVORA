@@ -226,14 +226,16 @@ function handleTap(sx, sy) {
   } else {
     // Case ressource ? Cherche sur la tuile et les adjacentes
     let res = state.resources?.[row]?.[col];
+    let foundAt = [col, row];
     if (!res) {
-      for (const [dc,dr] of [[0,1],[0,-1],[1,0],[-1,0]]) {
-        res = state.resources?.[row+dr]?.[col+dc];
-        if (res) break;
+      for (const [dc,dr] of [[0,1],[0,-1],[1,0],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]]) {
+        const nr = state.resources?.[row+dr]?.[col+dc];
+        if (nr) { res = nr; foundAt = [col+dc, row+dr]; break; }
       }
     }
+    notify(`🗺️ Tuile [${col},${row}] res=${res ?? 'aucune'}`, 'ok');
     if (res) {
-      openResourceInfoPanel(res, col, row);
+      openResourceInfoPanel(res, foundAt[0], foundAt[1]);
     } else {
       closeBuildingPanel();
       closeTruckPanel();
