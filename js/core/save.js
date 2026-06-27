@@ -93,7 +93,8 @@ function loadGame() {
     state.truckCounter     = save.truckCounter     ?? 0;
     state.truckBuildQueue  = save.truckBuildQueue  ?? {};
     state.hasTownhall      = save.hasTownhall      ?? false;
-    state.hdvStock         = save.hdvStock         ?? { water_r: 100 };
+    const rawHdv = save.hdvStock ?? { water_r: 100 };
+    state.hdvStock = { water_r: rawHdv.water_r ?? 100 }; // uniquement eau potable
     state.marketAutoSell   = save.marketAutoSell   ?? false;
     state.exploredMaps     = save.exploredMaps     ?? { '1,1': true };
     state.factoryRemainder = save.factoryRemainder ?? {};
