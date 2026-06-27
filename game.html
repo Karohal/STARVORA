@@ -426,22 +426,22 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- PANEL CAMION -->
 <!-- ===== PANEL TRADING MARCHÉ ===== -->
-<div id="market-chart-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;background:#0b0e11;flex-direction:column;font-family:sans-serif">
+<div id="market-chart-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:2000;background:#0b0e11;flex-direction:column;font-family:sans-serif">
 
   <!-- Header fixe -->
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#0b0e11;border-bottom:1px solid #2b3139;flex-shrink:0">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#0b0e11;border-bottom:1px solid #2b3139;flex-shrink:0;position:relative;z-index:2001">
     <div>
       <div style="font-size:1rem;font-weight:700;color:#f0b90b">📊 StarVora Markets</div>
       <div id="mkt-selected-badge" style="font-size:0.65rem;color:#848e9c;margin-top:1px"></div>
     </div>
-    <button id="mkt-close-btn" style="background:#f0b90b;border:none;color:#000;font-size:0.85rem;font-weight:700;cursor:pointer;padding:8px 16px;border-radius:8px;min-width:80px;min-height:40px">✕ Fermer</button>
+    <button id="mkt-close-btn" style="background:#f0b90b;border:none;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;padding:10px 20px;border-radius:8px;position:relative;z-index:2002;-webkit-tap-highlight-color:transparent">✕ Fermer</button>
   </div>
 
   <!-- Onglets ressources -->
   <div id="market-res-tabs" style="display:flex;overflow-x:auto;padding:8px 12px;gap:6px;background:#0b0e11;border-bottom:1px solid #1e2329;flex-shrink:0;-webkit-overflow-scrolling:touch"></div>
 
   <!-- Contenu scrollable -->
-  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px;padding-bottom:80px">
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px">
 
     <!-- Prix actuel -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -468,32 +468,32 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
     <!-- Graphique -->
     <div style="background:#1e2329;border-radius:8px;padding:10px;margin-bottom:12px">
-      <canvas id="market-chart-canvas" style="width:100%;height:140px;display:block"></canvas>
+      <canvas id="market-chart-canvas" style="width:100%;height:130px;display:block"></canvas>
       <div style="display:flex;justify-content:space-between;margin-top:4px">
         <span style="font-size:0.52rem;color:#848e9c">← 20 fluctuations</span>
         <span style="font-size:0.52rem;color:#848e9c">Maintenant →</span>
       </div>
     </div>
 
-    <!-- Tous les cours -->
+    <!-- Tous les cours en liste colonne unique triée par ordre alpha -->
     <div style="background:#1e2329;border-radius:8px;padding:10px;margin-bottom:12px">
       <div style="font-size:0.65rem;color:#848e9c;margin-bottom:6px;font-weight:600;letter-spacing:0.05em">TOUS LES COURS</div>
-      <div id="mkt-all-prices" style="display:grid;grid-template-columns:1fr 1fr;gap:4px"></div>
+      <div id="mkt-all-prices"></div>
     </div>
 
     <!-- Vente manuelle -->
-    <div style="background:#1e2329;border-radius:8px;padding:12px">
+    <div style="background:#1e2329;border-radius:8px;padding:12px;margin-bottom:12px">
       <div style="font-size:0.65rem;color:#848e9c;margin-bottom:10px;font-weight:600;letter-spacing:0.05em">VENTE MANUELLE</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <span style="font-size:0.72rem;color:#f0f0f0;white-space:nowrap">Quantité :</span>
         <input id="mkt-sell-qty" type="number" min="1" value="1" oninput="updateSellPreview()"
           style="flex:1;background:#0b0e11;border:1px solid #2b3139;color:#f0f0f0;padding:8px;border-radius:4px;font-size:0.85rem;min-height:36px">
-        <button onclick="mktSellMax()" style="background:#2b3139;border:none;color:#f0f0f0;padding:8px 12px;border-radius:4px;font-size:0.7rem;cursor:pointer;min-height:36px">MAX</button>
+        <button id="mkt-max-btn" style="background:#2b3139;border:none;color:#f0f0f0;padding:8px 12px;border-radius:4px;font-size:0.7rem;cursor:pointer;min-height:36px">MAX</button>
       </div>
       <div id="mkt-sell-preview" style="margin-bottom:10px;font-size:0.65rem;color:#848e9c;min-height:16px"></div>
       <div style="display:flex;gap:8px">
-        <button onclick="mktSellNow()" style="flex:1;background:#02c076;border:none;color:#fff;padding:12px;border-radius:8px;font-weight:700;font-size:0.9rem;cursor:pointer;min-height:48px">VENDRE</button>
-        <button id="mkt-auto-btn" onclick="mktToggleAuto()" style="flex:1;background:transparent;border:2px solid #f0b90b;color:#f0b90b;padding:12px;border-radius:8px;font-weight:700;font-size:0.75rem;cursor:pointer;min-height:48px">AUTO: ON</button>
+        <button id="mkt-sell-btn" style="flex:1;background:#02c076;border:none;color:#fff;padding:12px;border-radius:8px;font-weight:700;font-size:0.9rem;cursor:pointer;min-height:48px">VENDRE</button>
+        <button id="mkt-auto-btn" style="flex:1;background:transparent;border:2px solid #f0b90b;color:#f0b90b;padding:12px;border-radius:8px;font-weight:700;font-size:0.75rem;cursor:pointer;min-height:48px">AUTO: ON</button>
       </div>
     </div>
 
@@ -545,27 +545,27 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=160"></script>
-<script src="js/config/buildings.js?v=160"></script>
-<script src="js/config/research.js?v=160"></script>
-<script src="js/config/trucks.js?v=160"></script>
-<script src="js/config/map.js?v=160"></script>
+<script src="js/config/resources.js?v=161"></script>
+<script src="js/config/buildings.js?v=161"></script>
+<script src="js/config/research.js?v=161"></script>
+<script src="js/config/trucks.js?v=161"></script>
+<script src="js/config/map.js?v=161"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=160"></script>
-<script src="js/core/save.js?v=160"></script>
+<script src="js/core/state.js?v=161"></script>
+<script src="js/core/save.js?v=161"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=160"></script>
-<script src="js/engine/production.js?v=160"></script>
-<script src="js/engine/logistics.js?v=160"></script>
-<script src="js/engine/exploration.js?v=160"></script>
+<script src="js/engine/economy.js?v=161"></script>
+<script src="js/engine/production.js?v=161"></script>
+<script src="js/engine/logistics.js?v=161"></script>
+<script src="js/engine/exploration.js?v=161"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=160"></script>
+<script src="js/render/renderer.js?v=161"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=160"></script>
-<script src="js/ui/research.js?v=160"></script>
-<script src="js/ui/input.js?v=160"></script>
+<script src="js/ui/panels.js?v=161"></script>
+<script src="js/ui/research.js?v=161"></script>
+<script src="js/ui/input.js?v=161"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=160"></script>
+<script src="js/core/main.js?v=161"></script>
 
 </body>
 </html>
