@@ -612,15 +612,6 @@ function drawBuildingLabel(ctx, cx, cy, bh, topOffset, col, row, def, cam) {
       ctx.fillText('🚱', cx + 10 * cam.zoom, labelY);
     }
   }
-
-  if (cam.zoom > 0.55) {
-    ctx.font = `bold ${Math.floor(9 * cam.zoom)}px monospace`;
-    ctx.fillStyle = '#fff';
-    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-    ctx.lineWidth = 2 * cam.zoom;
-    ctx.strokeText(String(lvl), cx, cy - bh + 4 * cam.zoom);
-    ctx.fillText(String(lvl), cx, cy - bh + 4 * cam.zoom);
-  }
 }
 
 // ============================================================
