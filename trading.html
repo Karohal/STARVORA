@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>StarVora Markets</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0b0e11; color: #f0f0f0; font-family: -apple-system, sans-serif; min-height: 100vh; }
+
+/* HEADER */
+.header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#0b0e11; border-bottom:1px solid #2b3139; position:sticky; top:0; z-index:10; }
+.header-title { font-size:1rem; font-weight:700; color:#f0b90b; }
+.btn-close { background:#f0b90b; border:none; color:#000; font-weight:700; padding:8px 16px; border-radius:6px; font-size:0.85rem; cursor:pointer; }
+
+/* ONGLETS RESSOURCES */
+.res-tabs { display:flex; overflow-x:auto; padding:8px 12px; gap:6px; background:#131722; border-bottom:1px solid #2b3139; }
+.res-tabs::-webkit-scrollbar { display:none; }
+.res-tab { flex-shrink:0; padding:6px 12px; border-radius:4px; border:1px solid #2b3139; background:transparent; color:#848e9c; font-size:0.7rem; cursor:pointer; white-space:nowrap; }
+.res-tab.active { background:#2b3139; color:#f0b90b; border-color:#f0b90b; font-weight:700; }
+
+/* CORPS */
+.body { padding:12px 14px; }
+
+/* PRIX */
+.price-row { display:flex; align-items:baseline; gap:10px; margin-bottom:12px; }
+.price-big { font-size:2.4rem; font-weight:700; }
+.price-badge { font-size:0.8rem; padding:3px 8px; border-radius:4px; font-weight:600; }
+.price-unit { font-size:0.7rem; color:#848e9c; }
+
+/* STATS */
+.stats-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:12px; }
+.stat-box { background:#1e2329; border-radius:6px; padding:8px; }
+.stat-label { font-size:0.55rem; color:#848e9c; margin-bottom:2px; text-transform:uppercase; }
+.stat-val { font-size:0.8rem; color:#f0f0f0; font-weight:600; }
+
+/* GRAPHIQUE */
+.chart-box { background:#1e2329; border-radius:8px; padding:10px; margin-bottom:12px; }
+#chart-canvas { width:100%; height:150px; display:block; }
+.chart-labels { display:flex; justify-content:space-between; margin-top:4px; }
+.chart-labels span { font-size:0.52rem; color:#848e9c; }
+
+/* COURS */
+.all-prices-box { background:#1e2329; border-radius:8px; padding:10px; margin-bottom:12px; }
+.section-title { font-size:0.65rem; color:#848e9c; margin-bottom:8px; font-weight:600; letter-spacing:0.05em; }
+.price-row-item { display:flex; align-items:center; justify-content:space-between; padding:10px 8px; border-radius:6px; cursor:pointer; margin-bottom:2px; transition:background 0.1s; }
+.price-row-item:active { background:#2b3139; }
+.price-row-item.selected { background:#2b3139; }
+.price-row-name { font-size:0.8rem; color:#f0f0f0; }
+.price-row-val { font-size:0.82rem; font-weight:700; }
+.price-row-pct { font-size:0.65rem; margin-left:6px; }
+
+/* TRADING */
+.trade-box { background:#1e2329; border-radius:8px; padding:12px; margin-bottom:20px; }
+.trade-tabs { display:flex; margin-bottom:12px; border-radius:6px; overflow:hidden; }
+.trade-tab { flex:1; padding:10px; border:none; font-weight:700; font-size:0.85rem; cursor:pointer; }
+.trade-tab.buy  { background:#02c076; color:#fff; }
+.trade-tab.sell { background:#f6465d; color:#fff; }
+.trade-tab.inactive { background:#2b3139; color:#848e9c; }
+
+.trade-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.trade-label { font-size:0.72rem; color:#848e9c; white-space:nowrap; width:80px; }
+.trade-input { flex:1; background:#0b0e11; border:1px solid #2b3139; color:#f0f0f0; padding:10px; border-radius:4px; font-size:0.85rem; }
+.trade-input:focus { border-color:#f0b90b; outline:none; }
+.btn-max { background:#2b3139; border:none; color:#f0f0f0; padding:8px 12px; border-radius:4px; font-size:0.7rem; cursor:pointer; }
+.trade-preview { font-size:0.65rem; color:#848e9c; text-align:center; margin-bottom:10px; min-height:18px; }
+.btn-trade { width:100%; padding:14px; border:none; border-radius:8px; font-weight:700; font-size:0.95rem; cursor:pointer; }
+.btn-trade.buy  { background:#02c076; color:#fff; }
+.btn-trade.sell { background:#f6465d; color:#fff; }
+
+.stock-info { font-size:0.65rem; color:#848e9c; text-align:center; margin-top:8px; }
+
+/* UP/DOWN */
+.up   { color:#02c076; }
+.down { color:#f6465d; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">📊 StarVora Markets</div>
+    <div id="selected-name" style="font-size:0.65rem;color:#848e9c;margin-top:1px"></div>
+  </div>
+  <button class="btn-close" onclick="window.close()">✕ Fermer</button>
+</div>
+
+<div class="res-tabs" id="res-tabs"></div>
+
+<div class="body">
+
+  <div class="price-row">
+    <span id="price-big" class="price-big">—</span>
+    <span id="price-badge" class="price-badge">—</span>
+    <span class="price-unit">💰/u</span>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-label">Prix base</div><div id="stat-base" class="stat-val">—</div></div>
+    <div class="stat-box"><div class="stat-label">Min / Max</div><div id="stat-range" class="stat-val">—</div></div>
+    <div class="stat-box"><div class="stat-label">En stock</div><div id="stat-stock" class="stat-val" style="color:#f0b90b">—</div></div>
+  </div>
+
+  <div class="chart-box">
+    <canvas id="chart-canvas"></canvas>
+    <div class="chart-labels"><span>← 20 fluctuations</span><span>Maintenant →</span></div>
+  </div>
+
+  <div class="all-prices-box">
+    <div class="section-title">TOUS LES COURS</div>
+    <div id="all-prices"></div>
+  </div>
+
+  <div class="trade-box">
+    <div class="section-title">TRADER</div>
+    <div class="trade-tabs">
+      <button id="tab-sell" class="trade-tab sell" onclick="setTradeMode('sell')">VENDRE</button>
+      <button id="tab-buy"  class="trade-tab inactive" onclick="setTradeMode('buy')">ACHETER</button>
+    </div>
+    <div class="trade-row">
+      <span class="trade-label">Quantité :</span>
+      <input id="trade-qty" class="trade-input" type="number" min="1" value="1" oninput="updatePreview()">
+      <button class="btn-max" onclick="setMax()">MAX</button>
+    </div>
+    <div id="trade-preview" class="trade-preview"></div>
+    <button id="btn-trade" class="btn-trade sell" onclick="executeTrade()">VENDRE</button>
+    <div id="stock-info" class="stock-info"></div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// ÉTAT LOCAL — synchronisé avec le jeu via localStorage
+// ============================================================
+const BASE_PRICES = {
+  stone:2, iron:4, coal:3, water:2,
+  stone_r:8, iron_r:15, coal_r:10, water_r:6,
+  waste:1, incin:3, limestone:3
+};
+
+const LABELS = {
+  stone:'Pierre Brute', iron:'Minerais de Fer', coal:'Minerais de Charbon',
+  water:'Eau Brute', stone_r:'Pierre Traitée', iron_r:'Fer Brut',
+  coal_r:'Charbon Brut', water_r:'Eau Potable',
+  waste:'Déchets', incin:'Incinérable', limestone:'Calcaire'
+};
+
+const ICONS = {
+  stone:'🪨', iron:'⚒️', coal:'⚒️', water:'💧',
+  stone_r:'🧱', iron_r:'🔩', coal_r:'🪨', water_r:'💧',
+  waste:'🗑️', incin:'🔥', limestone:'🧱'
+};
+
+let state = {};
+let selectedRes = 'stone';
+let tradeMode   = 'sell';
+let history     = {};
+let prices      = {};
+let nextFluctuation = Date.now() + 120000;
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('starvora_trade_state');
+    if (raw) state = JSON.parse(raw);
+    const ph  = localStorage.getItem('starvora_market_history');
+    if (ph) history = JSON.parse(ph);
+    const pp  = localStorage.getItem('starvora_market_prices');
+    if (pp) prices = JSON.parse(pp);
+    else initPrices();
+  } catch(e) { initPrices(); }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('starvora_trade_state', JSON.stringify(state));
+    localStorage.setItem('starvora_market_prices', JSON.stringify(prices));
+    localStorage.setItem('starvora_market_history', JSON.stringify(history));
+  } catch(e) {}
+}
+
+function initPrices() {
+  prices = {};
+  for (const [r,b] of Object.entries(BASE_PRICES)) prices[r] = b;
+}
+
+function fluctuate() {
+  for (const [r,b] of Object.entries(BASE_PRICES)) {
+    const mult = 0.7 + Math.random() * 0.8;
+    prices[r] = Math.round(b * mult * 10) / 10;
+    if (!history[r]) history[r] = [];
+    history[r].push(prices[r]);
+    if (history[r].length > 20) history[r].shift();
+  }
+  saveState();
+  render();
+  nextFluctuation = Date.now() + 120000;
+}
+
+function getStock(res) {
+  return state.warehouseStock ? Object.values(state.warehouseStock).reduce((a,s) => a + (s[res]??0), 0) : 0;
+}
+
+function getMoney() { return state.money ?? 0; }
+
+function setTradeMode(mode) {
+  tradeMode = mode;
+  document.getElementById('tab-sell').className = 'trade-tab ' + (mode==='sell' ? 'sell' : 'inactive');
+  document.getElementById('tab-buy').className  = 'trade-tab ' + (mode==='buy'  ? 'buy'  : 'inactive');
+  document.getElementById('btn-trade').className = 'btn-trade ' + mode;
+  document.getElementById('btn-trade').textContent = mode === 'sell' ? 'VENDRE' : 'ACHETER';
+  updatePreview();
+}
+
+function setMax() {
+  const qty = tradeMode === 'sell' ? getStock(selectedRes)
+    : Math.floor(getMoney() / (prices[selectedRes] ?? 1));
+  document.getElementById('trade-qty').value = Math.max(0, qty);
+  updatePreview();
+}
+
+function updatePreview() {
+  const qty   = parseInt(document.getElementById('trade-qty').value) || 0;
+  const price = prices[selectedRes] ?? BASE_PRICES[selectedRes] ?? 1;
+  const total = Math.round(qty * price);
+  const prev  = document.getElementById('trade-preview');
+  if (qty <= 0) { prev.textContent = ''; return; }
+  prev.textContent = tradeMode === 'sell'
+    ? `→ +${total} 💰 pour ${qty} unités`
+    : `→ -${total} 💰 pour ${qty} unités`;
+}
+
+function executeTrade() {
+  const qty   = parseInt(document.getElementById('trade-qty').value) || 0;
+  if (qty <= 0) { alert('Quantité invalide'); return; }
+  const price = prices[selectedRes] ?? 1;
+  const total = Math.round(qty * price);
+
+  if (tradeMode === 'sell') {
+    const stock = getStock(selectedRes);
+    if (qty > stock) { alert(`Stock insuffisant ! (${stock} disponibles)`); return; }
+    // Prélever du stock
+    let rem = qty;
+    for (const wKey of Object.keys(state.warehouseStock ?? {})) {
+      if (rem <= 0) break;
+      const s = state.warehouseStock[wKey][selectedRes] ?? 0;
+      const take = Math.min(s, rem);
+      state.warehouseStock[wKey][selectedRes] = s - take;
+      rem -= take;
+    }
+    state.money = (state.money ?? 0) + total;
+    alert(`✅ Vendu ${qty} ${LABELS[selectedRes]} → +${total} 💰`);
+  } else {
+    if (total > getMoney()) { alert(`Crédits insuffisants ! (${getMoney()} 💰)`); return; }
+    // Ajouter au premier entrepôt disponible
+    const wKeys = Object.keys(state.warehouseStock ?? {});
+    if (wKeys.length === 0) { alert('Aucun entrepôt disponible !'); return; }
+    state.warehouseStock[wKeys[0]][selectedRes] = (state.warehouseStock[wKeys[0]][selectedRes] ?? 0) + qty;
+    state.money = (state.money ?? 0) - total;
+    alert(`✅ Acheté ${qty} ${LABELS[selectedRes]} → -${total} 💰`);
+  }
+  saveState();
+  render();
+}
+
+function selectRes(res) {
+  selectedRes = res;
+  render();
+}
+
+function render() {
+  const res   = selectedRes;
+  const base  = BASE_PRICES[res] ?? 1;
+  const price = prices[res] ?? base;
+  const up    = price >= base;
+  const pct   = Math.round((price - base) / base * 100);
+  const sign  = pct >= 0 ? '+' : '';
+  const col   = up ? '#02c076' : '#f6465d';
+  const hist  = history[res] ?? [];
+  const stock = getStock(res);
+
+  document.getElementById('selected-name').textContent = (ICONS[res]??'') + ' ' + (LABELS[res]??res);
+  document.getElementById('price-big').textContent = price + ' 💰';
+  document.getElementById('price-big').style.color = col;
+  document.getElementById('price-badge').textContent = sign + pct + '%';
+  document.getElementById('price-badge').style.background = up ? 'rgba(2,192,118,0.15)' : 'rgba(246,70,93,0.15)';
+  document.getElementById('price-badge').style.color = col;
+  document.getElementById('stat-base').textContent  = base + ' 💰';
+  document.getElementById('stat-stock').textContent = stock + ' u';
+  if (hist.length > 0) {
+    const mn = Math.min(...hist).toFixed(1), mx = Math.max(...hist).toFixed(1);
+    document.getElementById('stat-range').textContent = mn + ' / ' + mx;
+  } else {
+    document.getElementById('stat-range').textContent = '—';
+  }
+
+  // Graphique
+  const canvas = document.getElementById('chart-canvas');
+  const rect   = canvas.getBoundingClientRect();
+  const dpr    = window.devicePixelRatio || 1;
+  canvas.width  = rect.width  * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height || 150;
+  ctx.clearRect(0, 0, W, H);
+
+  // Grille
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(0, H*i/4); ctx.lineTo(W, H*i/4); ctx.stroke(); }
+
+  if (hist.length >= 2) {
+    const maxP = Math.max(...hist, base) * 1.05;
+    const minP = Math.min(...hist, base) * 0.95;
+    const range = maxP - minP || 1;
+    const toY = p => H - ((p - minP) / range) * H;
+    const step = W / (hist.length - 1);
+
+    // Ligne de base
+    ctx.strokeStyle = 'rgba(240,185,11,0.4)'; ctx.lineWidth = 1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(0, toY(base)); ctx.lineTo(W, toY(base)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Zone
+    ctx.beginPath();
+    ctx.moveTo(0, toY(hist[0]));
+    hist.forEach((p, i) => ctx.lineTo(i * step, toY(p)));
+    ctx.lineTo((hist.length-1)*step, H); ctx.lineTo(0, H); ctx.closePath();
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, up ? 'rgba(2,192,118,0.3)' : 'rgba(246,70,93,0.3)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad; ctx.fill();
+
+    // Ligne
+    ctx.beginPath(); ctx.strokeStyle = col; ctx.lineWidth = 2;
+    hist.forEach((p, i) => i===0 ? ctx.moveTo(0, toY(p)) : ctx.lineTo(i*step, toY(p)));
+    ctx.stroke();
+
+    // Point
+    const lx = (hist.length-1)*step, ly = toY(hist[hist.length-1]);
+    ctx.beginPath(); ctx.arc(lx, ly, 4, 0, Math.PI*2);
+    ctx.fillStyle = col; ctx.fill();
+    ctx.strokeStyle = '#0b0e11'; ctx.lineWidth = 2; ctx.stroke();
+  } else {
+    ctx.fillStyle = '#848e9c'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('En attente (fluctuation toutes les 2min)...', W/2, H/2);
+  }
+
+  // Onglets
+  const tabsEl = document.getElementById('res-tabs');
+  tabsEl.innerHTML = Object.keys(BASE_PRICES).map(r => {
+    const p  = prices[r] ?? BASE_PRICES[r];
+    const b  = BASE_PRICES[r];
+    const c  = p >= b ? '#02c076' : '#f6465d';
+    const sel = r === res;
+    return `<button class="res-tab ${sel?'active':''}" onclick="selectRes('${r}')" style="${sel?'border-color:'+c+';color:'+c:''}">
+      ${ICONS[r]??''} ${LABELS[r]??r} <span style="color:${c}">${p}💰</span>
+    </button>`;
+  }).join('');
+
+  // Tous les cours
+  const allEl = document.getElementById('all-prices');
+  const sorted = Object.entries(BASE_PRICES).sort((a,b) => (LABELS[a[0]]??a[0]).localeCompare(LABELS[b[0]]??b[0]));
+  allEl.innerHTML = sorted.map(([r, b]) => {
+    const p   = prices[r] ?? b;
+    const up2 = p >= b;
+    const c   = up2 ? '#02c076' : '#f6465d';
+    const pct2 = Math.round((p-b)/b*100);
+    const s   = pct2 >= 0 ? '+' : '';
+    return `<div class="price-row-item ${r===res?'selected':''}" onclick="selectRes('${r}')">
+      <span class="price-row-name">${ICONS[r]??''} ${LABELS[r]??r}</span>
+      <span><span class="price-row-val" style="color:${c}">${p} 💰</span><span class="price-row-pct" style="color:${c}">${s}${pct2}%</span></span>
+    </div>`;
+  }).join('');
+
+  // Stock info
+  document.getElementById('stock-info').textContent =
+    `Stock: ${stock} u · Crédits: ${getMoney()} 💰`;
+
+  updatePreview();
+
+  // Compte à rebours fluctuation
+  const remaining = Math.max(0, Math.round((nextFluctuation - Date.now()) / 1000));
+  document.title = `📊 StarVora Markets — prochaine fluctuation: ${remaining}s`;
+}
+
+// Sync état du jeu depuis localStorage
+function syncFromGame() {
+  try {
+    const raw = localStorage.getItem('starvora_save');
+    if (raw) {
+      const save = JSON.parse(raw);
+      state.money          = save.money;
+      state.warehouseStock = save.warehouseStock;
+    }
+  } catch(e) {}
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadState();
+syncFromGame();
+render();
+
+// Fluctuation toutes les 2 minutes
+setInterval(() => {
+  fluctuate();
+}, 120000);
+
+// Refresh état du jeu toutes les 5s
+setInterval(() => {
+  syncFromGame();
+  render();
+}, 5000);
+
+// Countdown titre
+setInterval(() => {
+  const remaining = Math.max(0, Math.round((nextFluctuation - Date.now()) / 1000));
+  document.title = `📊 Markets — fluctuation dans ${remaining}s`;
+}, 1000);
+</script>
+</body>
+</html>
