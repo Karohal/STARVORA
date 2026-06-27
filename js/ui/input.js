@@ -224,8 +224,15 @@ function handleTap(sx, sy) {
     closeTruckPanel();
     openBuildingPanel(key, state.buildings[key]);
   } else {
-    closeBuildingPanel();
-    closeTruckPanel();
+    // Case ressource ?
+    const res = state.resources?.[row]?.[col];
+    if (res) {
+      openResourceInfoPanel(res, col, row);
+    } else {
+      closeBuildingPanel();
+      closeTruckPanel();
+      closeResourceInfoPanel();
+    }
   }
 }
 
