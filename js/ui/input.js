@@ -224,8 +224,14 @@ function handleTap(sx, sy) {
     closeTruckPanel();
     openBuildingPanel(key, state.buildings[key]);
   } else {
-    // Case ressource ?
-    const res = state.resources?.[row]?.[col];
+    // Case ressource ? Cherche sur la tuile et les adjacentes
+    let res = state.resources?.[row]?.[col];
+    if (!res) {
+      for (const [dc,dr] of [[0,1],[0,-1],[1,0],[-1,0]]) {
+        res = state.resources?.[row+dr]?.[col+dc];
+        if (res) break;
+      }
+    }
     if (res) {
       openResourceInfoPanel(res, col, row);
     } else {
