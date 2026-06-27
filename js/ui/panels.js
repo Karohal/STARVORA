@@ -149,6 +149,9 @@ function openBuildingPanel(key, type) {
   const isWarehouse = Object.keys(WAREHOUSE_CATEGORIES).includes(type) || type === 'research_warehouse' || type === 'market' || type === 'water_tower';
   const isMarket     = type === 'market';
   const isWaterTower = type === 'water_tower';
+  // Montrer/cacher le bouton marché fixe
+  const mktBtnZone = document.getElementById('bp-market-btn-zone');
+  if (mktBtnZone) mktBtnZone.style.display = isMarket ? 'block' : 'none';
   const hasWorkers  = (BASE_WORKERS[type] ?? 0) > 0;
 
   document.getElementById('bp-prod-section').style.display      = isProducer  ? 'block' : 'none';
@@ -555,6 +558,12 @@ function toggleWaterZone() {
 window.toggleWaterZone = toggleWaterZone;
 
 function refreshMarketPanel(key) {
+  // Mettre à jour le bouton fixe
+  const mktBtnZone = document.getElementById('bp-market-btn-zone');
+  const mktChartBtn = document.getElementById('bp-market-chart-btn');
+  if (mktBtnZone) mktBtnZone.style.display = 'block';
+  if (mktChartBtn) mktChartBtn.dataset.marketKey = key;
+
   const level    = state.buildingLevels[key] ?? 0;
   const stock    = state.warehouseStock[key] ?? {};
   const cap      = marketCapacity(level);
@@ -573,7 +582,7 @@ function refreshMarketPanel(key) {
   <div class="th-muted" style="font-size:0.62rem;margin-bottom:8px">Vend ${sellRate} unités toutes les ${cycleS}s</div>`;
 
   // Bouton graphique
-  html += `<button data-market-key="${key}" class="assign-btn" style="width:100%;border-color:var(--cyan);color:var(--cyan);margin-bottom:8px">📊 Cours & Tendances</button>`;
+
 
   // Stock en vente avec prix
   html += `<div style="font-size:0.62rem;color:var(--muted);margin-bottom:4px">En vente :</div>`;
@@ -593,9 +602,7 @@ function refreshMarketPanel(key) {
   if (!hasStock) html += `<div class="th-muted" style="font-size:0.62rem">Aucune ressource en stock</div>`;
 
   wEl.innerHTML = html;
-  // Brancher le bouton via event delegation (évite les problèmes onclick inline)
-  const mktBtn = wEl.querySelector('[data-market-key]');
-  if (mktBtn) mktBtn.addEventListener('click', () => openMarketChartPanel(mktBtn.dataset.marketKey));
+
 }
 window.refreshMarketPanel = refreshMarketPanel;
 
