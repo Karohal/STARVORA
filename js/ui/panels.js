@@ -555,15 +555,14 @@ function toggleWaterZone() {
 window.toggleWaterZone = toggleWaterZone;
 
 function refreshMarketPanel(key) {
-  const level     = state.buildingLevels[key] ?? 0;
-  const stock     = state.warehouseStock[key] ?? {};
-  const cap       = marketCapacity(level);
-  const sellRate  = marketSellRate(level);
-  const cycleS    = marketCycleMs(level) / 1000;
-  const prices    = state.marketPrices ?? {};
-  const loaded    = Object.values(stock).reduce((a,b)=>a+b,0);
+  const level    = state.buildingLevels[key] ?? 0;
+  const stock    = state.warehouseStock[key] ?? {};
+  const cap      = marketCapacity(level);
+  const sellRate = marketSellRate(level);
+  const cycleS   = marketCycleMs(level) / 1000;
+  const prices   = state.marketPrices ?? {};
+  const loaded   = Object.values(stock).reduce((a,b)=>a+b,0);
 
-  // Afficher infos dans la section warehouse
   const wEl = document.getElementById('bp-warehouse-stock');
   if (!wEl) return;
 
@@ -573,10 +572,15 @@ function refreshMarketPanel(key) {
   </div>
   <div class="th-muted" style="font-size:0.62rem;margin-bottom:8px">Vend ${sellRate} unités toutes les ${cycleS}s</div>`;
 
-  // Prix courants
-  html += `<div style="font-size:0.62rem;color:var(--muted);margin-bottom:4px">Prix du marché :</div>`;
+  // Bouton graphique
+  html += `<button onclick="openMarketChartPanel()" class="assign-btn" style="width:100%;border-color:var(--cyan);color:var(--cyan);margin-bottom:8px">📊 Cours & Tendances</button>`;
+
+  // Stock en vente avec prix
+  html += `<div style="font-size:0.62rem;color:var(--muted);margin-bottom:4px">En vente :</div>`;
+  let hasStock = false;
   for (const [res, qty] of Object.entries(stock)) {
     if (!qty) continue;
+    hasStock = true;
     const price = prices[res] ?? MARKET_BASE_PRICES[res] ?? 1;
     const base  = MARKET_BASE_PRICES[res] ?? 1;
     const trend = price > base ? '📈' : price < base ? '📉' : '➡️';
@@ -586,22 +590,133 @@ function refreshMarketPanel(key) {
       <span style="color:${color}">${trend} ${price}💰/u</span>
     </div>`;
   }
-
-  // Prix de toutes les ressources même sans stock
-  html += `<div style="font-size:0.62rem;color:var(--muted);margin-top:8px;margin-bottom:4px">Cours actuels :</div>`;
-  for (const [res, base] of Object.entries(MARKET_BASE_PRICES)) {
-    const price = prices[res] ?? base;
-    const trend = price > base ? '📈' : price < base ? '📉' : '➡️';
-    const color = price > base ? 'var(--success)' : price < base ? '#c04040' : 'var(--muted)';
-    html += `<div class="th-row" style="font-size:0.62rem">
-      <span style="color:var(--muted)">${RESOURCE_LABELS?.[res] ?? res}</span>
-      <span style="color:${color}">${trend} ${price}💰</span>
-    </div>`;
-  }
+  if (!hasStock) html += `<div class="th-muted" style="font-size:0.62rem">Aucune ressource en stock</div>`;
 
   wEl.innerHTML = html;
 }
 window.refreshMarketPanel = refreshMarketPanel;
+
+// ===== PANEL GRAPHIQUE MARCHÉ =====
+let _marketSelectedRes = null;
+
+function openMarketChartPanel() {
+  const panel = document.getElementById('market-chart-panel');
+  if (!panel) return;
+  panel.style.display = 'block';
+  _marketSelectedRes = _marketSelectedRes ?? Object.keys(MARKET_BASE_PRICES)[0];
+  renderMarketChart();
+}
+window.openMarketChartPanel = openMarketChartPanel;
+
+function closeMarketChartPanel() {
+  document.getElementById('market-chart-panel').style.display = 'none';
+}
+window.closeMarketChartPanel = closeMarketChartPanel;
+
+function selectMarketRes(res) {
+  _marketSelectedRes = res;
+  renderMarketChart();
+}
+window.selectMarketRes = selectMarketRes;
+
+function renderMarketChart() {
+  const prices  = state.marketPrices ?? {};
+  const history = state.marketHistory ?? {};
+
+  // Onglets ressources
+  const tabsEl = document.getElementById('market-res-tabs');
+  if (tabsEl) {
+    tabsEl.innerHTML = Object.keys(MARKET_BASE_PRICES).map(res => {
+      const active = res === _marketSelectedRes;
+      const price  = prices[res] ?? MARKET_BASE_PRICES[res];
+      const base   = MARKET_BASE_PRICES[res];
+      const color  = price > base ? 'var(--success)' : price < base ? '#c04040' : 'var(--muted)';
+      return `<button onclick="selectMarketRes('${res}')"
+        style="padding:3px 7px;font-size:0.6rem;border:1px solid ${active ? color : 'var(--border)'};
+        background:${active ? 'rgba(255,255,255,0.08)' : 'transparent'};
+        color:${active ? color : 'var(--muted)'};border-radius:3px;cursor:pointer">
+        ${RESOURCE_ICONS?.[res] ?? ''} ${RESOURCE_LABELS?.[res] ?? res}
+      </button>`;
+    }).join('');
+  }
+
+  // Graphique canvas
+  const canvas = document.getElementById('market-chart-canvas');
+  if (!canvas) return;
+  const ctx2 = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx2.clearRect(0, 0, W, H);
+
+  const res     = _marketSelectedRes;
+  const base    = MARKET_BASE_PRICES[res] ?? 1;
+  const hist    = history[res] ?? [];
+  const current = prices[res] ?? base;
+
+  // Ligne de base
+  ctx2.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx2.lineWidth   = 1;
+  ctx2.setLineDash([4,4]);
+  const baseY = H - (base / (base * 1.6)) * (H - 20) - 10;
+  ctx2.beginPath(); ctx2.moveTo(0, baseY); ctx2.lineTo(W, baseY); ctx2.stroke();
+  ctx2.setLineDash([]);
+
+  if (hist.length < 2) {
+    ctx2.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx2.font = '11px sans-serif';
+    ctx2.textAlign = 'center';
+    ctx2.fillText('En attente de données...', W/2, H/2);
+  } else {
+    const maxP = Math.max(...hist) * 1.1;
+    const minP = Math.min(...hist) * 0.9;
+    const range = maxP - minP || 1;
+    const toY = p => H - 10 - ((p - minP) / range) * (H - 20);
+    const step = W / (hist.length - 1);
+
+    // Zone remplie
+    ctx2.beginPath();
+    ctx2.moveTo(0, toY(hist[0]));
+    hist.forEach((p, i) => ctx2.lineTo(i * step, toY(p)));
+    ctx2.lineTo((hist.length-1)*step, H);
+    ctx2.lineTo(0, H);
+    ctx2.closePath();
+    const grad = ctx2.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, 'rgba(64,160,255,0.35)');
+    grad.addColorStop(1, 'rgba(64,160,255,0.02)');
+    ctx2.fillStyle = grad;
+    ctx2.fill();
+
+    // Ligne
+    ctx2.beginPath();
+    ctx2.strokeStyle = '#40a0ff';
+    ctx2.lineWidth = 2;
+    hist.forEach((p, i) => i === 0 ? ctx2.moveTo(0, toY(p)) : ctx2.lineTo(i * step, toY(p)));
+    ctx2.stroke();
+
+    // Point actuel
+    const lastX = (hist.length-1)*step, lastY = toY(hist[hist.length-1]);
+    ctx2.beginPath();
+    ctx2.arc(lastX, lastY, 4, 0, Math.PI*2);
+    ctx2.fillStyle = '#40a0ff';
+    ctx2.fill();
+  }
+
+  // Infos ressource
+  const infoEl = document.getElementById('market-res-info');
+  if (infoEl) {
+    const trend = current > base ? '📈' : current < base ? '📉' : '➡️';
+    const color = current > base ? 'var(--success)' : current < base ? '#c04040' : 'var(--muted)';
+    const pct   = Math.round((current - base) / base * 100);
+    const sign  = pct >= 0 ? '+' : '';
+    infoEl.innerHTML = `
+      <div class="th-row">
+        <span style="color:var(--gold)">${RESOURCE_ICONS?.[res]??''} ${RESOURCE_LABELS?.[res]??res}</span>
+        <span style="color:${color}">${trend} ${current}💰/u (${sign}${pct}%)</span>
+      </div>
+      <div class="th-muted" style="font-size:0.6rem">Prix de base : ${base}💰 · ${hist.length} points de données</div>
+    `;
+  }
+}
+window.renderMarketChart = renderMarketChart;
 
 // ===== LEVEL UP =====
 function getTotalWarehouseStock() {
