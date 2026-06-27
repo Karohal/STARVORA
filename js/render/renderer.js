@@ -379,17 +379,7 @@ function drawMap(ctx) {
         ctx.fillStyle = '#434350'; ctx.fill();
       }
 
-      // Nom de la ressource
-      if (res && cam.zoom > 0.6) {
-        ctx.font         = `bold ${Math.floor(8 * cam.zoom)}px sans-serif`;
-        ctx.textAlign    = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle    = '#fff';
-        ctx.strokeStyle  = 'rgba(0,0,0,0.6)';
-        ctx.lineWidth    = 2;
-        ctx.strokeText(RESOURCE_LABELS[res] ?? res, s.x, s.y + th/2);
-        ctx.fillText(RESOURCE_LABELS[res] ?? res, s.x, s.y + th/2);
-      }
+      // Nom de la ressource supprimé - visible dans le panel au clic
     }
   }
 }
