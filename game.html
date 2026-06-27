@@ -426,10 +426,10 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- PANEL CAMION -->
 <!-- ===== PANEL TRADING MARCHÉ ===== -->
-<div id="market-chart-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:2000;background:#0b0e11;flex-direction:column;font-family:sans-serif">
+<div id="market-chart-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100vh;z-index:2000;background:#0b0e11;font-family:sans-serif;overflow:hidden">
 
   <!-- Header fixe -->
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#0b0e11;border-bottom:1px solid #2b3139;flex-shrink:0;position:relative;z-index:2001">
+  <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#0b0e11;border-bottom:1px solid #2b3139;z-index:2001;height:60px;box-sizing:border-box">
     <div>
       <div style="font-size:1rem;font-weight:700;color:#f0b90b">📊 StarVora Markets</div>
       <div id="mkt-selected-badge" style="font-size:0.65rem;color:#848e9c;margin-top:1px"></div>
@@ -438,10 +438,10 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   </div>
 
   <!-- Onglets ressources -->
-  <div id="market-res-tabs" style="display:flex;overflow-x:auto;padding:8px 12px;gap:6px;background:#0b0e11;border-bottom:1px solid #1e2329;flex-shrink:0;-webkit-overflow-scrolling:touch"></div>
+  <div id="market-res-tabs" style="position:absolute;top:60px;left:0;right:0;display:flex;overflow-x:auto;padding:8px 12px;gap:6px;background:#0b0e11;border-bottom:1px solid #1e2329;-webkit-overflow-scrolling:touch;height:50px;box-sizing:border-box;align-items:center;z-index:2000"></div>
 
   <!-- Contenu scrollable -->
-  <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:12px 14px 120px 14px">
+  <div style="position:absolute;top:110px;left:0;right:0;bottom:0;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:12px 14px 150px 14px">
 
     <!-- Prix actuel -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -545,27 +545,27 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=163"></script>
-<script src="js/config/buildings.js?v=163"></script>
-<script src="js/config/research.js?v=163"></script>
-<script src="js/config/trucks.js?v=163"></script>
-<script src="js/config/map.js?v=163"></script>
+<script src="js/config/resources.js?v=164"></script>
+<script src="js/config/buildings.js?v=164"></script>
+<script src="js/config/research.js?v=164"></script>
+<script src="js/config/trucks.js?v=164"></script>
+<script src="js/config/map.js?v=164"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=163"></script>
-<script src="js/core/save.js?v=163"></script>
+<script src="js/core/state.js?v=164"></script>
+<script src="js/core/save.js?v=164"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=163"></script>
-<script src="js/engine/production.js?v=163"></script>
-<script src="js/engine/logistics.js?v=163"></script>
-<script src="js/engine/exploration.js?v=163"></script>
+<script src="js/engine/economy.js?v=164"></script>
+<script src="js/engine/production.js?v=164"></script>
+<script src="js/engine/logistics.js?v=164"></script>
+<script src="js/engine/exploration.js?v=164"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=163"></script>
+<script src="js/render/renderer.js?v=164"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=163"></script>
-<script src="js/ui/research.js?v=163"></script>
-<script src="js/ui/input.js?v=163"></script>
+<script src="js/ui/panels.js?v=164"></script>
+<script src="js/ui/research.js?v=164"></script>
+<script src="js/ui/input.js?v=164"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=163"></script>
+<script src="js/core/main.js?v=164"></script>
 
 </body>
 </html>
