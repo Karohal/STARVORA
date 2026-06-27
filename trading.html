@@ -199,7 +199,9 @@ function fluctuate() {
 }
 
 function getStock(res) {
-  return state.warehouseStock ? Object.values(state.warehouseStock).reduce((a,s) => a + (s[res]??0), 0) : 0;
+  // Uniquement le stock des bâtiments marché (déjà filtré côté jeu)
+  if (!state.warehouseStock) return 0;
+  return Object.values(state.warehouseStock).reduce((a,s) => a + (s[res]??0), 0);
 }
 
 function getMoney() { return state.money ?? 0; }
@@ -261,6 +263,8 @@ function executeTrade() {
     alert(`✅ Acheté ${qty} ${LABELS[selectedRes]} → -${total} 💰`);
   }
   saveState();
+  // Notifier le jeu du changement
+  localStorage.setItem('starvora_trade_result', JSON.stringify({ money: state.money, warehouseStock: state.warehouseStock, ts: Date.now() }));
   render();
 }
 
