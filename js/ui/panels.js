@@ -607,6 +607,11 @@ function refreshMarketPanel(key) {
 window.refreshMarketPanel = refreshMarketPanel;
 
 
+function levelUpCost(type, currentLevel) {
+  const base = LEVELUP_BASE_COST[type] ?? 50;
+  return Math.round(base * Math.pow(1.2, currentLevel));
+}
+
 // ===== PANEL TRADING MARCHÉ =====
 function openMarketChartPanel(key) {
   // Sauvegarder l'état dans localStorage pour trading.html
@@ -622,3 +627,99 @@ function openMarketChartPanel(key) {
   window.open('trading.html', '_blank');
 }
 window.openMarketChartPanel = openMarketChartPanel;
+
+function getTotalWarehouseStock() {
+  const total = {};
+  for (const stock of Object.values(state.warehouseStock ?? {})) {
+    for (const [res, qty] of Object.entries(stock)) {
+      total[res] = (total[res] ?? 0) + qty;
+    }
+  }
+  return total;
+}
+
+function buildingLevelUp() {
+  const btn  = document.getElementById('bp-levelup-btn');
+  const key  = btn?.dataset.key;
+  const type = btn?.dataset.type;
+  if (!key || !type) return;
+  const level = state.buildingLevels[key] ?? 0;
+
+  if (type === 'road') {
+    const nextDef = ROAD_LEVELS.find(r => r.level > level);
+    if (!nextDef) return notify('Niveau maximum atteint !', 'err');
+    const cost = getRoadUpgradeCost(level);
+    if (state.money < cost) return notify("Pas assez d'argent !", 'err');
+    const resCost = nextDef.resources ?? null;
+    if (resCost) {
+      const total = getTotalWarehouseStock();
+      for (const [res, qty] of Object.entries(resCost)) {
+        if ((total[res]??0) < qty) {
+          return notify(`Pas assez de ${RESOURCE_LABELS?.[res]??res} ! (${qty} requis)`, 'err');
+        }
+      }
+      for (const [res, qty] of Object.entries(resCost)) {
+        let rem = qty;
+        for (const wKey of Object.keys(state.warehouseStock ?? {})) {
+          if (rem <= 0) break;
+          const s = state.warehouseStock[wKey][res] ?? 0;
+          const take = Math.min(s, rem);
+          state.warehouseStock[wKey][res] = s - take;
+          rem -= take;
+        }
+      }
+    }
+    state.money -= cost;
+    state.buildingLevels[key] = level + 1;
+    updateStats();
+    openBuildingPanel(key, type);
+    notify(`🛣️ Route améliorée : ${getRoadDef(level+1).name} !`, 'ok');
+    return;
+  }
+
+  const cost = levelUpCost(type, level);
+  const resCost = (LEVELUP_RESOURCE_COST[type] ?? [])[level + 1] ?? null;
+  if (state.money < cost) return notify("Pas assez d'argent !", 'err');
+  if (resCost) {
+    const total = getTotalWarehouseStock();
+    for (const [res, qty] of Object.entries(resCost)) {
+      if ((total[res]??0) < qty) {
+        return notify(`Pas assez de ${RESOURCE_LABELS?.[res]??res} ! (${qty} requis)`, 'err');
+      }
+    }
+    for (const [res, qty] of Object.entries(resCost)) {
+      let rem = qty;
+      for (const wKey of Object.keys(state.warehouseStock ?? {})) {
+        if (rem <= 0) break;
+        const s = state.warehouseStock[wKey][res] ?? 0;
+        const take = Math.min(s, rem);
+        state.warehouseStock[wKey][res] = s - take;
+        rem -= take;
+      }
+    }
+  }
+  state.money -= cost;
+  state.buildingLevels[key] = level + 1;
+  updateStats();
+  openBuildingPanel(key, type);
+  notify(`✅ ${BUILDING_DEF[type]?.icon} Niveau ${level+1} !`, 'ok');
+}
+window.buildingLevelUp = buildingLevelUp;
+
+function refreshHdvStockPanel() {
+  const el = document.getElementById('hdv-stock-content');
+  if (!el) return;
+  const stock = state.hdvStock ?? {};
+  el.innerHTML = Object.entries(stock).map(([res, qty]) => `
+    <div class="th-row">
+      <span>${RESOURCE_ICONS?.[res]??''} ${RESOURCE_LABELS?.[res]??res}</span>
+      <span class="th-val">${Math.round(qty*10)/10}</span>
+    </div>`).join('') || '<div class="th-muted">Vide</div>';
+}
+window.refreshHdvStockPanel = refreshHdvStockPanel;
+
+function toggleSection(header) {
+  const content = header.nextElementSibling;
+  if (content) content.style.display = content.style.display === 'none' ? 'block' : 'none';
+}
+window.toggleSection = toggleSection;
