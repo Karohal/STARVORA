@@ -384,6 +384,10 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
   <div id="bp-warehouse-section" style="display:none">
     <div class="section-header" onclick="toggleSection(this)">▸ STOCKS</div>
     <div>
+      <!-- Bouton marché fixe (visible seulement pour le marché) -->
+      <div id="bp-market-btn-zone" style="display:none;margin-bottom:6px">
+        <button id="bp-market-chart-btn" class="assign-btn" style="width:100%;border-color:var(--cyan);color:var(--cyan)">📊 Cours & Tendances</button>
+      </div>
       <div id="bp-warehouse-stock"><div class="th-muted">Vide</div></div>
       <div class="th-row"><span>Capacité</span><span class="th-val" id="bp-warehouse-capacity">0/0</span></div>
     </div>
@@ -545,27 +549,27 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=169"></script>
-<script src="js/config/buildings.js?v=169"></script>
-<script src="js/config/research.js?v=169"></script>
-<script src="js/config/trucks.js?v=169"></script>
-<script src="js/config/map.js?v=169"></script>
+<script src="js/config/resources.js?v=170"></script>
+<script src="js/config/buildings.js?v=170"></script>
+<script src="js/config/research.js?v=170"></script>
+<script src="js/config/trucks.js?v=170"></script>
+<script src="js/config/map.js?v=170"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=169"></script>
-<script src="js/core/save.js?v=169"></script>
+<script src="js/core/state.js?v=170"></script>
+<script src="js/core/save.js?v=170"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=169"></script>
-<script src="js/engine/production.js?v=169"></script>
-<script src="js/engine/logistics.js?v=169"></script>
-<script src="js/engine/exploration.js?v=169"></script>
+<script src="js/engine/economy.js?v=170"></script>
+<script src="js/engine/production.js?v=170"></script>
+<script src="js/engine/logistics.js?v=170"></script>
+<script src="js/engine/exploration.js?v=170"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=169"></script>
+<script src="js/render/renderer.js?v=170"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=169"></script>
-<script src="js/ui/research.js?v=169"></script>
-<script src="js/ui/input.js?v=169"></script>
+<script src="js/ui/panels.js?v=170"></script>
+<script src="js/ui/research.js?v=170"></script>
+<script src="js/ui/input.js?v=170"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=169"></script>
+<script src="js/core/main.js?v=170"></script>
 
 </body>
 </html>
