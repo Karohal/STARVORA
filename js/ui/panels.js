@@ -732,13 +732,12 @@ function toggleSection(header) {
 window.toggleSection = toggleSection;
 
 function toggleMarketAutoSell() {
-  state.marketAutoSell = !(state.marketAutoSell !== false);
-  // Rafraîchir le panel marché si ouvert
+  state.marketAutoSell = !state.marketAutoSell;
   const key = state.selectedTileKey;
   if (key && state.buildings[key] === 'market') refreshMarketPanel(key);
   notify(state.marketAutoSell ? '✅ Vente automatique activée' : '⏸ Vente automatique désactivée', 'ok');
 }
 window.toggleMarketAutoSell = toggleMarketAutoSell;
 
-function getMktAutoSell() { return state.marketAutoSell !== false; }
+function getMktAutoSell() { return state.marketAutoSell === true; }
 window.getMktAutoSell = getMktAutoSell;
