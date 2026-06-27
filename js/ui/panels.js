@@ -621,11 +621,18 @@ function levelUpCost(type, currentLevel) {
 
 // ===== PANEL TRADING MARCHÉ =====
 function openMarketChartPanel(key) {
-  // Sauvegarder l'état dans localStorage pour trading.html
   try {
+    // Identifier tous les bâtiments marché et leurs stocks
+    const marketStock = {};
+    for (const [k, type] of Object.entries(state.buildings)) {
+      if (type === 'market') {
+        marketStock[k] = state.warehouseStock[k] ?? {};
+      }
+    }
     const save = {
-      money: state.money,
-      warehouseStock: state.warehouseStock,
+      money:          state.money,
+      warehouseStock: marketStock, // uniquement les marchés
+      marketKeys:     Object.keys(marketStock),
     };
     localStorage.setItem('starvora_save', JSON.stringify(save));
     localStorage.setItem('starvora_market_prices', JSON.stringify(state.marketPrices ?? {}));
