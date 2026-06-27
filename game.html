@@ -425,6 +425,19 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 </div>
 
 <!-- PANEL CAMION -->
+<!-- ===== PANEL MARCHÉ ===== -->
+<div id="market-chart-panel" class="panel" style="display:none;position:fixed;bottom:68px;left:8px;width:min(320px,94vw);z-index:200;max-height:70vh;overflow-y:auto">
+  <div class="panel-title">📊 Cours du marché
+    <button onclick="closeMarketChartPanel()" style="float:right;background:transparent;border:none;color:var(--muted);font-size:1rem;cursor:pointer">✕</button>
+  </div>
+  <!-- Sélecteur de ressource -->
+  <div id="market-res-tabs" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px"></div>
+  <!-- Graphique -->
+  <canvas id="market-chart-canvas" width="280" height="100" style="width:100%;border-radius:4px;background:rgba(255,255,255,0.04)"></canvas>
+  <!-- Infos ressource sélectionnée -->
+  <div id="market-res-info" style="margin-top:8px;font-size:0.68rem"></div>
+</div>
+
 <div id="truck-panel" class="panel">
   <button class="panel-close" onclick="closeTruckPanel()">✕</button>
   <div class="panel-title" id="tp-title">🚛</div>
@@ -470,27 +483,27 @@ canvas { display: block; position: fixed; top: 0; left: 0; }
 
 <!-- ===== SCRIPTS (ordre important) ===== -->
 <!-- Config -->
-<script src="js/config/resources.js?v=154"></script>
-<script src="js/config/buildings.js?v=154"></script>
-<script src="js/config/research.js?v=154"></script>
-<script src="js/config/trucks.js?v=154"></script>
-<script src="js/config/map.js?v=154"></script>
+<script src="js/config/resources.js?v=155"></script>
+<script src="js/config/buildings.js?v=155"></script>
+<script src="js/config/research.js?v=155"></script>
+<script src="js/config/trucks.js?v=155"></script>
+<script src="js/config/map.js?v=155"></script>
 <!-- Core -->
-<script src="js/core/state.js?v=154"></script>
-<script src="js/core/save.js?v=154"></script>
+<script src="js/core/state.js?v=155"></script>
+<script src="js/core/save.js?v=155"></script>
 <!-- Engine -->
-<script src="js/engine/economy.js?v=154"></script>
-<script src="js/engine/production.js?v=154"></script>
-<script src="js/engine/logistics.js?v=154"></script>
-<script src="js/engine/exploration.js?v=154"></script>
+<script src="js/engine/economy.js?v=155"></script>
+<script src="js/engine/production.js?v=155"></script>
+<script src="js/engine/logistics.js?v=155"></script>
+<script src="js/engine/exploration.js?v=155"></script>
 <!-- Render -->
-<script src="js/render/renderer.js?v=154"></script>
+<script src="js/render/renderer.js?v=155"></script>
 <!-- UI -->
-<script src="js/ui/panels.js?v=154"></script>
-<script src="js/ui/research.js?v=154"></script>
-<script src="js/ui/input.js?v=154"></script>
+<script src="js/ui/panels.js?v=155"></script>
+<script src="js/ui/research.js?v=155"></script>
+<script src="js/ui/input.js?v=155"></script>
 <!-- Main -->
-<script src="js/core/main.js?v=154"></script>
+<script src="js/core/main.js?v=155"></script>
 
 </body>
 </html>
