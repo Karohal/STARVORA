@@ -43,7 +43,32 @@ document.addEventListener('DOMContentLoaded', () => {
   initMarketPrices();
   setInterval(() => fluctuateMarketPrices(), 120000); // fluctuation toutes les 2min
   setInterval(() => updateMarkets(), 5000); // vérification toutes les 5s
-  setInterval(() => updateWaterSystem(), 30000); // eau toutes les 30s
+  setInterval(() => updateWaterSystem(), 30000);
+  // Sync trading.html toutes les 5s
+  setInterval(() => {
+    try {
+      const marketStock = {};
+      for (const [k, t] of Object.entries(state.buildings ?? {})) {
+        if (t === 'market') marketStock[k] = state.warehouseStock[k] ?? {};
+      }
+      localStorage.setItem('starvora_save', JSON.stringify({ money: state.money, warehouseStock: marketStock }));
+      localStorage.setItem('starvora_market_prices', JSON.stringify(state.marketPrices ?? {}));
+      localStorage.setItem('starvora_market_history', JSON.stringify(state.marketHistory ?? {}));
+      // Lire résultat d'un trade effectué dans trading.html
+      const tradeRaw = localStorage.getItem('starvora_trade_result');
+      if (tradeRaw) {
+        const trade = JSON.parse(tradeRaw);
+        if (trade.ts && Date.now() - trade.ts < 10000) {
+          state.money = trade.money;
+          for (const [k, stock] of Object.entries(trade.warehouseStock ?? {})) {
+            if (state.warehouseStock[k]) state.warehouseStock[k] = stock;
+          }
+          localStorage.removeItem('starvora_trade_result');
+          updateStats();
+        }
+      }
+    } catch(e) {}
+  }, 5000); // eau toutes les 30s
 
   // Boucle de rendu
   drawFrame_start();
