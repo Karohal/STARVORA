@@ -791,3 +791,25 @@ function refreshHospitalPanel(key) {
     `</div>`;
 }
 window.refreshHospitalPanel = refreshHospitalPanel;
+
+function openBuildingInfo(type) {
+  const def = BUILDING_DEF[type];
+  if (!def || !def.info) return;
+  document.getElementById('building-info-title').textContent = (def.icon ?? '') + ' ' + (def.name ?? type);
+  document.getElementById('building-info-body').innerHTML    = def.info;
+  document.getElementById('building-info-panel').style.display   = 'block';
+  document.getElementById('building-info-overlay').style.display = 'block';
+}
+function closeBuildingInfo() {
+  document.getElementById('building-info-panel').style.display   = 'none';
+  document.getElementById('building-info-overlay').style.display = 'none';
+}
+function maybeShowBuildingInfo(type) {
+  if (!state.seenBuildingInfo) state.seenBuildingInfo = {};
+  if (state.seenBuildingInfo[type]) return;
+  state.seenBuildingInfo[type] = true;
+  setTimeout(() => openBuildingInfo(type), 500);
+}
+window.openBuildingInfo      = openBuildingInfo;
+window.closeBuildingInfo     = closeBuildingInfo;
+window.maybeShowBuildingInfo = maybeShowBuildingInfo;
