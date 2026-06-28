@@ -634,7 +634,7 @@ function openMarketChartPanel(key) {
       warehouseStock: marketStock, // uniquement les marchés
       marketKeys:     Object.keys(marketStock),
     };
-    localStorage.setItem('starvora_save', JSON.stringify(save));
+    localStorage.setItem('starvora_trading', JSON.stringify(save));
     localStorage.setItem('starvora_market_prices', JSON.stringify(state.marketPrices ?? {}));
     localStorage.setItem('starvora_market_history', JSON.stringify(state.marketHistory ?? {}));
   } catch(e) {}
